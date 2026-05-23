@@ -25,9 +25,9 @@ allowed-tools:
 **This skill produces FILES, not a plan.** Regardless of whether you are in plan mode
 or not, ALWAYS:
 
-1. Write the report to `.lazyweb/design-brainstorm/{topic}-{date}/report.md`
-2. Write the HTML to `.lazyweb/design-brainstorm/{topic}-{date}/report.html`
-3. Download references to `.lazyweb/design-brainstorm/{topic}-{date}/references/`
+1. Write the HTML report to `.lazyweb/design-brainstorm/{topic}-{date}/report.html`
+2. Download references to `.lazyweb/design-brainstorm/{topic}-{date}/references/`
+3. Do NOT create `report.md` or any other Markdown report artifact
 4. Do NOT write brainstorm content into a plan file
 5. After saving, show the user a summary of ideas and tell them where the files are
 6. Ask the user if the brainstorm looks good
@@ -116,13 +116,17 @@ capture the current state:
 - **Mobile app:** Ask user to provide a screenshot
 - **No specific page yet:** Skip this step
 
-Save as `$REPORT_DIR/references/current-state.png` and include it in the report
-after the TL;DR as:
+Save as `$REPORT_DIR/references/current-state.png` and include it in the HTML report
+after the TL;DR using this structure:
 
-```markdown
-## Current State
-![Current State](references/current-state.png)
-*{Brief description of what we're looking at}*
+```html
+<section>
+  <h2>Current State</h2>
+  <figure>
+    <img src="references/current-state.png" alt="Current State">
+    <figcaption>{Brief description of what we're looking at}</figcaption>
+  </figure>
+</section>
 ```
 
 This grounds the brainstorm — the reader sees where we are before seeing where we could go.
@@ -277,14 +281,17 @@ For each cross-category result, ask:
 might be terrible. Filter for ideas where the UNDERLYING PATTERN transfers, even if
 the surface aesthetic doesn't.
 
-### 9. Write Brainstorm Document
+### 9. Write HTML Brainstorm Report
 
-Write to `.lazyweb/design-brainstorm/{topic-slug}-{YYYY-MM-DD}/report.md`
+Write directly to `.lazyweb/design-brainstorm/{topic-slug}-{YYYY-MM-DD}/report.html`.
+Do not create a Markdown version.
 
 **Reverse pyramid:** Lead with the action (which ideas to prototype), then the ideas,
 then the analysis. The reader should know what to do in the first 30 seconds.
 
-```markdown
+Use this content outline, rendered as semantic HTML:
+
+```text
 # Design Brainstorm: {Topic}
 
 ## TL;DR
@@ -352,10 +359,9 @@ considering. Flag the risk alongside the upside.}
 
 Label each reference `[Lazyweb]` or `[Web]` so the user knows where it came from.
 
-### 10. Generate HTML Report
+### 10. HTML Requirements
 
-After writing report.md, generate a `report.html` alongside it for visual preview.
-The HTML report should:
+The `report.html` file should:
 - Be a self-contained single HTML file with inline CSS (no external dependencies)
 - Use clean, readable styling: system fonts, max-width 900px, comfortable line-height
 - Reference images using RELATIVE paths (`references/filename.png`)

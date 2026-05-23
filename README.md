@@ -4,7 +4,7 @@
 
 AI agents design from training data averages — generic layouts, safe colors, patterns you've seen a thousand times. This plugin gives your agent Lazyweb skills plus the hosted Lazyweb MCP server for real app and web screenshots.
 
-Your agent searches before it designs. It finds real examples, downloads them locally, and produces structured reports with inline images you can preview in any markdown viewer.
+Your agent searches before it designs. It finds real examples, downloads them locally, and produces structured HTML reports with inline images you can open in any browser.
 
 ## Skills included
 
@@ -94,14 +94,14 @@ All skills produce a report with downloaded reference images:
 
 ```
 .lazyweb/{skill}/{topic}-{date}/
-├── report.md          <- Structured findings with inline images
+├── report.html        <- Structured findings with inline images
 └── references/        <- Downloaded screenshots (persisted locally)
     ├── stripe-pricing-page.png
     ├── linear-onboarding.png
     └── ...
 ```
 
-Preview `report.md` in any markdown viewer to see the screenshots inline.
+Open `report.html` in any browser to see the screenshots inline.
 
 ## License
 

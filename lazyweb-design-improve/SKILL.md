@@ -25,9 +25,9 @@ allowed-tools:
 **This skill produces FILES, not a plan.** Regardless of whether you are in plan mode
 or not, ALWAYS:
 
-1. Write the report to `.lazyweb/design-improve/{screen}-{date}/report.md`
-2. Write the HTML to `.lazyweb/design-improve/{screen}-{date}/report.html`
-3. Download references to `.lazyweb/design-improve/{screen}-{date}/references/`
+1. Write the HTML report to `.lazyweb/design-improve/{screen}-{date}/report.html`
+2. Download references to `.lazyweb/design-improve/{screen}-{date}/references/`
+3. Do NOT create `report.md` or any other Markdown report artifact
 4. Do NOT write improvement content into a plan file
 5. After saving, show the user a summary of improvement ideas and tell them where the files are
 6. Ask the user if the improvements look good
@@ -254,13 +254,16 @@ Generate 1-5 concrete improvement ideas. Each must be:
 - Tied to a reference (which screenshot inspired this idea?)
 - Actionable (the user should be able to implement it)
 
-### 7. Write Improvement Report
+### 7. Write HTML Improvement Report
 
-Write to `.lazyweb/design-improve/{screen-slug}-{YYYY-MM-DD}/report.md`
+Write directly to `.lazyweb/design-improve/{screen-slug}-{YYYY-MM-DD}/report.html`.
+Do not create a Markdown version.
 
 **Reverse pyramid:** Lead with what to do, then show the evidence.
 
-```markdown
+Use this content outline, rendered as semantic HTML:
+
+```text
 # Design Improvement: {Screen/Feature}
 
 ## TL;DR
@@ -322,10 +325,9 @@ just enough to communicate the layout idea. Example:
 These sketches help the user visualize the improvement without needing to open a
 design tool. They don't need to be pixel-perfect — just communicative.
 
-### 8. Generate HTML Report
+### 8. HTML Requirements
 
-After writing report.md, generate a `report.html` alongside it for visual preview.
-The HTML report should:
+The `report.html` file should:
 - Be a self-contained single HTML file with inline CSS (no external dependencies)
 - Use clean, readable styling: system fonts, max-width 900px, comfortable line-height
 - Reference images using RELATIVE paths (`references/filename.png`)

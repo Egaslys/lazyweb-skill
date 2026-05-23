@@ -29,9 +29,9 @@ and produces a report with downloaded visual references.
 **This skill produces FILES, not a plan.** Regardless of whether you are in plan mode
 or not, ALWAYS:
 
-1. Write the report to `.lazyweb/design-research/{topic}-{date}/report.md`
-2. Write the HTML to `.lazyweb/design-research/{topic}-{date}/report.html`
-3. Download references to `.lazyweb/design-research/{topic}-{date}/references/`
+1. Write the HTML report to `.lazyweb/design-research/{topic}-{date}/report.html`
+2. Download references to `.lazyweb/design-research/{topic}-{date}/references/`
+3. Do NOT create `report.md` or any other Markdown report artifact
 4. Do NOT write research content into a plan file
 5. After saving, show the user a summary of findings and tell them where the files are
 6. Ask the user if the research looks good
@@ -110,13 +110,17 @@ capture the current state:
 - **Mobile app:** Ask user to provide a screenshot
 - **No specific page:** Skip this step
 
-Save as `$REPORT_DIR/references/current-state.png` and include it in the report
-after the TL;DR as:
+Save as `$REPORT_DIR/references/current-state.png` and include it in the HTML report
+after the TL;DR using this structure:
 
-```markdown
-## Current State
-![Current State](references/current-state.png)
-*{Brief description of what we're looking at}*
+```html
+<section>
+  <h2>Current State</h2>
+  <figure>
+    <img src="references/current-state.png" alt="Current State">
+    <figcaption>{Brief description of what we're looking at}</figcaption>
+  </figure>
+</section>
 ```
 
 This grounds the entire report — the reader sees where we are before seeing where we could go.
@@ -260,16 +264,19 @@ Cap at 30 images total. Name files descriptively: `stripe-pricing-page.png`, `li
 Label each reference with its source in the report: `[Lazyweb]` or `[Web]` so the
 user knows the provenance.
 
-### 8. Write the Report
+### 8. Write the HTML Report
 
-Write to `.lazyweb/design-research/{topic-slug}-{YYYY-MM-DD}/report.md`
+Write directly to `.lazyweb/design-research/{topic-slug}-{YYYY-MM-DD}/report.html`.
+Do not create a Markdown version.
 
 **Reverse pyramid structure:** Lead with action, back into analysis. The reader should
 get the answer in the first 30 seconds, then optionally dive deeper.
 
 **Skip sections that don't apply.** A narrow question doesn't need all sections. Only include sections where you have real findings.
 
-```markdown
+Use this content outline, rendered as semantic HTML:
+
+```text
 # Design Research: {Topic}
 
 ## TL;DR
@@ -341,10 +348,9 @@ What the research reveals about this problem space.}
 Web sources listed here with URLs.}
 ```
 
-### 9. Generate HTML Report
+### 9. HTML Requirements
 
-After writing report.md, generate a `report.html` alongside it for visual preview.
-The HTML report should:
+The `report.html` file should:
 - Be a self-contained single HTML file with inline CSS (no external dependencies)
 - Use clean, readable styling: system fonts, max-width 900px, comfortable line-height
 - Reference images using RELATIVE paths (`references/filename.png`) — HTML files loaded

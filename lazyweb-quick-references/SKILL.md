@@ -28,9 +28,9 @@ Lighter than design-research — no competitive analysis, no anti-patterns. Just
 **This skill produces FILES, not a plan.** Regardless of whether you are in plan mode
 or not, ALWAYS:
 
-1. Write the report to `.lazyweb/quick-references/{topic}-{date}/report.md`
-2. Write the HTML to `.lazyweb/quick-references/{topic}-{date}/report.html`
-3. Download references to `.lazyweb/quick-references/{topic}-{date}/references/`
+1. Write the HTML report to `.lazyweb/quick-references/{topic}-{date}/report.html`
+2. Download references to `.lazyweb/quick-references/{topic}-{date}/references/`
+3. Do NOT create `report.md` or any other Markdown report artifact
 4. Do NOT write research content into a plan file
 5. After saving, show the user a summary and tell them where the files are
 6. Ask the user if the references look good
@@ -101,13 +101,17 @@ If the user is looking for references for a specific page or app they're buildin
 - **Mobile app:** Ask user to provide a screenshot
 - **No specific page:** Skip this step
 
-Save as `$REPORT_DIR/references/current-state.png` and include it in the report
-after the TL;DR as:
+Save as `$REPORT_DIR/references/current-state.png` and include it in the HTML report
+after the TL;DR using this structure:
 
-```markdown
-## Current State
-![Current State](references/current-state.png)
-*{Brief description of what we're looking at}*
+```html
+<section>
+  <h2>Current State</h2>
+  <figure>
+    <img src="references/current-state.png" alt="Current State">
+    <figcaption>{Brief description of what we're looking at}</figcaption>
+  </figure>
+</section>
 ```
 
 This grounds the collection — the reader sees what they have before seeing the references.
@@ -224,13 +228,16 @@ if [ -x "$LB" ]; then
 fi
 ```
 
-### 6. Write Reference Document
+### 6. Write HTML Reference Report
 
-Write to `.lazyweb/quick-references/{topic-slug}-{YYYY-MM-DD}/report.md`
+Write directly to `.lazyweb/quick-references/{topic-slug}-{YYYY-MM-DD}/report.html`.
+Do not create a Markdown version.
 
 **Reverse pyramid:** Lead with the patterns (the answer), then show the evidence.
 
-```markdown
+Use this content outline, rendered as semantic HTML:
+
+```text
 # Quick References: {Topic}
 
 ## TL;DR
@@ -284,10 +291,9 @@ just enough to communicate the layout idea. Example:
 These sketches help the user visualize how a pattern could apply to their work
 without needing to open a design tool. They don't need to be pixel-perfect — just communicative.
 
-### 7. Generate HTML Report
+### 7. HTML Requirements
 
-After writing report.md, generate a `report.html` alongside it for visual preview.
-The HTML report should:
+The `report.html` file should:
 - Be a self-contained single HTML file with inline CSS (no external dependencies)
 - Use clean, readable styling: system fonts, max-width 900px, comfortable line-height
 - Reference images using RELATIVE paths (`references/filename.png`)
