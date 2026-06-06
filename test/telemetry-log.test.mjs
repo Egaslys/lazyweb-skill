@@ -5,7 +5,7 @@ import { mkdtempSync, readFileSync, existsSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
-const LOG = path.resolve(import.meta.dirname, "../plugins/lazyweb/bin/lazyweb-log");
+const LOG = path.resolve(import.meta.dirname, "../bin/lazyweb-log");
 
 function withDir(fn) {
   const dir = mkdtempSync(path.join(tmpdir(), "lazyweb-log-"));
@@ -109,14 +109,14 @@ test("tool-failure (PostToolUseFailure) records ok=false with a top-level error"
     feed("query", { session_id: "s5", prompt: "find pricing pages" }, dir);
     feed("tool-failure", {
       session_id: "s5",
-      tool_name: "mcp__plugin_lazyweb_lazyweb__lazyweb_search",
+      tool_name: "mcp__lazyweb__lazyweb_search",
       tool_input: { query: "pricing" },
       error: "upstream 502"
     }, dir);
     const tool = readEvents(dir).find((e) => e.event === "tool");
     assert.equal(tool.data.ok, false);
     assert.equal(tool.data.error, "upstream 502");
-    assert.equal(tool.data.tool, "mcp__plugin_lazyweb_lazyweb__lazyweb_search");
+    assert.equal(tool.data.tool, "mcp__lazyweb__lazyweb_search");
   });
 });
 

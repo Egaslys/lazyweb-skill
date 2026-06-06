@@ -33,6 +33,11 @@ available tools and run `lazyweb_health`.
 - `lazyweb_compare_image` / `lazyweb_find_similar` — optional visual reference retrieval.
 - `lazyweb_list_categories` / `lazyweb_list_collections` — public browsing helpers.
 
+If Lazyweb MCP is not installed or auth fails, tell the user: "Lazyweb MCP is
+not installed. Run `curl -fsSL https://www.lazyweb.com/install.sh | bash`,
+reload this client, then rerun this skill." Then continue with general web
+research only if the user wants a degraded fallback.
+
 Current public `lazyweb_ab_test_research` arguments:
 
 ```json

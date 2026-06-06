@@ -6,7 +6,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import http from "node:http";
 
-const FLUSH = path.resolve(import.meta.dirname, "../plugins/lazyweb/bin/lazyweb-telemetry-flush");
+const FLUSH = path.resolve(import.meta.dirname, "../bin/lazyweb-telemetry-flush");
 
 function startServer() {
   return new Promise((resolve) => {

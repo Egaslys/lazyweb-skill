@@ -1,5 +1,5 @@
 #!/bin/sh
-# lazyweb-update-check: compare the installed plugin VERSION to the published VERSION
+# lazyweb-update-check: compare the installed skill-pack VERSION to the published VERSION
 # on the repo's main branch. Prints "UPGRADE_AVAILABLE <local> <remote>" when a newer
 # version exists, otherwise prints nothing.
 #
@@ -12,7 +12,7 @@ CACHE_DIR="${HOME}/.lazyweb"
 CACHE_FILE="${CACHE_DIR}/.update-check"
 TTL=86400
 
-# Resolve the local VERSION. Prefer the plugin root the router exports; fall back to
+# Resolve the local VERSION. Prefer the installed skill root; fall back to
 # this script's own location so it also works when run directly from a checkout.
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname "$0")" 2>/dev/null && pwd)
 LOCAL_VERSION=""

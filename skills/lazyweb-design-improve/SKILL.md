@@ -33,7 +33,7 @@ or not, ALWAYS:
 6. Ask the user if the improvements look good
 7. If in plan mode, exit plan mode after the user confirms
 8. Suggest next steps: "You can now implement these improvements, ask
-   `/lazyweb:lazyweb` for more creative ideas, or start building."
+   `/lazyweb` for more creative ideas, or start building."
 
 ---
 
@@ -44,7 +44,7 @@ and generate 1-5 concrete improvement ideas — each tied to a real reference.
 
 Before searching, ground the work in what the user is building, and avoid guessing when a wrong guess wastes a search:
 
-1. **Detect context.** Run `lazyweb-context-detect` (on `PATH` when installed as a plugin; otherwise `<plugin-root>/bin/lazyweb-context-detect`). It prints the project, platform (mobile/desktop), and stack. Use it to bias the `platform` filter and to caption references accurately. (You will also capture the current screen below; context-detect grounds the surrounding product.)
+1. **Detect context.** Run `lazyweb-context-detect` (on `PATH` when installed by setup; otherwise `~/.lazyweb/repos/lazyweb-skill/bin/lazyweb-context-detect`). It prints the project, platform (mobile/desktop), and stack. Use it to bias the `platform` filter and to caption references accurately. (You will also capture the current screen below; context-detect grounds the surrounding product.)
 2. **Clarify only what's missing.** If it reports `platform=unknown`, or you can't tell the product/screen from the request, ask ONE AskUserQuestion to pin down product/screen, mobile vs desktop, and the specific outcome. Skip anything the context already answered; don't interrogate when the request is already clear.
 3. **Search from multiple angles.** Cast 3-5 `lazyweb_search` queries with different wordings and filters (by screen, by competitor `company`, by `category`, by `platform`, and by `high_design_bar` only when exposed) instead of one, and read each result's `visionDescription` before using it.
 
@@ -82,9 +82,7 @@ Before searching, verify MCP is available by listing tools and running
 `lazyweb_health`.
 
 **If Lazyweb MCP is not installed or auth fails:**
-Tell the user: "Lazyweb MCP is not installed. Enable the global Lazyweb plugin or
-get the free setup instructions at https://www.lazyweb.com/mcp-install, paste
-them into this agent, then rerun this skill. Lazyweb is free; the bearer token is
+Tell the user: "Lazyweb MCP is not installed. Run `curl -fsSL https://www.lazyweb.com/install.sh | bash`, reload this client, then rerun this skill. Lazyweb is free; the bearer token is
 only for no-billing UI reference tools and is okay in ignored local config."
 Then proceed with web research only — the skill still works, just without Lazyweb's database.
 
@@ -92,8 +90,8 @@ Then proceed with web research only — the skill still works, just without Lazy
 
 ```bash
 LB=""
-# Check lazyweb-skill browse first
-for _P in "$(pwd)/.claude/skills/lazyweb-skill/browse/dist/browse" ~/.claude/skills/lazyweb-skill/browse/dist/browse; do
+# Check the standalone Lazyweb checkout first
+for _P in "$(pwd)/.lazyweb/repos/lazyweb-skill/browse/dist/browse" ~/.lazyweb/repos/lazyweb-skill/browse/dist/browse; do
   [ -x "$_P" ] && LB="$_P" && break
 done
 # Fall back to gstack browse
@@ -107,7 +105,7 @@ fi
 
 If `NO_BROWSE`: Web screenshot capture is unavailable. Lazyweb results still work —
 just describe web examples in text without screenshots. To enable web captures,
-run: `cd ~/.claude/skills/lazyweb-skill/browse && ./setup`
+run: `cd ~/.lazyweb/repos/lazyweb-skill/browse && ./setup`
 
 ## Workflow
 
@@ -214,7 +212,7 @@ A reference from Mobbin that doesn't clearly show a better approach than the cur
 design is useless — skip it.
 
 **If the library session has expired** (login wall, redirect to sign-in):
-- Tell the user: "Your {library} session has expired. Ask `/lazyweb:lazyweb` to reconnect that inspiration source."
+- Tell the user: "Your {library} session has expired. Reconnect that inspiration source manually before relying on it."
 - Skip this library and continue with other sources.
 
 Label all library-sourced references: `[Mobbin]`, `[Savee]`, etc.

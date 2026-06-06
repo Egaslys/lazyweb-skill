@@ -32,7 +32,7 @@ or not, ALWAYS:
 5. After saving, show the user a summary of ideas and tell them where the files are
 6. Ask the user if the brainstorm looks good
 7. If in plan mode, exit plan mode after the user confirms
-8. Suggest next steps: "You can now prototype the top ideas, ask `/lazyweb:lazyweb`
+8. Suggest next steps: "You can now prototype the top ideas, ask `/lazyweb`
    for deeper design research on a specific idea, or start building."
 
 ---
@@ -48,7 +48,7 @@ The point is cross-pollination, not conformity.
 
 Before searching, ground the work in what the user is building, and avoid guessing when a wrong guess wastes a search:
 
-1. **Detect context.** Run `lazyweb-context-detect` (on `PATH` when installed as a plugin; otherwise `<plugin-root>/bin/lazyweb-context-detect`). It prints the project, platform (mobile/desktop), and stack. Use it to keep ideas applicable to the user's platform even while you search outside their category.
+1. **Detect context.** Run `lazyweb-context-detect` (on `PATH` when installed by setup; otherwise `~/.lazyweb/repos/lazyweb-skill/bin/lazyweb-context-detect`). It prints the project, platform (mobile/desktop), and stack. Use it to keep ideas applicable to the user's platform even while you search outside their category.
 2. **Clarify only what's missing.** If it reports `platform=unknown`, or you can't tell the product/problem from the request, ask ONE AskUserQuestion to pin down the product, the platform, and what they're trying to spark. Skip anything the context already answered.
 3. **Search from multiple angles.** Cast 3-5 `lazyweb_search` queries across deliberately different categories (the cross-pollination move) and read each result's `visionDescription` before using it. Add `high_design_bar: true` only when the live schema exposes it and the user asks for high-design-bar, premium, best-designed, or stronger visual-quality examples.
 
@@ -85,9 +85,7 @@ Before searching, verify MCP is available by listing tools and running
 `lazyweb_health`.
 
 **If Lazyweb MCP is not installed or auth fails:**
-Tell the user: "Lazyweb MCP is not installed. Enable the global Lazyweb plugin or
-get the free setup instructions at https://www.lazyweb.com/mcp-install, paste
-them into this agent, then rerun this skill. Lazyweb is free; the bearer token is
+Tell the user: "Lazyweb MCP is not installed. Run `curl -fsSL https://www.lazyweb.com/install.sh | bash`, reload this client, then rerun this skill. Lazyweb is free; the bearer token is
 only for no-billing UI reference tools and is okay in ignored local config."
 Then proceed with web research only — the brainstorm still works, just with web examples.
 
@@ -95,8 +93,8 @@ Then proceed with web research only — the brainstorm still works, just with we
 
 ```bash
 LB=""
-# Check lazyweb-skill browse first
-for _P in "$(pwd)/.claude/skills/lazyweb-skill/browse/dist/browse" ~/.claude/skills/lazyweb-skill/browse/dist/browse; do
+# Check the standalone Lazyweb checkout first
+for _P in "$(pwd)/.lazyweb/repos/lazyweb-skill/browse/dist/browse" ~/.lazyweb/repos/lazyweb-skill/browse/dist/browse; do
   [ -x "$_P" ] && LB="$_P" && break
 done
 # Fall back to gstack browse
@@ -110,7 +108,7 @@ fi
 
 If `NO_BROWSE`: Web screenshot capture is unavailable. Lazyweb results still work —
 just describe web examples in text without screenshots. To enable web captures,
-run: `cd ~/.claude/skills/lazyweb-skill/browse && ./setup`
+run: `cd ~/.lazyweb/repos/lazyweb-skill/browse && ./setup`
 
 ## Workflow
 
@@ -229,7 +227,7 @@ search BOTH the obvious category AND unrelated categories in each library:
 to deliberately search outside the user's category — that's the whole point of this skill.
 
 **If the library session has expired** (login wall, redirect to sign-in):
-- Tell the user: "Your {library} session has expired. Ask `/lazyweb:lazyweb` to reconnect that inspiration source."
+- Tell the user: "Your {library} session has expired. Reconnect that inspiration source manually before relying on it."
 - Skip this library and continue with other sources.
 
 Label all library-sourced references: `[Mobbin]`, `[Savee]`, etc.

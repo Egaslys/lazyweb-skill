@@ -5,7 +5,7 @@ import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
-const SCRIPT = path.resolve(import.meta.dirname, "../plugins/lazyweb/bin/lazyweb-update-check");
+const SCRIPT = path.resolve(import.meta.dirname, "../bin/lazyweb-update-check");
 
 // Run the update-check with an isolated HOME (so the 24h cache can't leak between
 // cases) and the remote version injected via the test seam (no network).

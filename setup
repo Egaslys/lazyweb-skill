@@ -1,0 +1,312 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+MCP_URL="${LAZYWEB_MCP_URL:-https://www.lazyweb.com/mcp}"
+INSTALL_TOKEN_URL="${LAZYWEB_INSTALL_TOKEN_URL:-https://www.lazyweb.com/api/mcp/install-token}"
+TOKEN_FILE="${LAZYWEB_TOKEN_FILE:-$HOME/.lazyweb/lazyweb_mcp_token}"
+HOST="auto"
+QUIET=0
+
+usage() {
+  cat <<'USAGE'
+Usage: ./setup [--host auto|all|codex|claude|cursor|opencode|kiro|factory|slate|hermes|antigravity] [--quiet]
+
+Installs the standalone Lazyweb skill pack and configures direct Lazyweb MCP
+access for supported local coding clients.
+USAGE
+}
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --host)
+      [ "${2:-}" ] || { echo "Missing value for --host" >&2; exit 1; }
+      HOST="$2"
+      shift 2
+      ;;
+    --host=*)
+      HOST="${1#--host=}"
+      shift
+      ;;
+    -q|--quiet)
+      QUIET=1
+      shift
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      echo "Unknown option: $1" >&2
+      usage >&2
+      exit 1
+      ;;
+  esac
+done
+
+log() {
+  [ "$QUIET" -eq 1 ] || printf '%s\n' "$*"
+}
+
+has_cmd() {
+  command -v "$1" >/dev/null 2>&1
+}
+
+json_escape() {
+  node -e 'process.stdout.write(JSON.stringify(process.argv[1]))' "$1"
+}
+
+link_or_copy() {
+  local src="$1"
+  local dst="$2"
+  rm -rf "$dst"
+  if ln -s "$src" "$dst" 2>/dev/null; then
+    return 0
+  fi
+  if [ -d "$src" ]; then
+    cp -R "$src" "$dst"
+  else
+    cp "$src" "$dst"
+  fi
+}
+
+ensure_token() {
+  mkdir -p "$(dirname "$TOKEN_FILE")"
+
+  if [ -n "${LAZYWEB_MCP_TOKEN:-}" ]; then
+    printf '%s\n' "$LAZYWEB_MCP_TOKEN" > "$TOKEN_FILE"
+    chmod 600 "$TOKEN_FILE" 2>/dev/null || true
+    printf '%s' "$LAZYWEB_MCP_TOKEN"
+    return 0
+  fi
+
+  if [ -s "$TOKEN_FILE" ]; then
+    tr -d '[:space:]' < "$TOKEN_FILE"
+    return 0
+  fi
+
+  [ "$QUIET" -eq 1 ] || printf '%s\n' "Creating a free Lazyweb MCP token..." >&2
+  local token
+  token="$(curl -fsS -X POST "$INSTALL_TOKEN_URL" -H "content-type: application/json" -d '{}' \
+    | node -e "let s='';process.stdin.on('data',d=>s+=d);process.stdin.on('end',()=>{const j=JSON.parse(s); process.stdout.write(j.token || j.userId || '');})")"
+  if [ -z "$token" ]; then
+    echo "Failed to create Lazyweb MCP token from $INSTALL_TOKEN_URL" >&2
+    exit 1
+  fi
+  printf '%s\n' "$token" > "$TOKEN_FILE"
+  chmod 600 "$TOKEN_FILE" 2>/dev/null || true
+  printf '%s' "$token"
+}
+
+install_skills_to_root() {
+  local skills_root="$1"
+  mkdir -p "$skills_root"
+  link_or_copy "$ROOT/lazyweb" "$skills_root/lazyweb"
+  for skill_dir in \
+    lazyweb-design-research \
+    lazyweb-quick-references \
+    lazyweb-design-improve \
+    lazyweb-design-brainstorm \
+    lazyweb-ab-test-research
+  do
+    link_or_copy "$ROOT/skills/$skill_dir" "$skills_root/$skill_dir"
+  done
+}
+
+install_lazyweb_bins() {
+  mkdir -p "$HOME/.lazyweb/bin"
+  for bin_name in lazyweb-context-detect lazyweb-log lazyweb-telemetry-flush lazyweb-update-check; do
+    [ -f "$ROOT/bin/$bin_name" ] || continue
+    link_or_copy "$ROOT/bin/$bin_name" "$HOME/.lazyweb/bin/$bin_name"
+    chmod +x "$HOME/.lazyweb/bin/$bin_name" 2>/dev/null || true
+  done
+}
+
+write_codex_mcp_config() {
+  local config_path="${CODEX_HOME:-$HOME/.codex}/config.toml"
+  mkdir -p "$(dirname "$config_path")"
+  CONFIG_PATH="$config_path" MCP_URL="$MCP_URL" node <<'NODE'
+const fs = require("fs");
+const path = require("path");
+
+const configPath = process.env.CONFIG_PATH;
+const mcpUrl = process.env.MCP_URL;
+const command = `TOKEN="\${LAZYWEB_MCP_TOKEN:-}"; if [ -z "$TOKEN" ] && [ -f "$HOME/.lazyweb/lazyweb_mcp_token" ]; then TOKEN="$(cat "$HOME/.lazyweb/lazyweb_mcp_token")"; fi; exec npx -y mcp-remote ${mcpUrl} --header "Authorization: Bearer $TOKEN" --transport http-first`;
+const block = [
+  "[mcp_servers.lazyweb]",
+  'command = "sh"',
+  `args = ["-lc", ${JSON.stringify(command)}]`,
+  ""
+].join("\n");
+
+let text = "";
+try {
+  text = fs.readFileSync(configPath, "utf8");
+} catch (err) {
+  if (err.code !== "ENOENT") throw err;
+}
+
+const lines = text.split(/\n/);
+const out = [];
+let skipping = false;
+for (const line of lines) {
+  if (/^\s*\[mcp_servers\.lazyweb\]\s*$/.test(line)) {
+    skipping = true;
+    continue;
+  }
+  if (skipping && /^\s*\[[^\]]+\]\s*$/.test(line)) {
+    skipping = false;
+  }
+  if (!skipping) out.push(line);
+}
+
+const next = out.join("\n").trimEnd();
+fs.mkdirSync(path.dirname(configPath), { recursive: true });
+fs.writeFileSync(configPath, `${next}${next ? "\n\n" : ""}${block}`);
+NODE
+}
+
+write_json_mcp_config() {
+  local config_path="$1"
+  local url_key="$2"
+  local token="$3"
+  mkdir -p "$(dirname "$config_path")"
+  CONFIG_PATH="$config_path" MCP_URL="$MCP_URL" URL_KEY="$url_key" TOKEN="$token" node <<'NODE'
+const fs = require("fs");
+const path = require("path");
+
+const configPath = process.env.CONFIG_PATH;
+const urlKey = process.env.URL_KEY;
+const mcpUrl = process.env.MCP_URL;
+const token = process.env.TOKEN;
+let data = {};
+try {
+  data = JSON.parse(fs.readFileSync(configPath, "utf8"));
+} catch (err) {
+  if (err.code !== "ENOENT") data = {};
+}
+
+if (!data || typeof data !== "object" || Array.isArray(data)) data = {};
+if (!data.mcpServers || typeof data.mcpServers !== "object" || Array.isArray(data.mcpServers)) {
+  data.mcpServers = {};
+}
+data.mcpServers.lazyweb = {
+  [urlKey]: mcpUrl,
+  headers: {
+    Authorization: `Bearer ${token}`,
+    Accept: "application/json, text/event-stream"
+  },
+  disabled: false
+};
+fs.mkdirSync(path.dirname(configPath), { recursive: true });
+fs.writeFileSync(configPath, `${JSON.stringify(data, null, 2)}\n`);
+NODE
+}
+
+configure_claude_mcp() {
+  local token="$1"
+  if ! has_cmd claude; then
+    log "Claude Code CLI not found; skipping Claude MCP auto-config."
+    return 0
+  fi
+  claude mcp remove -s user lazyweb >/dev/null 2>&1 || true
+  claude mcp add --transport http --scope user lazyweb "$MCP_URL" --header "Authorization: Bearer $token" >/dev/null
+}
+
+selected_hosts() {
+  case "$HOST" in
+    all)
+      printf '%s\n' codex claude cursor opencode kiro factory slate hermes antigravity
+      ;;
+    codex|claude|cursor|opencode|kiro|factory|slate|hermes|antigravity)
+      printf '%s\n' "$HOST"
+      ;;
+    auto)
+      { has_cmd codex || [ -d "$HOME/.codex" ]; } && printf '%s\n' codex
+      { has_cmd claude || [ -d "$HOME/.claude" ]; } && printf '%s\n' claude
+      { has_cmd cursor || [ -d "$HOME/.cursor" ]; } && printf '%s\n' cursor
+      { has_cmd opencode || [ -d "$HOME/.config/opencode" ]; } && printf '%s\n' opencode
+      { has_cmd kiro || [ -d "$HOME/.kiro" ]; } && printf '%s\n' kiro
+      { has_cmd droid || [ -d "$HOME/.factory" ]; } && printf '%s\n' factory
+      [ -d "$HOME/.slate" ] && printf '%s\n' slate
+      [ -d "$HOME/.hermes" ] && printf '%s\n' hermes
+      { has_cmd antigravity || has_cmd antigravity-cli || [ -d "$HOME/.gemini/antigravity" ] || [ -d "$HOME/.gemini/antigravity-cli" ] || [ -d "$HOME/.gemini/antigravity-ide" ]; } && printf '%s\n' antigravity
+      ;;
+    *)
+      echo "Unknown --host value: $HOST" >&2
+      exit 1
+      ;;
+  esac
+}
+
+TOKEN="$(ensure_token)"
+install_lazyweb_bins
+
+HOSTS="$(selected_hosts | awk '!seen[$0]++' || true)"
+if [ -z "$HOSTS" ]; then
+  printf '%s\n' "No supported local coding clients were detected."
+else
+  for host in $HOSTS; do
+    case "$host" in
+      codex)
+        install_skills_to_root "${CODEX_HOME:-$HOME/.codex}/skills"
+        write_codex_mcp_config
+        log "Installed Lazyweb skills and MCP config for Codex."
+        ;;
+      claude)
+        install_skills_to_root "$HOME/.claude/skills"
+        configure_claude_mcp "$TOKEN"
+        log "Installed Lazyweb skills and MCP config for Claude Code."
+        ;;
+      cursor)
+        install_skills_to_root "$HOME/.cursor/skills"
+        write_json_mcp_config "$HOME/.cursor/mcp.json" "url" "$TOKEN"
+        log "Installed Lazyweb skills and MCP config for Cursor."
+        ;;
+      opencode)
+        install_skills_to_root "$HOME/.config/opencode/skills"
+        log "Installed Lazyweb skills for OpenCode. Add the manual MCP config below if OpenCode does not already share an MCP config."
+        ;;
+      kiro)
+        install_skills_to_root "$HOME/.kiro/skills"
+        log "Installed Lazyweb skills for Kiro. Add the manual MCP config below if Kiro does not already share an MCP config."
+        ;;
+      factory)
+        install_skills_to_root "$HOME/.factory/skills"
+        log "Installed Lazyweb skills for Factory Droid. Add the manual MCP config below if Factory does not already share an MCP config."
+        ;;
+      slate)
+        install_skills_to_root "$HOME/.slate/skills"
+        log "Installed Lazyweb skills for Slate. Add the manual MCP config below if Slate does not already share an MCP config."
+        ;;
+      hermes)
+        install_skills_to_root "$HOME/.hermes/skills"
+        log "Installed Lazyweb skills for Hermes. Add the manual MCP config below if Hermes does not already share an MCP config."
+        ;;
+      antigravity)
+        write_json_mcp_config "$HOME/.gemini/antigravity/mcp_config.json" "serverUrl" "$TOKEN"
+        write_json_mcp_config "$HOME/.gemini/antigravity-cli/mcp_config.json" "serverUrl" "$TOKEN"
+        write_json_mcp_config "$HOME/.gemini/antigravity-ide/mcp_config.json" "serverUrl" "$TOKEN"
+        log "Installed Lazyweb MCP config for Antigravity."
+        ;;
+    esac
+  done
+fi
+
+cat <<EOF
+
+Lazyweb setup complete.
+
+Token file:
+  $TOKEN_FILE
+
+Manual MCP config for any unsupported local client:
+  URL: $MCP_URL
+  Transport: Streamable HTTP
+  Header: Authorization: Bearer $TOKEN
+
+First checks:
+  1. Reload/restart the client.
+  2. Run /lazyweb if the skill is visible.
+  3. List MCP tools and confirm lazyweb_health and lazyweb_search are present.
+EOF

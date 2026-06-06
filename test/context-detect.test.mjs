@@ -5,7 +5,7 @@ import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
-const SCRIPT = path.resolve(import.meta.dirname, "../plugins/lazyweb/bin/lazyweb-context-detect");
+const SCRIPT = path.resolve(import.meta.dirname, "../bin/lazyweb-context-detect");
 
 function detect(setup) {
   const dir = mkdtempSync(path.join(tmpdir(), "lazyweb-ctx-"));
