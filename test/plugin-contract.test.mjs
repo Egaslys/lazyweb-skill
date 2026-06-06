@@ -145,8 +145,10 @@ test("README documents first-run welcome, free screenshots, paid A/B, and feedba
   assert.match(readme, /Only the router above should appear in slash completion/);
   assert.match(readme, /Free access includes screenshot search/);
   assert.match(readme, /only paid feature/i);
-  assert.match(readme, /20k\+.*A\/B tests/i);
-  assert.match(readme, /https:\/\/buy\.stripe\.com\/4gM3cwbdE8Mc46df5fawo07/);
+  assert.match(readme, /\$49\/month/);
+  assert.match(readme, /over 20k.*A\/B tests/i);
+  assert.match(readme, /what actually works/);
+  assert.match(readme, /https:\/\/dashboard\.stripe\.com\/acct_1RXB5lLhlPE8lk98\/payment-links\/plink_1Tf3bXLhlPE8lk98Guda4IRf/);
   assert.match(readme, /https:\/\/www\.lazyweb\.com\/research\.md/);
   assert.match(readme, /lazyweb feedback/);
 });

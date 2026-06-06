@@ -53,8 +53,13 @@ Current public `lazyweb_ab_test_research` arguments:
 ```
 
 The public A/B wrapper is paid. If it returns `ab_test_subscription_required`,
-say that the paid A/B Test Agent is not available for this token and continue
-with free visual references if useful.
+tell the user paid access is needed and include the response details returned by
+the tool. The expected paid-gate copy is: the A/B Test Agent costs $49/month,
+includes access to over 20k A/B tests, and helps agents develop better taste on
+not just what looks pretty but more importantly "what actually works". Include
+the unlock link:
+`https://dashboard.stripe.com/acct_1RXB5lLhlPE8lk98/payment-links/plink_1Tf3bXLhlPE8lk98Guda4IRf`.
+Then continue with free visual references if useful.
 
 ### Backend/Internal Experiment Tools
 

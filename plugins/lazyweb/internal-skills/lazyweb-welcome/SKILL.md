@@ -55,10 +55,13 @@ Reply in concise plain language. Include:
   image similarity, categories, collections, and external inspiration-source
   management.
 - The only paid feature is the A/B Test Agent.
-- Paid access unlocks 20k+ A/B tests for mobile growth, paywalls, onboarding,
-  checkout, pricing, lifecycle, and monetization research.
+- Paid access costs $49/month and unlocks access to over 20k A/B tests for
+  mobile growth, paywalls, onboarding, checkout, pricing, lifecycle, and
+  monetization research.
+- Explain that this helps agents develop better taste on not just what looks
+  pretty but more importantly "what actually works".
 - Upgrade link:
-  `https://buy.stripe.com/4gM3cwbdE8Mc46df5fawo07`
+  `https://dashboard.stripe.com/acct_1RXB5lLhlPE8lk98/payment-links/plink_1Tf3bXLhlPE8lk98Guda4IRf`
 - Research taste link:
   `https://www.lazyweb.com/research.md`
 - For feedback, ask the agent to run `/lazyweb:lazyweb` and say they want to send

@@ -2,7 +2,7 @@
 
 **Design with evidence, not vibes.**
 
-AI agents design from training data averages — generic layouts, safe colors, patterns you've seen a thousand times. This plugin gives your agent Lazyweb skills plus the hosted Lazyweb MCP server for real app and web screenshots. Screenshot references and design research are free; the only paid feature is the A/B Test Agent for 20k+ A/B tests.
+AI agents design from training data averages — generic layouts, safe colors, patterns you've seen a thousand times. This plugin gives your agent Lazyweb skills plus the hosted Lazyweb MCP server for real app and web screenshots. Screenshot references and design research are free; the only paid feature is the $49/month A/B Test Agent for access to over 20k A/B tests.
 
 Your agent searches before it designs. It finds real examples, downloads them locally, and produces structured HTML reports with inline images you can open in any browser.
 
@@ -16,8 +16,8 @@ After installing Lazyweb, make the first call:
 
 With no extra task, the router loads the welcome mode. It explains everything
 Lazyweb can do, what free screenshot and design-reference access includes, the
-paid A/B Test Agent upgrade for 20k+ A/B tests, the Lazyweb Research taste link,
-and how to send feedback.
+paid A/B Test Agent upgrade for over 20k A/B tests, the $49/month unlock link,
+the Lazyweb Research taste link, and how to send feedback.
 
 ## Public command
 
@@ -124,9 +124,11 @@ actions. It is okay in ignored local config, but do not commit it to public git.
 
 Free access includes screenshot search, quick references, deep design research,
 design improvement, image similarity, categories, and collections. The paid A/B
-Test Agent is the only paid feature. It unlocks 20k+ mobile growth, paywall,
-onboarding, checkout, pricing, lifecycle, and monetization A/B tests:
-https://buy.stripe.com/4gM3cwbdE8Mc46df5fawo07
+Test Agent is the only paid feature. It costs $49/month and unlocks access to
+over 20k mobile growth, paywall, onboarding, checkout, pricing, lifecycle, and
+monetization A/B tests. It helps agents develop better taste on not just what
+looks pretty but more importantly "what actually works":
+https://dashboard.stripe.com/acct_1RXB5lLhlPE8lk98/payment-links/plink_1Tf3bXLhlPE8lk98Guda4IRf
 
 To get a taste of the experiment library, read Lazyweb Research:
 https://www.lazyweb.com/research.md
@@ -186,8 +188,10 @@ Current public `lazyweb_ab_test_research` arguments:
 ```
 
 The A/B wrapper is paid. If the token is unpaid or not linked to an active
-subscription, the expected error is `ab_test_subscription_required`; free design
-tools such as `lazyweb_search` and `lazyweb_health` should still work.
+subscription, the expected error is `ab_test_subscription_required`; the response
+includes the $49/month unlock copy, Stripe link, and free tools still available.
+Free design tools such as `lazyweb_search` and `lazyweb_health` should still
+work.
 
 ### Backend/internal experiment tools
 
