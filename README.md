@@ -6,6 +6,18 @@ AI agents design from training data averages — generic layouts, safe colors, p
 
 Your agent searches before it designs. It finds real examples, downloads them locally, and produces structured HTML reports with inline images you can open in any browser.
 
+## First thing to test
+
+After installing Lazyweb, make the first call:
+
+```text
+/lazyweb:lazyweb-welcome
+```
+
+The welcome skill explains everything Lazyweb can do, what free screenshot and
+design-reference access includes, the paid A/B Test Agent upgrade for 20k+ A/B
+tests, the Lazyweb Research taste link, and how to send feedback.
+
 ## Skills included
 
 **`/lazyweb`** — The entry point. One command that routes you to the right Lazyweb skill. Say what you want ("research onboarding", "improve this screen", "show me pricing references") and it hands off to the matching skill below, or asks which one you meant when it's ambiguous. It also runs a non-blocking update check so you know when a newer plugin is available. Installed as a plugin, it is namespaced `/lazyweb:lazyweb`; you can also just describe your goal and the agent will route through it.
@@ -53,7 +65,7 @@ claude plugin install lazyweb@lazyweb
 ```
 
 Claude Code skills are namespaced as `/lazyweb:<skill-name>`, for example
-`/lazyweb:lazyweb-quick-references`.
+`/lazyweb:lazyweb-welcome`.
 
 After installing, restart Claude Code if it was already running, then make the
 first Lazyweb call:
@@ -88,7 +100,13 @@ https://www.lazyweb.com/research.md
 
 ### Verify
 
-List MCP tools, run `lazyweb_health`, then run `lazyweb_search` with:
+First run the welcome skill:
+
+```text
+/lazyweb:lazyweb-welcome
+```
+
+Then list MCP tools, run `lazyweb_health`, and run `lazyweb_search` with:
 
 ```json
 {"query":"pricing page","limit":3}
