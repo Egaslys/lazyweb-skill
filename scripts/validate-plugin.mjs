@@ -12,6 +12,7 @@ const publicGatewayTools = new Set([
   "lazyweb_search",
   "lazyweb_find_similar",
   "lazyweb_compare_image",
+  "lazyweb_get_flows",
   "lazyweb_list_categories",
   "lazyweb_list_collections",
   "lazyweb_ab_test_research"
@@ -267,8 +268,15 @@ async function assertLiveMcpToolNamesWhenRequested() {
   }
 
   const liveTools = await listLiveMcpTools();
+  // Lazyweb_* gateway tools must be asserted explicitly: the canonical-tool
+  // loop below skips lazyweb_* aliases so backend/internal docs-only tools do
+  // not make the public live check fail.
   for (const tool of publicGatewayTools) {
     assert.ok(liveTools.has(tool), `live MCP missing public gateway tool ${tool}`);
+  }
+  for (const tool of documentedLazywebTools) {
+    if (tool.startsWith("lazyweb_")) continue;
+    assert.ok(liveTools.has(tool), `live MCP missing canonical tool ${tool}`);
   }
 }
 

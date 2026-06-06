@@ -98,6 +98,7 @@ Pick the one sub-skill that matches the user's request and hand off to it.
 | A/B tests, experiments, growth hypotheses, monetization strategy | `lazyweb-ab-test-research` |
 | Creative, cross-category ideas ("zig when everyone zags") | `lazyweb-design-brainstorm` |
 | Send product feedback, bug reports, feature requests, or onboarding friction to Lazyweb | `lazyweb-feedback` |
+| A real multi-screen flow (onboarding, checkout, paywall) step by step | `lazyweb-flows` |
 | Connect an external inspiration library (Mobbin, Savee, Dribbble…) | `lazyweb-add-inspo-source` |
 | Disconnect an inspiration library | `lazyweb-remove-inspo-source` |
 
@@ -125,7 +126,7 @@ one source of truth.
 - Every sub-skill stays directly invocable (e.g. `/lazyweb:lazyweb-design-research`).
 - All skills are backed by the hosted Lazyweb MCP tools. The current public
   gateway normally exposes `lazyweb_search`, `lazyweb_find_similar`,
-  `lazyweb_compare_image`, `lazyweb_list_categories`,
+  `lazyweb_compare_image`, `lazyweb_get_flows`, `lazyweb_list_categories`,
   `lazyweb_list_collections`, `lazyweb_ab_test_research`, and
   `lazyweb_health`. Richer backend/internal surfaces may also expose
   `lazyweb_find_experiments`, `lazyweb_recent_experiments`, and
