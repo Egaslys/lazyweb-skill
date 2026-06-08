@@ -5,15 +5,22 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 MCP_URL="${LAZYWEB_MCP_URL:-https://www.lazyweb.com/mcp}"
 INSTALL_TOKEN_URL="${LAZYWEB_INSTALL_TOKEN_URL:-https://www.lazyweb.com/api/mcp/install-token}"
 TOKEN_FILE="${LAZYWEB_TOKEN_FILE:-$HOME/.lazyweb/lazyweb_mcp_token}"
+AUTO_UPDATE_MARKER="${LAZYWEB_AUTO_UPDATE_MARKER:-$HOME/.lazyweb/auto_update}"
 HOST="auto"
 QUIET=0
+AUTO_UPDATE_CHOICE=""
 
 usage() {
   cat <<'USAGE'
-Usage: ./setup [--host auto|all|codex|claude|cursor|opencode|kiro|factory|slate|hermes|antigravity] [--quiet]
+Usage: ./setup [--host auto|all|codex|claude|cursor|opencode|kiro|factory|slate|hermes|antigravity] [--quiet] [--auto-update|--no-auto-update]
 
 Installs the standalone Lazyweb skill pack and configures direct Lazyweb MCP
 access for supported local coding clients.
+
+Flags:
+  --auto-update     Opt in to silent automatic updates (creates
+                    ~/.lazyweb/auto_update). Skips the interactive prompt.
+  --no-auto-update  Opt out and skip the prompt; updates remain advisory.
 USAGE
 }
 
@@ -30,6 +37,14 @@ while [ "$#" -gt 0 ]; do
       ;;
     -q|--quiet)
       QUIET=1
+      shift
+      ;;
+    --auto-update)
+      AUTO_UPDATE_CHOICE="on"
+      shift
+      ;;
+    --no-auto-update)
+      AUTO_UPDATE_CHOICE="off"
       shift
       ;;
     -h|--help)
@@ -325,3 +340,34 @@ First checks:
   4. Call lazyweb_get_workflows with operation=list and task_context="first run Lazyweb capabilities"; summarize the returned workflows as Lazyweb's super powers.
   5. Do not call lazyweb_get_flows for the first-run capability guide. That is a separate tool for ordered product journeys.
 EOF
+
+# Auto-update opt-in. Resolved explicitly via --auto-update / --no-auto-update,
+# otherwise prompted once interactively. Quiet, non-interactive, and previously
+# answered installs leave the existing marker alone.
+case "$AUTO_UPDATE_CHOICE" in
+  on)
+    mkdir -p "$(dirname "$AUTO_UPDATE_MARKER")"
+    touch "$AUTO_UPDATE_MARKER"
+    log "Auto-updates enabled. Disable later: rm $AUTO_UPDATE_MARKER"
+    ;;
+  off)
+    log "Auto-updates left off. Enable later: touch $AUTO_UPDATE_MARKER"
+    ;;
+  *)
+    if [ "$QUIET" -eq 0 ] && [ -t 0 ] && [ ! -f "$AUTO_UPDATE_MARKER" ]; then
+      printf '\nEnable auto-updates so future Lazyweb skill changes apply silently? [Y/n] '
+      if read -r LAZYWEB_AUTO_ANSWER; then
+        case "$LAZYWEB_AUTO_ANSWER" in
+          n|N|no|No|NO)
+            log "Auto-updates left off. Enable later: touch $AUTO_UPDATE_MARKER"
+            ;;
+          *)
+            mkdir -p "$(dirname "$AUTO_UPDATE_MARKER")"
+            touch "$AUTO_UPDATE_MARKER"
+            log "Auto-updates enabled. Disable later: rm $AUTO_UPDATE_MARKER"
+            ;;
+        esac
+      fi
+    fi
+    ;;
+esac

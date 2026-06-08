@@ -90,6 +90,21 @@ To run setup for a specific client:
 
 Use `--host all` to install every supported local skill root.
 
+## Auto-updates (opt-in)
+
+Lazyweb checks for a newer version on every invocation. By default it tells
+the agent to surface the upgrade command to you. To apply updates silently
+without confirmation, opt in once:
+
+```bash
+touch ~/.lazyweb/auto_update
+```
+
+`./setup` prompts you for this on first interactive run; pass `--auto-update`
+or `--no-auto-update` to skip the prompt in scripted installs. Disable later
+with `rm ~/.lazyweb/auto_update`. The check itself is non-blocking
+(time-boxed to 3s, cached 24h) and never delays your request.
+
 ## Tool Surfaces
 
 Use MCP tools for Lazyweb database access. Always inspect the live tool list
