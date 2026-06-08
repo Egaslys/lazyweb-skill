@@ -101,4 +101,24 @@ for (const relativePath of ["README.md", "setup", "SKILL.md", ...visibleModeSkil
   assert.doesNotMatch(text, pluginInstallPattern, `${relativePath} still mentions plugin install paths`);
 }
 
+const staleScreenshotContractPatterns = [
+  /\{"screenshot_id"/,
+  /\bscreenshotId\b/,
+  /\bscreenshotIds\b/,
+  /known Lazyweb screenshot ID/i,
+  /BASE\+control\.path/,
+  /BASE\+variant\.path/,
+  /control\/variant\.image_url do NOT exist/i,
+  /Build the URL yourself/i
+];
+for (const relativePath of ["README.md", "SKILL.md", ...visibleModeSkillDirs.map((dir) => `${dir}/SKILL.md`)]) {
+  const text = read(relativePath);
+  for (const pattern of staleScreenshotContractPatterns) {
+    assert.doesNotMatch(text, pattern, `${relativePath} has stale screenshot URL/ID guidance: ${pattern}`);
+  }
+}
+
+assert.match(allSkillText, /signed for\s+90 days/i, "skill docs should state Lazyweb storage image URLs are signed for 90 days");
+assert.match(allSkillText, /lazyweb_find_similar` accepts `image_url` or `image_base64`/i, "router should document lazyweb_find_similar image URL input");
+
 console.log("Lazyweb skill-pack validation passed");

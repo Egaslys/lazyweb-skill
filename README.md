@@ -100,14 +100,20 @@ Current public gateway tools:
 | MCP tool | Use |
 |---|---|
 | `lazyweb_health` | Check Lazyweb backend connectivity. |
-| `lazyweb_search` | Search mobile and desktop screenshots by text. |
-| `lazyweb_compare_image` | Find visually similar screenshots from an image URL or base64 image. |
-| `lazyweb_find_similar` | Find screenshots similar to a known Lazyweb screenshot ID. |
+| `lazyweb_search` | Search mobile and desktop screenshots by text; screenshot results include full `imageUrl`/`image_url` values. |
+| `lazyweb_compare_image` | Find visually similar screenshots from an image URL or base64 image; results include full image URLs. |
+| `lazyweb_find_similar` | Find visually similar screenshots from a returned Lazyweb `imageUrl` or an image payload; do not pass screenshot IDs. |
 | `lazyweb_list_categories` | List public company categories. |
-| `lazyweb_list_collections` | List or fetch curated Lazyweb collections. |
+| `lazyweb_list_collections` | List or fetch curated Lazyweb collections; hydrated screenshots include full image URLs. |
 | `lazyweb_get_workflows` | Discover and fetch current Lazyweb workflow instructions. |
-| `lazyweb_get_flows` | Fetch ordered multi-screen product journeys. |
-| `lazyweb_ab_test_research` | Paid A/B Test Agent wrapper for PM-facing research. |
+| `lazyweb_get_flows` | Fetch ordered multi-screen product journeys with full step image URLs. |
+| `lazyweb_ab_test_research` | Paid A/B Test Agent wrapper for PM-facing research; when `include_images` is true, evidence includes full control/variant image URLs. |
+
+All Lazyweb screenshot-bearing tools return usable full URLs for screenshots.
+Supabase storage-backed image URLs are signed for 90 days. Do not ask tools for
+screenshot IDs, do not pass screenshot IDs between Lazyweb tools, and do not
+construct storage URLs from raw paths; embed the returned `imageUrl`/`image_url`
+or A/B `control_image_url`/`variant_image_url` fields directly.
 
 Richer backend/internal surfaces may also expose `lazyweb_find_experiments`,
 `lazyweb_recent_experiments`, and

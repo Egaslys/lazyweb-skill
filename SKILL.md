@@ -83,7 +83,7 @@ When a mode is clear:
 1. Read the corresponding `SKILL.md`.
 2. Follow that mode from the top.
 3. Use Lazyweb MCP tools for database-backed evidence.
-4. Embed Lazyweb database images directly with returned `imageUrl` values, and save only current-state or web-captured screenshots locally when the selected mode requires them.
+4. Embed Lazyweb database images directly with returned `imageUrl`/`image_url` values, and save only current-state or web-captured screenshots locally when the selected mode requires them.
 5. Cite whether each reference came from Lazyweb or the web.
 
 If the local host exposes the mode skills directly in its slash menu, users may
@@ -106,3 +106,8 @@ not sure which mode to use.
 - Pass `high_design_bar: true` only to tools whose live schema exposes it, and
   only when the user asks for premium, stronger, high-design-bar, or
   best-designed examples.
+- Screenshot-bearing tools return full image URLs. Supabase storage-backed URLs
+  are signed for 90 days. Do not request or pass screenshot IDs, and do not
+  construct storage URLs from raw paths.
+- `lazyweb_find_similar` accepts `image_url` or `image_base64` plus `mime_type`;
+  it does not take a screenshot ID.
