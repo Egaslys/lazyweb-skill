@@ -207,6 +207,10 @@ For ranked App Store slices, add rank filters:
    screen or flow when visual examples would make the recommendation clearer.
    Read `visionDescription` before relying on any screenshot, and embed returned
    `imageUrl` values directly instead of downloading Lazyweb images locally.
+   Never repeat an identical query — page deeper with `offset` and follow
+   `pagination.next_offset`; on `no_matches`/`low_coverage` warnings use the
+   closest result or note the gap instead of rephrasing in a loop, and on
+   `company_not_in_library` use a suggested company or drop the filter.
 
 4. **Synthesize like a growth PM.** Answer with:
    - Relevant observed experiments and what changed.

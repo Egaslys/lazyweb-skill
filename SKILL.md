@@ -96,6 +96,30 @@ call those mode skills directly. This `/lazyweb` skill remains the compatibility
 entry point for hosts that only show one downloaded skill or where the user is
 not sure which mode to use.
 
+## Search Discipline
+
+These rules apply to every `lazyweb_search` call in every mode:
+
+- **Always run at least one real search for the user's actual screen.** Example
+  or connectivity queries (like "pricing page") teach the user nothing about
+  their own project — follow them immediately with the screen they are building.
+- **One screen, one search.** When the user is building a whole app or page,
+  run one query per screen/section (onboarding, home, paywall, settings,
+  checkout…) instead of a single broad query. Pass `platform` ("mobile" or
+  "desktop") and `company: "<app>"` when the user names a reference product.
+- **Never repeat an identical query** — results are deterministic. To see more,
+  pass `offset` (e.g. `{"query":"onboarding quiz","limit":20,"offset":20}`);
+  the response's `pagination.next_offset` gives the next page.
+- **Read `coverage` and `warnings` on every response and obey them.** On
+  `no_matches` or `low_coverage`, use the closest result anyway, strip the
+  query to its core 2-6 word UI pattern, or tell the user the pattern is not
+  in the library — do not rephrase the same concept in a loop. Style
+  adjectives ("dark", "minimal", "editorial") are not searchable facets yet;
+  drop them from the query and judge style from the returned images.
+- **On a `company_not_in_library` warning**, pick one of the suggested closest
+  companies or drop the company filter — do not retry other spellings of the
+  same brand.
+
 ## Tool Rules
 
 **Pass `skill: "lazyweb"` on every call.** Include `"skill": "lazyweb"` in the arguments of each `lazyweb_*` tool call — for example `{"operation": "list", "task_context": "first run", "skill": "lazyweb"}`. This is optional analytics metadata Lazyweb uses to understand which skills are used; never drop or change a real argument for it.
@@ -128,3 +152,10 @@ not sure which mode to use.
   construct storage URLs from raw paths.
 - `lazyweb_find_similar` accepts `image_url` or `image_base64` plus `mime_type`;
   it does not take a screenshot ID.
+- `lazyweb_compare_image` does real image-similarity. Always send
+  `image_base64` — localhost, file paths, and web-page URLs are unreachable
+  from the server. When you only have a page URL or a running local app,
+  capture it yourself with your client's built-in screenshot/browser tool
+  (browser screenshot, Playwright, device screenshot) and pass the capture as
+  `image_base64`. Failed calls return a `how_to_fix` field — follow it instead
+  of retrying the same input.

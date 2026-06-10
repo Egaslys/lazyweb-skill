@@ -151,6 +151,8 @@ Think about two groups:
 
 ### 4. Search Lazyweb
 
+**Search discipline:** never repeat an identical query — results are deterministic; page deeper with `offset` and follow the response's `pagination.next_offset`. Read `coverage` and `warnings` on every response: on `no_matches`/`low_coverage`, use the closest result, strip the query to its core 2-6 word UI pattern, or note the coverage gap in the report — don't rephrase the same concept in a loop (style adjectives like "dark"/"minimal" are not searchable facets; judge style from the images). On `company_not_in_library`, use a suggested company or drop the filter. Researching a whole app or page? Run one search per screen/section.
+
 Call `lazyweb_search` multiple times with different angles:
 
 ```json

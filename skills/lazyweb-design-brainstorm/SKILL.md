@@ -51,6 +51,7 @@ Before searching, ground the work in what the user is building, and avoid guessi
 1. **Detect context.** Run `lazyweb-context-detect` (on `PATH` when installed by setup; otherwise `~/.lazyweb/repos/lazyweb-skill/bin/lazyweb-context-detect`). It prints the project, platform (mobile/desktop), and stack. Use it to keep ideas applicable to the user's platform even while you search outside their category.
 2. **Clarify only what's missing.** If it reports `platform=unknown`, or you can't tell the product/problem from the request, ask ONE AskUserQuestion to pin down the product, the platform, and what they're trying to spark. Skip anything the context already answered.
 3. **Search from multiple angles.** Cast 3-5 `lazyweb_search` queries across deliberately different categories (the cross-pollination move) and read each result's `visionDescription` before using it. Add `high_design_bar: true` only when the live schema exposes it and the user asks for high-design-bar, premium, best-designed, or stronger visual-quality examples.
+4. **Obey the response metadata.** Never repeat an identical query — results are deterministic; page deeper with `offset` and follow `pagination.next_offset`. On `no_matches`/`low_coverage` warnings, pivot to a different category or mechanism instead of rephrasing the same concept (style adjectives like "dark"/"minimal" are not searchable facets; judge style from the images). On `company_not_in_library`, use a suggested company or drop the filter.
 
 ## When to Use This
 
