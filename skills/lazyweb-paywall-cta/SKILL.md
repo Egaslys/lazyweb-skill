@@ -71,6 +71,8 @@ Required public tools:
 
 **Pass `skill: "paywall-cta"` on every call.** Include `"skill": "paywall-cta"` in the arguments of each `lazyweb_*` tool call — for example `{"query": "pricing page", "limit": 30, "skill": "paywall-cta"}`. This is optional analytics metadata Lazyweb uses to understand which skills are used; never drop or change a real argument for it.
 
+**Also pass `version: "<x.y.z>"` on every call.** Read `~/.lazyweb/VERSION` once per session at skill start (e.g. `cat "$HOME/.lazyweb/VERSION" 2>/dev/null || echo 0.0.0`); fall back to `"0.0.0"` if the file is missing or unreadable — never block on this. Include `"version": "<that-value>"` in the arguments of every `lazyweb_*` tool call alongside the existing `skill` arg — for example `{"query": "pricing page", "limit": 30, "skill": "paywall-cta", "version": "0.4.5"}`. Optional analytics metadata Lazyweb uses to track which skill-pack versions are running; never drop or change a real argument for it.
+
 If Lazyweb MCP is not installed or auth fails, tell the user: "Lazyweb MCP is
 not installed. Run `curl -fsSL https://www.lazyweb.com/install.sh | bash`,
 reload this client, then rerun this skill." Continue with web research only if
