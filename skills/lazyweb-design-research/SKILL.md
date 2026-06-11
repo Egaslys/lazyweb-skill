@@ -70,7 +70,66 @@ speed/exploration.
 ## Publish a Shareable Link (always, right after writing report.html)
 
 Every report is auto-published to lazyweb.com so the user can share it with
-teammates. Run this with `$REPORT_DIR` set to `.lazyweb/design-research/{topic}-{date}`:
+teammates. Before publishing, run this contract gate with `$REPORT_DIR` set to
+`.lazyweb/design-research/{topic}-{date}`:
+
+```bash
+REPORT_HTML="$REPORT_DIR/report.html"
+python3 - "$REPORT_HTML" <<'REPORT_CONTRACT_EOF'
+import pathlib, re, sys
+
+path = pathlib.Path(sys.argv[1])
+html = path.read_text(encoding="utf-8")
+
+required_groups = {
+    "Agent Instructions copy block": [
+        r'class=["\'][^"\']*\bagent-instructions\b',
+        r'FOR THE CODING AGENT',
+    ],
+    "Recommendation option deck": [
+        r'class=["\'][^"\']*\boption-deck\b',
+        r'class=["\'][^"\']*\bprototype-option\b',
+        r'Recommended',
+    ],
+    "Annotated pattern proof": [
+        r'class=["\'][^"\']*\bpattern-shot\b',
+        r'class=["\'][^"\']*\bannotated\b',
+        r'class=["\'][^"\']*\bbbox\b',
+    ],
+}
+missing = []
+for label, patterns in required_groups.items():
+    for pattern in patterns:
+        if not re.search(pattern, html, re.I):
+            missing.append(f"{label}: missing {pattern}")
+
+if re.search(r'<h2[^>]*>\s*Inspo\s*</h2>', html, re.I) and not re.search(r'class=["\'][^"\']*\binspo-map\b', html, re.I):
+    missing.append("Inspo section must use .inspo-map")
+
+for label, pattern in {
+    "old tabbed recommendation UI": r'class=["\'][^"\']*\boption-tabs\b|class=["\'][^"\']*\boption-panel\b',
+    "old axis/bubble inspo UI": r'class=["\'][^"\']*\baxis\b|class=["\'][^"\']*\bbubble\b',
+    "old prototype wrapper": r'class=["\'][^"\']*\bprototype-image\b',
+    "old evidence sections": r'Reference Evidence|Source Notes|Key Examples|<h2[^>]*>\s*Findings\s*</h2>|<h2[^>]*>\s*Sources\s*</h2>',
+}.items():
+    if re.search(pattern, html, re.I):
+        missing.append(f"Forbidden {label}: {pattern}")
+
+if missing:
+    print("REPORT_CONTRACT_FAILED")
+    for item in missing:
+        print(f"- {item}")
+    raise SystemExit(1)
+
+print("REPORT_CONTRACT_OK")
+REPORT_CONTRACT_EOF
+```
+
+Only proceed when stdout contains `REPORT_CONTRACT_OK`. If it fails, rewrite
+the report once against the "Report v3 Contract" below and rerun this gate.
+Never publish a `lazyweb-design-research` report that fails this gate.
+
+Then run this with the same `$REPORT_DIR`:
 
 ```bash
 IDEMPOTENCY_KEY="${REPORT_DIR##*.lazyweb/}"   # stable per-report key (e.g. design-research/{topic}-{date}) — works for absolute and relative $REPORT_DIR; send the SAME value every attempt so retries dedupe to one link

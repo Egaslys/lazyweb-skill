@@ -84,8 +84,22 @@ for (const dir of visibleModeSkillDirs) {
 const allSkillText = ["SKILL.md", ...visibleModeSkillDirs.map((dir) => `${dir}/SKILL.md`)]
   .map((relativePath) => read(relativePath))
   .join("\n");
+const allInstructionText = ["README.md", "AGENTS.md", "CLAUDE.md", "SKILL.md", ...visibleModeSkillDirs.map((dir) => `${dir}/SKILL.md`)]
+  .map((relativePath) => read(relativePath))
+  .join("\n");
 for (const match of allSkillText.matchAll(/\b(?:lazyweb_(?:health|search|find_similar|compare_image|list_categories|list_collections|ab_test_research|paywall_cta_research|get_workflows|get_flows|find_experiments|recent_experiments)|search_screenshots|list_filters|list_all_filters|vision_screenshots|metadata_screenshots|get_company_details|list_companies_by_categories)\b/g)) {
   assert.ok(documentedLazywebTools.has(match[0]), `skill docs mention unknown Lazyweb MCP tool: ${match[0]}`);
+}
+
+for (const stalePattern of [
+  /Design-research v2 exception/i,
+  /do not place them side by side/i,
+  /Do not reintroduce a visible standalone Agent Instructions block/i,
+  /v2 prototype\/inspo\/pattern-crop/i,
+  /\.hypothesis-strip/,
+  /\.pattern-crop/
+]) {
+  assert.doesNotMatch(allInstructionText, stalePattern, `stale design-research v2 guidance must not reappear: ${stalePattern}`);
 }
 
 const setupPath = path.join(root, "setup");
@@ -196,6 +210,13 @@ for (const pattern of [
   /medium effort/i,
   /low effort/i,
   /Normal skill execution must not run full `npm test`/,
+  /REPORT_CONTRACT_OK/,
+  /REPORT_CONTRACT_FAILED/,
+  /option-tabs/,
+  /option-panel/,
+  /Reference Evidence/,
+  /Source Notes/,
+  /Never publish a `lazyweb-design-research` report that fails this gate/,
   /Provider fallback order/,
   /native host image generation tool/i,
   /Do not use Codex CLI for image generation/i,
