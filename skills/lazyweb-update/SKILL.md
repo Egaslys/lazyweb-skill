@@ -27,6 +27,9 @@ Use the bundled updater when available:
 "$HOME/.lazyweb/bin/lazyweb-update" --host all --quiet
 ```
 
+Use `--host auto` only when the user explicitly wants detected clients instead
+of every supported local skill root.
+
 If that file is missing because the install is old, bootstrap once from GitHub:
 
 ```bash
