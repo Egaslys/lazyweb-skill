@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Old Design Research Report - Upsell Pricing Page</title>
+  <style>
+    :root{--ink:#1f2328;--mut:#57606a;--line:#d0d7de;--soft:#eef4fb;--accent:#0969da}
+    body{margin:0;font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:#fff}
+    main{max-width:980px;margin:0 auto;padding:28px 20px 48px}
+    h1{font-size:34px;line-height:1.1;margin:0 0 20px} h2{font-size:24px;margin:34px 0 12px} h3{font-size:18px;margin:20px 0 8px}
+    .agent{background:var(--soft);border-left:4px solid var(--accent);border-radius:8px;padding:14px 16px;margin:18px 0}
+    .agent pre{white-space:pre-wrap;background:#fff;border:1px solid var(--line);border-radius:6px;padding:12px;font:12px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace}
+    .note,.lede{color:var(--mut)} .busy{border:1px solid var(--line);border-radius:10px;padding:14px;background:#fff;margin:14px 0}
+    .deck{display:flex;gap:12px;overflow-x:auto;padding:6px 2px 12px;scroll-snap-type:x mandatory}
+    .deck figure{flex:0 0 320px;scroll-snap-align:start;margin:0;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fafbfc}
+    .deck img{display:block;width:100%;height:430px;object-fit:cover;object-position:top}
+    figcaption{padding:9px 10px;font-size:12px;color:var(--mut)}
+    table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px} th,td{border:1px solid var(--line);padding:8px;text-align:left;vertical-align:top} th{background:#f6f8fa}
+    .rec-list li{margin:8px 0}.pill{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:2px 8px;font-size:11px;color:var(--mut)}
+    .mock{border:1px dashed #b9c7d6;border-radius:8px;padding:14px;background:#f6f8fa;color:#57606a;margin:12px 0}
+    .lw-foot{margin-top:34px;padding-top:14px;border-top:1px solid var(--line);text-align:center;font-size:13px;color:var(--mut)}
+  </style>
+</head>
+<body>
+<main>
+  <h1>Design Research: Upsell Pricing Page</h1>
+
+  <section class="agent">
+    <h2>Agent Instructions</h2>
+    <p>Build a calmer upsell page, but preserve evidence before deciding implementation details.</p>
+    <pre>LAZYWEB REPORT - AGENT HANDOFF
+Use this report as a starting point for implementing a desktop SaaS upsell pricing page.
+
+TOP RECOMMENDATIONS (do first):
+1. Add a value-led hero before plan cards.
+2. Use plan comparison to reduce upgrade uncertainty.
+3. Add annual anchoring and a savings badge.
+
+INDEX ON: plan comparison, annual anchoring, trial/risk reversal.
+DO NOT OVER-INDEX ON: mobile-only urgency timers or dating-app feature walls.
+DIVE FURTHER: lazyweb_find_similar on comparison-grid paywalls.</pre>
+  </section>
+
+  <section>
+    <h2>Recommendations / Next Steps</h2>
+    <ol class="rec-list">
+      <li><b>Lead with the upgrade outcome before price.</b> Users should see what paid unlocks before comparing plans. This is supported by the Tinder feature-wall family and comparison-grid paywalls.</li>
+      <li><b>Show Free vs Pro directly.</b> A two-column comparison grid makes the upgrade feel like a product decision instead of a price decision.</li>
+      <li><b>Anchor annual without making it feel forced.</b> Use a default annual card with per-month math and a savings badge, but keep monthly visible.</li>
+    </ol>
+    <div class="mock">Mock-frame: hero / plan cards / comparison grid / CTA / FAQ</div>
+  </section>
+
+  <section>
+    <h2>Key Examples</h2>
+    <p class="lede">The references below are relevant, but this old structure requires the reader to connect them back to the recommendation.</p>
+    <div class="deck">
+      <figure>
+        <img src="https://zlfyzdmohcskkucuunmk.supabase.co/storage/v1/object/public/screenshots/uploaded_accuweather/paywall/compare/2026-05-28/1780018400965_00_AccuWeather-20260529-013320-01.png" alt="AccuWeather paywall">
+        <figcaption><b>AccuWeather</b> - Premium/Premium+ toggle with benefits and compare link.</figcaption>
+      </figure>
+      <figure>
+        <img src="https://zlfyzdmohcskkucuunmk.supabase.co/storage/v1/object/public/screenshots/uploaded_perplexity/compare/2026-01-29/1771004862965_t__-_1140.PNG" alt="Perplexity tiers">
+        <figcaption><b>Perplexity</b> - Free/Pro/Max tier comparison.</figcaption>
+      </figure>
+      <figure>
+        <img src="https://zlfyzdmohcskkucuunmk.supabase.co/storage/v1/object/public/screenshots/books1_audible/lazyscreenshots/2024_06_29_23-34-41_A628231A.png" alt="Audible annual plan">
+        <figcaption><b>Audible</b> - annual plan framed as best value.</figcaption>
+      </figure>
+      <figure>
+        <img src="https://zlfyzdmohcskkucuunmk.supabase.co/storage/v1/object/public/screenshots/edu16_babbel/compare/!tab1_home/!tab1_home_states/2024-04-14-14-24-59-.png" alt="Babbel paywall">
+        <figcaption><b>Babbel</b> - save badges, crossed-out original prices, and per-month math.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section>
+    <h2>Patterns</h2>
+    <article class="busy">
+      <h3>Comparison grid reduces ambiguity</h3>
+      <p>Seen in AccuWeather, Perplexity, Washington Post, and The Weather Channel. Users can inspect exactly what changes when they pay.</p>
+    </article>
+    <article class="busy">
+      <h3>Annual anchoring changes price perception</h3>
+      <p>Seen in Audible and Babbel. Per-period math makes annual commitment feel smaller than a single yearly number.</p>
+    </article>
+    <article class="busy">
+      <h3>Trial or guarantee creates risk reversal</h3>
+      <p>Seen in Peloton and Spotify. It helps when users are interested but not yet convinced.</p>
+    </article>
+  </section>
+
+  <section>
+    <h2>Anti-Patterns</h2>
+    <ul>
+      <li>Do not lead with a countdown timer; it can damage trust for a B2B SaaS upgrade.</li>
+      <li>Do not hide monthly pricing; forced annual defaults can read as hostile.</li>
+      <li>Do not stack benefits without a visual hierarchy; it creates scanning work.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Findings</h2>
+    <table>
+      <thead><tr><th>Reference</th><th>Supports</th><th>Evidence strength</th></tr></thead>
+      <tbody>
+        <tr><td>AccuWeather</td><td>Plan comparison</td><td>Directional visual evidence</td></tr>
+        <tr><td>Perplexity</td><td>Tier comparison</td><td>Directional visual evidence</td></tr>
+        <tr><td>Audible</td><td>Annual anchoring</td><td>Directional visual evidence</td></tr>
+        <tr><td>Babbel</td><td>Savings badge and crossed-out prices</td><td>Directional visual evidence</td></tr>
+        <tr><td>Peloton</td><td>Trial/risk reversal</td><td>Directional visual evidence</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Sources</h2>
+    <p><span class="pill">Lazyweb</span> 8 desktop pricing references returned by `lazyweb_search`, 8 paywall flows returned by `lazyweb_get_flows`, and existing prior eval references reused for this comparison fixture.</p>
+  </section>
+
+  <footer class="lw-foot">Powered by <a href="https://www.lazyweb.com">Lazyweb</a> - turn your agent into a design researcher... for free!</footer>
+</main>
+</body>
+</html>

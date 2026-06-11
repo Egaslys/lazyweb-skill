@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>New Design Research Report - Upsell Pricing Page</title>
+  <style>
+    :root{--ink:#1f2328;--mut:#57606a;--line:#d0d7de;--soft:#eef4fb;--accent:#0969da}
+    body{margin:0;font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:#fff}
+    main{max-width:1120px;margin:0 auto;padding:32px 20px 48px}
+    h1,h2,h3,p{letter-spacing:0} h1{font-size:34px;line-height:1.1;margin:0 0 28px} h2{font-size:24px;margin:32px 0 14px} h3{font-size:16px;margin:14px 0 6px}
+    .goal p{font-size:20px;max-width:780px;margin:0;color:var(--ink)}
+    .prototype{margin:0;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff;box-shadow:0 1px 8px rgba(31,35,40,.08)}
+    .proto-frame{min-height:390px;padding:22px;background:#fbfcfe}
+    .proto-hero{display:grid;grid-template-columns:1.2fr .8fr;gap:18px;border:1px solid var(--line);border-radius:8px;background:#fff;padding:22px}
+    .proto-hero h4{font-size:28px;line-height:1.08;margin:0 0 10px}.proto-hero p{margin:0 0 16px;color:var(--mut)}
+    .unlock{display:grid;gap:8px}.unlock div{border:1px solid #dbe7f5;background:var(--soft);border-radius:7px;padding:10px;font-weight:650}
+    .plans{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}.plan{border:1px solid var(--line);border-radius:8px;background:#fff;padding:14px}.plan.lead{border:2px solid var(--accent);box-shadow:0 4px 14px rgba(9,105,218,.12)}
+    .badge{display:inline-block;border-radius:999px;background:#e6f4ea;color:#0a5d2a;padding:3px 8px;font-size:11px;font-weight:800}.price{font-size:26px;font-weight:800;margin:8px 0}.cta{border:0;border-radius:7px;background:var(--accent);color:#fff;font-weight:800;padding:11px 14px;width:100%}
+    .compare{margin-top:16px;border:1px solid var(--line);border-radius:8px;overflow:hidden}.compare div{display:grid;grid-template-columns:1fr 90px 90px;padding:9px 12px;border-top:1px solid #eef1f4}.compare div:first-child{border-top:0;background:#f6f8fa;font-weight:800}
+    .inspo-map{position:relative;min-height:520px;border:1px solid var(--line);border-radius:8px;background:linear-gradient(var(--line),var(--line)) 50% 0/1px 100% no-repeat,linear-gradient(90deg,var(--line),var(--line)) 0 50%/100% 1px no-repeat,#f6f8fa;overflow:hidden}
+    .axis{position:absolute;font-size:12px;color:var(--mut);font-weight:700}.axis.top{top:10px;left:50%;transform:translateX(-50%)}.axis.bottom{bottom:10px;left:50%;transform:translateX(-50%)}.axis.left{left:10px;top:50%;transform:translateY(-50%)}.axis.right{right:10px;top:50%;transform:translateY(-50%)}
+    .inspo-point{position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,-50%);width:min(220px,36vw);padding:0;border:1px solid var(--line);border-radius:8px;background:#fff;box-shadow:0 1px 4px rgba(31,35,40,.12);cursor:pointer;overflow:hidden;z-index:1}
+    .inspo-point:hover,.inspo-point:focus{z-index:4;transform:translate(-50%,-50%) scale(1.18);outline:2px solid var(--accent);outline-offset:2px}
+    .inspo-img{display:block;width:100%;aspect-ratio:16/10;object-fit:cover;background:#fafbfc}
+    .anno-shot{margin:16px 0 24px}.shot-wrap{position:relative;display:inline-block;width:min(340px,100%);max-height:320px;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fafbfc}
+    .shot-wrap img{display:block;width:100%;height:auto}.anno-box{position:absolute;border:2px solid #d1242f;background:rgba(209,36,47,.08);box-shadow:0 0 0 9999px rgba(255,255,255,.08)}
+    .anno-num{position:absolute;display:grid;place-items:center;width:22px;height:22px;border-radius:999px;background:#d1242f;color:#fff;font-size:12px;font-weight:900}
+    .pattern-grid{display:grid;grid-template-columns:repeat(2,minmax(240px,360px));gap:18px}.muted{color:var(--mut)}.lw-foot{margin-top:34px;padding-top:14px;border-top:1px solid var(--line);text-align:center;font-size:13px;color:var(--mut)}
+    @media(max-width:760px){main{padding:24px 14px}.proto-hero,.plans,.pattern-grid{grid-template-columns:1fr}.inspo-map{min-height:430px}.inspo-point{width:min(160px,44vw)}.shot-wrap{width:min(300px,100%);max-height:280px}}
+  </style>
+</head>
+<body>
+<main>
+  <h1>Design Research: Upsell Pricing Page</h1>
+
+  <section id="goal" class="goal">
+    <h2>Goal</h2>
+    <p>Convert free desktop SaaS users to paid by making the upgrade feel useful, concrete, and low-pressure.</p>
+  </section>
+
+  <section id="recommendation" class="recommendation">
+    <h2>Recommendation</h2>
+    <figure class="prototype fidelity-medium" data-fidelity="medium" aria-label="Desktop SaaS upsell pricing prototype">
+      <div class="proto-frame">
+        <div class="proto-hero">
+          <div>
+            <h4>Unlock the work your team is already trying to finish</h4>
+            <p>Lead with the paid outcome, then make plan choice a quick confirmation instead of the whole pitch.</p>
+            <div class="unlock">
+              <div>Unlimited shared projects</div>
+              <div>Team approvals and version history</div>
+              <div>Priority support before launch day</div>
+            </div>
+          </div>
+          <div>
+            <div class="plans">
+              <div class="plan">
+                <b>Monthly</b>
+                <div class="price">$19</div>
+                <p class="muted">Flexible, cancel anytime</p>
+                <button class="cta" type="button">Choose monthly</button>
+              </div>
+              <div class="plan lead">
+                <span class="badge">Save 38%</span>
+                <div><b>Annual</b></div>
+                <div class="price">$12</div>
+                <p class="muted">per user / month, billed yearly</p>
+                <button class="cta" type="button">Upgrade annually</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="compare">
+          <div><span>What changes</span><span>Free</span><span>Pro</span></div>
+          <div><span>Shared projects</span><span>3</span><span>Unlimited</span></div>
+          <div><span>Approval workflow</span><span>-</span><span>Included</span></div>
+          <div><span>History</span><span>7 days</span><span>Unlimited</span></div>
+        </div>
+      </div>
+    </figure>
+  </section>
+
+  <section id="inspo" class="inspo">
+    <h2>Inspo</h2>
+    <div class="inspo-map" aria-label="Reference map: pushiness versus clarity">
+      <span class="axis top">More assertive</span>
+      <span class="axis bottom">More restrained</span>
+      <span class="axis left">Value-led</span>
+      <span class="axis right">Price-led</span>
+      <button class="inspo-point" type="button" style="--x:28%;--y:35%" data-source="Lazyweb reference">
+        <img class="inspo-img" src="https://zlfyzdmohcskkucuunmk.supabase.co/storage/v1/object/public/screenshots/uploaded_perplexity/compare/2026-01-29/1771004862965_t__-_1140.PNG" alt="Tier comparison screenshot with clear paid-plan deltas" loading="lazy">
+      </button>
+      <button class="inspo-point" type="button" style="--x:72%;--y:32%" data-source="Lazyweb reference">
+        <img class="inspo-img" src="https://zlfyzdmohcskkucuunmk.supabase.co/storage/v1/object/public/screenshots/edu16_babbel/compare/!tab1_home/!tab1_home_states/2024-04-14-14-24-59-.png" alt="Savings-led paywall screenshot with multiple billing plans" loading="lazy">
+      </button>
+      <button class="inspo-point" type="button" style="--x:33%;--y:70%" data-source="Lazyweb reference">
+        <img class="inspo-img" src="https://zlfyzdmohcskkucuunmk.supabase.co/storage/v1/object/public/screenshots/health119_peloton/compare/2024-07-21(16-20-01).png" alt="Two-tier membership screenshot with restrained trial framing" loading="lazy">
+      </button>
+      <button class="inspo-point" type="button" style="--x:70%;--y:68%" data-source="Lazyweb reference">
+        <img class="inspo-img" src="https://zlfyzdmohcskkucuunmk.supabase.co/storage/v1/object/public/screenshots/books1_audible/lazyscreenshots/2024_06_29_23-34-41_A628231A.png" alt="Annual best-value plan screenshot with compact offer framing" loading="lazy">
+      </button>
+    </div>
+  </section>
+
+  <section id="interesting-patterns" class="patterns">
+    <h2>Interesting Patterns</h2>
+    <div class="pattern-grid">
+      <article class="anno-shot">
+        <h3>Make the upgrade delta visible</h3>
+        <div class="shot-wrap">
+          <img src="https://zlfyzdmohcskkucuunmk.supabase.co/storage/v1/object/public/screenshots/uploaded_perplexity/compare/2026-01-29/1771004862965_t__-_1140.PNG" alt="Perplexity Free Pro Max tier comparison" loading="lazy">
+          <span class="anno-box" style="left:9%;top:28%;width:82%;height:36%"></span>
+          <span class="anno-num" style="left:9%;top:28%">1</span>
+        </div>
+        <p>The comparison grid turns "should I pay?" into "which concrete limits do I need removed?"</p>
+      </article>
+      <article class="anno-shot">
+        <h3>Use savings as a nudge, not the pitch</h3>
+        <div class="shot-wrap">
+          <img src="https://zlfyzdmohcskkucuunmk.supabase.co/storage/v1/object/public/screenshots/books1_audible/lazyscreenshots/2024_06_29_23-34-41_A628231A.png" alt="Audible annual best value paywall" loading="lazy">
+          <span class="anno-box" style="left:14%;top:16%;width:68%;height:17%"></span>
+          <span class="anno-num" style="left:14%;top:16%">2</span>
+        </div>
+        <p>The annual badge should support the decision after value is clear, not replace the value story.</p>
+      </article>
+    </div>
+  </section>
+
+  <footer class="lw-foot">Powered by <a href="https://www.lazyweb.com">Lazyweb</a> - turn your agent into a design researcher... for free!</footer>
+</main>
+</body>
+</html>

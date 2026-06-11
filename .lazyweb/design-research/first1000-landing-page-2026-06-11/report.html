@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Design Research: First 1000 Landing Page</title>
+  <style>
+    :root{--ink:#171717;--mut:#5f6368;--line:#d9dde3;--soft:#f4f7fb;--accent:#e11922;--blue:#2742d9;--green:#0e7a47}
+    *{box-sizing:border-box}
+    body{margin:0;font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:#fff}
+    main{max-width:1180px;margin:0 auto;padding:30px 22px 52px}
+    h1,h2,h3,p{letter-spacing:0} h1{font-size:34px;line-height:1.08;margin:0 0 18px} h2{font-size:24px;margin:28px 0 12px} h3{font-size:15px;margin:10px 0 6px}
+    p{margin:0 0 10px}.goal p{font-size:19px;max-width:850px;color:#24292f}
+    .topline{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:24px;color:var(--mut);font-size:13px}
+    .pill{border:1px solid var(--line);border-radius:999px;padding:5px 10px;background:#fff}
+    .rec-stack{display:grid;gap:18px;max-width:1040px}
+    .compare{margin:0}
+    .compare-label{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:0 0 8px;font-size:12px;font-weight:850;text-transform:uppercase;letter-spacing:.05em;color:#4c5561}
+    .compare-label span+span{font-weight:650;color:var(--mut);letter-spacing:0;text-transform:none}
+    .control-wrap{height:430px;overflow:hidden;border:1px solid var(--line);border-radius:6px;background:#fff}
+    .control-img{display:block;width:100%;height:100%;object-fit:cover;object-position:center 42%;background:#fff}
+    .proto{min-height:472px;background:#fbfbfc;padding:12px;border:1px solid var(--line);border-radius:6px}
+    .proto-page{min-height:438px;border:1px solid #cfd6df;background:#fff;border-radius:8px;overflow:hidden}
+    .proto-nav{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid #e5e8ec;font-size:12px}
+    .proto-brand{font-weight:850}.proto-links{display:flex;gap:14px;color:#51565d}.proto-cta{border:1px solid #111;border-radius:999px;padding:6px 10px;font-weight:750}
+    .proto-hero{display:grid;grid-template-columns:minmax(0,1fr) 218px;gap:18px;padding:28px 28px 18px}
+    .kicker{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--blue);font-weight:850;margin-bottom:10px}
+    .proto-hero h4{font-size:27px;line-height:1.04;margin:0 0 12px;max-width:590px}
+    .proto-hero p{font-size:14px;color:#4f5762;max-width:520px}
+    .proof-row{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}
+    .proof-row span{border:1px solid #dfe4eb;background:#f7f9fc;border-radius:999px;padding:7px 10px;font-size:12px;font-weight:700}
+    .signup-card{border:1px solid #c9d1db;border-radius:8px;padding:14px;background:#fff;box-shadow:0 8px 20px rgba(36,41,47,.08);min-width:0}
+    .signup-card b{display:block;margin-bottom:8px}.signup-card input{width:100%;border:1px solid #cbd3df;border-radius:6px;padding:12px;margin:4px 0 9px;font:inherit}
+    .signup-card button{width:100%;border:0;border-radius:6px;padding:12px;background:#111;color:#fff;font-weight:850;font:inherit}
+    .sample-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:0 28px 30px}
+    .sample{border:1px solid #dfe4eb;border-radius:8px;padding:12px;min-height:84px;background:#fbfcff}
+    .sample small{display:block;color:var(--mut);margin-bottom:6px}.sample b{font-size:13px}
+    .rec-note{max-width:850px;font-size:16px;color:#313842;margin:0 0 2px}
+    .rec-note strong{color:var(--ink)}
+    .hypothesis-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+    .hypothesis{border:1px solid var(--line);border-radius:6px;padding:10px;background:#fff}
+    .hypothesis.is-recommended{border-color:#111;background:#fbfbfc}
+    .hypothesis b{display:flex;justify-content:space-between;gap:8px;margin-bottom:5px;font-size:13px}.hypothesis small{color:var(--accent);font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+    .hypothesis span{display:block;color:#4d5560;font-size:13px}
+    .prototype-options{display:flex;gap:18px;max-width:1040px;overflow-x:auto;scroll-snap-type:x mandatory;padding:0 4px 12px;margin:0 -4px}
+    .prototype-options::-webkit-scrollbar{height:8px}.prototype-options::-webkit-scrollbar-thumb{background:#cfd6df;border-radius:999px}
+    .prototype-option{flex:0 0 min(920px,86vw);scroll-snap-align:start}
+    .prototype-option.is-recommended{flex-basis:min(980px,88vw)}
+    .prototype-option{margin:0}.prototype-option figcaption{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:0 0 8px;font-size:13px;font-weight:850;color:#1f2328}.prototype-option figcaption span{color:var(--accent);font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+    .prototype-img{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:6px;background:#fff}
+    .prototype-note{font-size:12px;color:var(--mut);margin:6px 0 0}
+    .build-prompt{margin-top:8px;font-size:13px;color:var(--mut)}.build-prompt summary{cursor:pointer;font-weight:750;color:#24292f}.build-prompt p{margin:7px 0 0}.build-prompt pre{white-space:pre-wrap;margin:8px 0 0;padding:10px;border:1px solid var(--line);border-radius:6px;background:#fafbfc;color:#30363d;font:12px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace}
+    .inspo-map{position:relative;background:transparent;padding:34px 0 30px;overflow:hidden}
+    .axis{position:absolute;color:var(--mut);font-size:12px;font-weight:750}.axis.top{top:10px;left:50%;transform:translateX(-50%)}.axis.bottom{bottom:9px;left:50%;transform:translateX(-50%)}.axis.left{left:10px;top:50%;transform:translateY(-50%) rotate(-90deg)}.axis.right{right:8px;top:50%;transform:translateY(-50%) rotate(90deg)}
+    .map-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;max-width:980px;margin:0 auto}
+    .inspo-cell{display:block;height:214px;border-radius:5px;background:#f1f3f6;overflow:hidden}
+    .inspo-cell img{display:block;width:100%;height:100%;object-fit:cover;object-position:top center;background:#fff}
+    .patterns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px 16px}
+    .pattern-shot{background:#fff;padding:0}
+    .pattern-crop{width:100%;aspect-ratio:16/10;overflow:hidden;border:1px solid var(--line);border-radius:5px;background:#fafafa}
+    .pattern-crop img{display:block;width:100%;height:100%;object-fit:cover;object-position:var(--pos,center top)}
+    .source-note{font-size:12px;color:var(--mut);margin-top:22px}
+    .lw-foot{margin-top:28px;padding-top:14px;border-top:1px solid var(--line);text-align:center;font-size:13px;color:var(--mut)}
+    @media(max-width:1040px){.patterns{grid-template-columns:1fr 1fr}.prototype-option,.prototype-option.is-recommended{flex-basis:88vw}.proto-hero{grid-template-columns:1fr}.sample-strip{grid-template-columns:1fr}.inspo-cell{height:220px}}
+    @media(max-width:720px){main{padding:22px 14px 40px}h1{font-size:29px}.patterns,.map-grid,.hypothesis-strip{grid-template-columns:1fr}.control-wrap{height:330px}.inspo-cell{height:260px}.proto{padding:10px}.proto-hero{padding:24px 18px}.proto-hero h4{font-size:27px}.sample-strip{padding:0 18px 24px}.proto-links{display:none}}
+  </style>
+</head>
+<body>
+<main>
+  <div class="topline">
+    <span>Desktop design research</span>
+    <span class="pill">A/B evidence unavailable: design-prevalence signal</span>
+  </div>
+  <h1>Design Research: First 1000 Landing Page</h1>
+
+  <section id="goal" class="goal">
+    <h2>Goal</h2>
+    <p>Move First 1000 from bubbly personal signup page to a high-credibility founder/operator briefing that earns more email signups.</p>
+  </section>
+
+  <section id="recommendation" class="recommendation">
+    <h2>Recommendation</h2>
+    <div class="rec-stack">
+      <figure class="compare">
+        <figcaption class="compare-label"><span>Control</span><span>live capture</span></figcaption>
+        <div class="control-wrap">
+          <img class="control-img" src="references/current-first1000.png" alt="Current First 1000 landing page with profile image, centered headline, email field, free access CTA, and 90k+ crew proof">
+        </div>
+      </figure>
+
+      <p class="rec-note"><strong>Recommendation:</strong> explore three sharper directions, defaulting to Operator Memo because it improves credibility and signup clarity without overdesigning the whole brand at once.</p>
+
+      <div class="hypothesis-strip" aria-label="Design direction hypotheses">
+        <article class="hypothesis is-recommended"><b>Operator Memo <small>Recommended</small></b><span>Make it feel like a serious weekly product-growth briefing with proof before the form.</span></article>
+        <article class="hypothesis"><b>Proof Wall</b><span>Lead with audience scale, quotes, and results so the email ask inherits trust immediately.</span></article>
+        <article class="hypothesis"><b>Editorial Dispatch</b><span>Lean into premium newsletter cues: issue previews, author authority, and restrained warmth.</span></article>
+      </div>
+
+      <div class="prototype-options" aria-label="Prototype options">
+        <figure class="prototype-option is-recommended">
+          <figcaption>Operator Memo <span>Recommended</span></figcaption>
+          <img class="prototype-img" src="references/prototype-operator-memo.png" alt="Generated Operator Memo landing-page prototype for First 1000 with proof chips, signup card, and issue previews" loading="lazy">
+          <p class="prototype-note">Image-generated prototype. Use the prompt below for exact implementation copy and component constraints.</p>
+          <details class="build-prompt"><summary>Agent prompt</summary><pre>CONTROL
+Attachment label: CONTROL
+Current First 1000 landing page: bubbly cream centered postcard, avatar illustration, centered promise, email field, red "Get access" CTA, and proof that appears after the ask. Conversion goal: increase email signups while making the publication feel more credible.
+
+WHAT TO IMPROVE
+The control asks for email before earning trust. The CTA sells generic access instead of a specific next artifact, and the page feels more playful than operator-grade.
+
+HOW TO IMPROVE
+Create the Operator Memo direction. Page strategy: serious product-growth briefing. Conversion mechanism: proof chips and named next issue before the email form. Information architecture: left-aligned editorial hero, compact proof row, signup card, then three issue preview cards. Trust source: subscriber scale, founder/operator audience, concrete topics. Primary components: memo header, proof chips, signup card, issue cards, muted footer proof.
+
+INSPIRATION
+Attachment label: INSPO A - Userpilot
+What to borrow: put credibility and the lead capture form in the same viewport.
+What not to borrow: do not make it a demo-sales page or overuse SaaS dashboard chrome.
+
+Attachment label: INSPO B - Photoroom
+What to borrow: quantified credibility, logo/proof density, and restrained enterprise spacing.
+What not to borrow: do not make First 1000 look like a generic B2B software homepage.
+
+ATTACHMENTS
+Upload CONTROL = references/current-first1000.png.
+Upload INSPO A = Userpilot SaaS conversion reference.
+Upload INSPO B = Photoroom credibility reference.</pre></details>
+        </figure>
+
+        <figure class="prototype-option">
+          <figcaption>Proof Wall</figcaption>
+          <img class="prototype-img" src="references/prototype-proof-wall.png" alt="Generated Proof Wall landing-page prototype for First 1000 with dark social-proof-heavy layout and signup card" loading="lazy">
+          <p class="prototype-note">Image-generated prototype. Use the prompt below for exact implementation copy and component constraints.</p>
+          <details class="build-prompt"><summary>Agent prompt</summary><pre>CONTROL
+Attachment label: CONTROL
+Current First 1000 landing page: soft cream hero, playful illustration, centered copy, email field, red CTA, and social proof below the main signup area. Conversion goal: make the email signup feel obviously worthwhile before the user reaches the form.
+
+WHAT TO IMPROVE
+The current page has credibility, but it is underused. Proof is not dense or visible enough to make the signup feel low-risk.
+
+HOW TO IMPROVE
+Create the Proof Wall direction. Page strategy: proof-first landing page. Conversion mechanism: surround the email ask with reader evidence and outcome snippets. Information architecture: top proof bar, headline, testimonial wall, compact signup panel, then reader/company row. Trust source: named quotes, audience count, recognizable readers/companies, result snippets. Primary components: proof ticker, testimonial cards, logo row, embedded signup panel, "latest issue" strip.
+
+INSPIRATION
+Attachment label: INSPO A - Savee
+What to borrow: dense testimonial grid and leading company logos that make trust scannable.
+What not to borrow: do not let testimonials become decorative filler.
+
+Attachment label: INSPO B - Userpilot
+What to borrow: proof and form placement in one decision viewport.
+What not to borrow: avoid a sales-demo form; this is an email signup, not an enterprise lead flow.
+
+ATTACHMENTS
+Upload CONTROL = references/current-first1000.png.
+Upload INSPO A = Savee testimonial/proof reference.
+Upload INSPO B = Userpilot proof-plus-form reference.</pre></details>
+        </figure>
+
+        <figure class="prototype-option">
+          <figcaption>Editorial Dispatch</figcaption>
+          <img class="prototype-img" src="references/prototype-editorial-dispatch.png" alt="Generated Editorial Dispatch landing-page prototype for First 1000 with premium newsletter styling, issue previews, and signup card" loading="lazy">
+          <p class="prototype-note">Image-generated prototype. Use the prompt below for exact implementation copy and component constraints.</p>
+          <details class="build-prompt"><summary>Agent prompt</summary><pre>CONTROL
+Attachment label: CONTROL
+Current First 1000 landing page: friendly centered hero with a single email form and broad "find your first 1000 users" promise. Conversion goal: improve signup quality by making the exact newsletter product feel concrete.
+
+WHAT TO IMPROVE
+The control does not show enough of what the reader receives next. It relies on the big promise instead of previewing the artifact, cadence, and editorial authority.
+
+HOW TO IMPROVE
+Create the Editorial Dispatch direction. Page strategy: premium publication landing page. Conversion mechanism: show the next issue and recent issue previews before the email field. Information architecture: publication masthead, issue preview hero, author credibility, inline signup, archive snippets. Trust source: author/operator authority, issue specificity, reader proof as a secondary layer. Primary components: masthead, feature issue card, author note, email form, archive grid.
+
+INSPIRATION
+Attachment label: INSPO A - Linktree
+What to borrow: name the signup job directly and preview the thing users are joining.
+What not to borrow: do not use the bubbly creator palette or oversized playful shapes.
+
+Attachment label: INSPO B - Photoroom
+What to borrow: compact quantified proof and mature spacing to keep the page credible.
+What not to borrow: avoid enterprise SaaS boilerplate and generic logo walls as the main story.
+
+ATTACHMENTS
+Upload CONTROL = references/current-first1000.png.
+Upload INSPO A = Linktree email-list conversion reference.
+Upload INSPO B = Photoroom credibility reference.</pre></details>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section id="inspo" class="inspo">
+    <h2>Inspo</h2>
+    <div class="inspo-map" aria-label="Image-only reference map, from creator-energy to SaaS-credibility and from newsletter-direct to proof-heavy">
+      <span class="axis top">Proof-heavy</span>
+      <span class="axis bottom">Signup-direct</span>
+      <span class="axis left">Creator</span>
+      <span class="axis right">SaaS</span>
+      <div class="map-grid">
+        <a class="inspo-cell" href="https://zlfyzdmohcskkucuunmk.supabase.co/storage/v1/object/sign/sites/savee/savee_3c3a6b17cd9f8db2a41f.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV81NTU0MmU4OC1mNWRkLTQxMDEtOWZkYy0yODFiMzM3NmYyOTIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJzaXRlcy9zYXZlZS9zYXZlZV8zYzNhNmIxN2NkOWY4ZGIyYTQxZi5wbmciLCJzY29wZSI6ImRvd25sb2FkIiwiaWF0IjoxNzgxMTkwMjMxLCJleHAiOjE4MTI3MjYyMzF9.cnmAPws7SqsPKBRGwilXhMIbyEwpZ97rWGKdtTcUseQ" target="_blank" rel="noopener"><img src="https://zlfyzdmohcskkucuunmk.supabase.co/storage/v1/object/sign/sites/savee/savee_3c3a6b17cd9f8db2a41f.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV81NTU0MmU4OC1mNWRkLTQxMDEtOWZkYy0yODFiMzM3NmYyOTIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJzaXRlcy9zYXZlZS9zYXZlZV8zYzNhNmIxN2NkOWY4ZGIyYTQxZi5wbmciLCJzY29wZSI6ImRvd25sb2FkIiwiaWF0IjoxNzgxMTkwMjMxLCJleHAiOjE4MTI3MjYyMzF9.cnmAPws7SqsPKBRGwilXhMIbyEwpZ97rWGKdtTcUseQ" alt="Reviews page with testimonial cards and leading company logos" loading="lazy"></a>
+        <a class="inspo-cell" href="https://zlfyzdmohcskkucuunmk.supabase.co/storage/v1/object/sign/sites/photoroom/photoroom_b2822a64ac7991eaf002.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV81NTU0MmU4OC1mNWRkLTQxMDEtOWZkYy0yODFiMzM3NmYyOTIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJzaXRlcy9waG90b3Jvb20vcGhvdG9yb29tX2IyODIyYTY0YWM3OTkxZWFmMDAyLnBuZyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODExOTA3OTEsImV4cCI6MTgxMjcyNjc5MX0.PY8y3EX1l5yU_S5d7Y_odGtrTg7ar5s6ErRYBQNjC-U" target="_blank" rel="noopener"><img src="https://zlfyzdmohcskkucuunmk.supabase.co/storage/v1/object/sign/sites/photoroom/photoroom_b2822a64ac7991eaf002.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV81NTU0MmU4OC1mNWRkLTQxMDEtOWZkYy0yODFiMzM3NmYyOTIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJzaXRlcy9waG90b3Jvb20vcGhvdG9yb29tX2IyODIyYTY0YWM3OTkxZWFmMDAyLnBuZyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODExOTA3OTEsImV4cCI6MTgxMjcyNjc5MX0.PY8y3EX1l5yU_S5d7Y_odGtrTg7ar5s6ErRYBQNjC-U" alt="Enterprise SaaS landing page with logos, quantified outcomes, certification, stories, and form" loading="lazy"></a>
+        <a class="inspo-cell" href="https://zlfyzdmohcskkucuunmk.supabase.co/storage/v1/object/sign/sites/linktree/linktree_885b49ac28c27eaf2ea3.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV81NTU0MmU4OC1mNWRkLTQxMDEtOWZkYy0yODFiMzM3NmYyOTIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJzaXRlcy9saW5rdHJlZS9saW5rdHJlZV84ODViNDlhYzI4YzI3ZWFmMmVhMy5wbmciLCJzY29wZSI6ImRvd25sb2FkIiwiaWF0IjoxNzgxMTkxNTcwLCJleHAiOjE4MTI3Mjc1NzB9.ampwqAr-rqql0DulheSEQUCsPPUBUvQ7T3H_bWwa5YY" target="_blank" rel="noopener"><img src="https://zlfyzdmohcskkucuunmk.supabase.co/storage/v1/object/sign/sites/linktree/linktree_885b49ac28c27eaf2ea3.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV81NTU0MmU4OC1mNWRkLTQxMDEtOWZkYy0yODFiMzM3NmYyOTIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJzaXRlcy9saW5rdHJlZS9saW5rdHJlZV84ODViNDlhYzI4YzI3ZWFmMmVhMy5wbmciLCJzY29wZSI6ImRvd25sb2FkIiwiaWF0IjoxNzgxMTkxNTcwLCJleHAiOjE4MTI3Mjc1NzB9.ampwqAr-rqql0DulheSEQUCsPPUBUvQ7T3H_bWwa5YY" alt="Creator landing page for growing an email list with a custom form and repeated CTA blocks" loading="lazy"></a>
+        <a class="inspo-cell" href="https://zlfyzdmohcskkucuunmk.supabase.co/storage/v1/object/sign/sites/userpilot/userpilot_07a1b5cf3537043d7e6d.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV81NTU0MmU4OC1mNWRkLTQxMDEtOWZkYy0yODFiMzM3NmYyOTIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJzaXRlcy91c2VycGlsb3QvdXNlcnBpbG90XzA3YTFiNWNmMzUzNzA0M2Q3ZTZkLnBuZyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODExOTE1NjksImV4cCI6MTgxMjcyNzU2OX0.fcxJ9KGGuM9hkkIy8fzs-XCdkfsJPHpELo9vZbFLjGY" target="_blank" rel="noopener"><img src="https://zlfyzdmohcskkucuunmk.supabase.co/storage/v1/object/sign/sites/userpilot/userpilot_07a1b5cf3537043d7e6d.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV81NTU0MmU4OC1mNWRkLTQxMDEtOWZkYy0yODFiMzM3NmYyOTIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJzaXRlcy91c2VycGlsb3QvdXNlcnBpbG90XzA3YTFiNWNmMzUzNzA0M2Q3ZTZkLnBuZyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODExOTE1NjksImV4cCI6MTgxMjcyNzU2OX0.fcxJ9KGGuM9hkkIy8fzs-XCdkfsJPHpELo9vZbFLjGY" alt="SaaS conversion page pairing proof, logos, and a lead capture form" loading="lazy"></a>
+      </div>
+    </div>
+  </section>
+
+  <section id="interesting-patterns" class="interesting">
+    <h2>Interesting Patterns</h2>
+    <div class="patterns">
+      <article class="pattern-shot">
+        <h3>Testimonials should feel like proof, not decoration</h3>
+        <div class="pattern-crop" style="--pos:center 22%" data-source="Lazyweb reference: Savee">
+          <img src="https://zlfyzdmohcskkucuunmk.supabase.co/storage/v1/object/sign/sites/savee/savee_3c3a6b17cd9f8db2a41f.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV81NTU0MmU4OC1mNWRkLTQxMDEtOWZkYy0yODFiMzM3NmYyOTIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJzaXRlcy9zYXZlZS9zYXZlZV8zYzNhNmIxN2NkOWY4ZGIyYTQxZi5wbmciLCJzY29wZSI6ImRvd25sb2FkIiwiaWF0IjoxNzgxMTkwMjMxLCJleHAiOjE4MTI3MjYyMzF9.cnmAPws7SqsPKBRGwilXhMIbyEwpZ97rWGKdtTcUseQ" alt="Cropped Savee reviews section showing dense named testimonial cards and a logo row" loading="lazy">
+        </div>
+      </article>
+      <article class="pattern-shot">
+        <h3>Put the form beside the strongest reason</h3>
+        <div class="pattern-crop" style="--pos:center 48%" data-source="Lazyweb reference: Userpilot">
+          <img src="https://zlfyzdmohcskkucuunmk.supabase.co/storage/v1/object/sign/sites/userpilot/userpilot_07a1b5cf3537043d7e6d.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV81NTU0MmU4OC1mNWRkLTQxMDEtOWZkYy0yODFiMzM3NmYyOTIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJzaXRlcy91c2VycGlsb3QvdXNlcnBpbG90XzA3YTFiNWNmMzUzNzA0M2Q3ZTZkLnBuZyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODExOTE1NjksImV4cCI6MTgxMjcyNzU2OX0.fcxJ9KGGuM9hkkIy8fzs-XCdkfsJPHpELo9vZbFLjGY" alt="Cropped Userpilot page showing proof copy beside a lead capture form" loading="lazy">
+        </div>
+      </article>
+      <article class="pattern-shot">
+        <h3>Quantified outcomes make credibility faster</h3>
+        <div class="pattern-crop" style="--pos:center 72%" data-source="Lazyweb reference: Photoroom">
+          <img src="https://zlfyzdmohcskkucuunmk.supabase.co/storage/v1/object/sign/sites/photoroom/photoroom_b2822a64ac7991eaf002.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV81NTU0MmU4OC1mNWRkLTQxMDEtOWZkYy0yODFiMzM3NmYyOTIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJzaXRlcy9waG90b3Jvb20vcGhvdG9yb29tX2IyODIyYTY0YWM3OTkxZWFmMDAyLnBuZyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODExOTA3OTEsImV4cCI6MTgxMjcyNjc5MX0.PY8y3EX1l5yU_S5d7Y_odGtrTg7ar5s6ErRYBQNjC-U" alt="Cropped Photoroom page showing quantified business outcomes below customer proof" loading="lazy">
+        </div>
+      </article>
+      <article class="pattern-shot">
+        <h3>Name the signup job directly</h3>
+        <div class="pattern-crop" style="--pos:center 12%" data-source="Lazyweb reference: Linktree">
+          <img src="https://zlfyzdmohcskkucuunmk.supabase.co/storage/v1/object/sign/sites/linktree/linktree_885b49ac28c27eaf2ea3.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV81NTU0MmU4OC1mNWRkLTQxMDEtOWZkYy0yODFiMzM3NmYyOTIiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJzaXRlcy9saW5rdHJlZS9saW5rdHJlZV84ODViNDlhYzI4YzI3ZWFmMmVhMy5wbmciLCJzY29wZSI6ImRvd25sb2FkIiwiaWF0IjoxNzgxMTkxNTcwLCJleHAiOjE4MTI3Mjc1NzB9.ampwqAr-rqql0DulheSEQUCsPPUBUvQ7T3H_bWwa5YY" alt="Cropped Linktree page showing an email-list promise and signup artifact preview" loading="lazy">
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <p class="source-note">Evidence used: current live capture of first1000.co, Lazyweb desktop searches for newsletter landing page, social proof landing page, email signup landing page, SaaS landing page credibility, creator landing page testimonials, and newsletter testimonials signup. A/B-test data was unavailable in this account.</p>
+  <footer class="lw-foot">Powered by <a href="https://www.lazyweb.com">Lazyweb</a> - turn your agent into a design researcher... for free.</footer>
+</main>
+</body>
+</html>

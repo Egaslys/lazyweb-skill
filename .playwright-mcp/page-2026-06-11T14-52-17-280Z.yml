@@ -1,0 +1,108 @@
+- main [ref=e2]:
+  - 'heading "Design Research: Upsell Pricing Page" [level=1] [ref=e3]'
+  - generic [ref=e4]:
+    - heading "Goal" [level=2] [ref=e5]
+    - paragraph [ref=e6]: Convert free desktop SaaS users to paid by making the upgrade feel useful, concrete, and low-pressure.
+  - generic [ref=e7]:
+    - heading "Recommendation" [level=2] [ref=e8]
+    - generic [ref=e9]:
+      - figure "Desktop SaaS upsell pricing prototype" [ref=e10]:
+        - generic [ref=e11]:
+          - generic [ref=e12]: Prototype
+          - generic [ref=e13]: Medium fidelity - screen and outcome are clear; brand context is light.
+        - generic [ref=e14]:
+          - generic [ref=e15]:
+            - generic [ref=e16]:
+              - heading "Unlock the work your team is already trying to finish" [level=4] [ref=e17]
+              - paragraph [ref=e18]: Lead with the paid outcome, then make plan choice a quick confirmation instead of the whole pitch.
+              - generic [ref=e19]:
+                - generic [ref=e20]: Unlimited shared projects
+                - generic [ref=e21]: Team approvals and version history
+                - generic [ref=e22]: Priority support before launch day
+            - generic [ref=e24]:
+              - generic [ref=e25]:
+                - text: Monthly
+                - generic [ref=e26]: $19
+                - paragraph [ref=e27]: Flexible, cancel anytime
+                - button "Choose monthly" [ref=e28]
+              - generic [ref=e29]:
+                - generic [ref=e30]: Save 38%
+                - generic [ref=e31]: Annual
+                - generic [ref=e32]: $12
+                - paragraph [ref=e33]: per user / month, billed yearly
+                - button "Upgrade annually" [ref=e34]
+          - generic [ref=e35]:
+            - generic [ref=e36]:
+              - generic [ref=e37]: What changes
+              - generic [ref=e38]: Free
+              - generic [ref=e39]: Pro
+            - generic [ref=e40]:
+              - generic [ref=e41]: Shared projects
+              - generic [ref=e42]: "3"
+              - generic [ref=e43]: Unlimited
+            - generic [ref=e44]:
+              - generic [ref=e45]: Approval workflow
+              - generic [ref=e46]: "-"
+              - generic [ref=e47]: Included
+            - generic [ref=e48]:
+              - generic [ref=e49]: History
+              - generic [ref=e50]: 7 days
+              - generic [ref=e51]: Unlimited
+      - generic [ref=e52]:
+        - heading "Rec" [level=3] [ref=e53]
+        - paragraph [ref=e54]: "Build a value-led upsell page: outcome hero first, annual plan softly preferred, comparison grid below."
+        - heading "Why" [level=3] [ref=e55]
+        - paragraph [ref=e56]: The strongest references reduce price anxiety by showing exactly what improves, then use annual savings as a nudge rather than a trap.
+        - heading "Inspo" [level=3] [ref=e57]
+        - generic [ref=e58]:
+          - group [ref=e59]:
+            - generic "AccuWeather Lazyweb reference" [ref=e60] [cursor=pointer]:
+              - text: AccuWeather
+              - generic [ref=e61]: Lazyweb reference
+          - group [ref=e62]:
+            - generic "Perplexity Lazyweb reference" [ref=e63] [cursor=pointer]:
+              - text: Perplexity
+              - generic [ref=e64]: Lazyweb reference
+          - group [ref=e65]:
+            - generic "Audible Lazyweb reference" [ref=e66] [cursor=pointer]:
+              - text: Audible
+              - generic [ref=e67]: Lazyweb reference
+          - group [ref=e68]:
+            - generic "Babbel Lazyweb reference" [ref=e69] [cursor=pointer]:
+              - text: Babbel
+              - generic [ref=e70]: Lazyweb reference
+  - generic [ref=e71]:
+    - heading "Inspo" [level=2] [ref=e72]
+    - 'generic "Reference map: pushiness versus clarity" [ref=e73]':
+      - generic [ref=e74]: More assertive
+      - generic [ref=e75]: More restrained
+      - generic [ref=e76]: Value-led
+      - generic [ref=e77]: Price-led
+      - group [ref=e78]:
+        - generic "Perplexity" [ref=e79] [cursor=pointer]
+      - group [ref=e80]:
+        - generic "Babbel" [ref=e81] [cursor=pointer]
+      - group [ref=e82]:
+        - generic "Peloton" [ref=e83] [cursor=pointer]
+      - group [ref=e84]:
+        - generic "Audible" [ref=e85] [cursor=pointer]
+  - generic [ref=e86]:
+    - heading "Interesting Patterns" [level=2] [ref=e87]
+    - generic [ref=e88]:
+      - article [ref=e89]:
+        - heading "Make the upgrade delta visible" [level=3] [ref=e90]
+        - generic [ref=e91]:
+          - img "Perplexity Free Pro Max tier comparison" [ref=e92]
+          - generic [ref=e94]: "1"
+        - paragraph [ref=e95]: The comparison grid turns "should I pay?" into "which concrete limits do I need removed?"
+      - article [ref=e96]:
+        - heading "Use savings as a nudge, not the pitch" [level=3] [ref=e97]
+        - generic [ref=e98]:
+          - img "Audible annual best value paywall"
+          - generic [ref=e100]: "2"
+        - paragraph [ref=e101]: The annual badge should support the decision after value is clear, not replace the value story.
+  - generic [ref=e102]:
+    - text: Powered by
+    - link "Lazyweb" [ref=e103] [cursor=pointer]:
+      - /url: https://www.lazyweb.com
+    - text: "- turn your agent into a design researcher... for free!"

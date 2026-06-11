@@ -1,0 +1,85 @@
+- main [ref=e2]:
+  - 'heading "Design Research: Upsell Pricing Page" [level=1] [ref=e3]'
+  - generic [ref=e4]:
+    - heading "Agent Instructions" [level=2] [ref=e5]
+    - paragraph [ref=e6]: Build a calmer upsell page, but preserve evidence before deciding implementation details.
+    - generic [ref=e7]: "LAZYWEB REPORT - AGENT HANDOFF Use this report as a starting point for implementing a desktop SaaS upsell pricing page. TOP RECOMMENDATIONS (do first): 1. Add a value-led hero before plan cards. 2. Use plan comparison to reduce upgrade uncertainty. 3. Add annual anchoring and a savings badge. INDEX ON: plan comparison, annual anchoring, trial/risk reversal. DO NOT OVER-INDEX ON: mobile-only urgency timers or dating-app feature walls. DIVE FURTHER: lazyweb_find_similar on comparison-grid paywalls."
+  - generic [ref=e8]:
+    - heading "Recommendations / Next Steps" [level=2] [ref=e9]
+    - list [ref=e10]:
+      - listitem [ref=e11]: Lead with the upgrade outcome before price. Users should see what paid unlocks before comparing plans. This is supported by the Tinder feature-wall family and comparison-grid paywalls.
+      - listitem [ref=e12]: Show Free vs Pro directly. A two-column comparison grid makes the upgrade feel like a product decision instead of a price decision.
+      - listitem [ref=e13]: Anchor annual without making it feel forced. Use a default annual card with per-month math and a savings badge, but keep monthly visible.
+    - generic [ref=e14]: "Mock-frame: hero / plan cards / comparison grid / CTA / FAQ"
+  - generic [ref=e15]:
+    - heading "Key Examples" [level=2] [ref=e16]
+    - paragraph [ref=e17]: The references below are relevant, but this old structure requires the reader to connect them back to the recommendation.
+    - generic [ref=e18]:
+      - figure "AccuWeather - Premium/Premium+ toggle with benefits and compare link." [ref=e19]:
+        - img "AccuWeather paywall" [ref=e20]
+        - generic [ref=e21]: AccuWeather - Premium/Premium+ toggle with benefits and compare link.
+      - figure "Perplexity - Free/Pro/Max tier comparison." [ref=e22]:
+        - img "Perplexity tiers" [ref=e23]
+        - generic [ref=e24]: Perplexity - Free/Pro/Max tier comparison.
+      - figure "Audible - annual plan framed as best value." [ref=e25]:
+        - img "Audible annual plan" [ref=e26]
+        - generic [ref=e27]: Audible - annual plan framed as best value.
+      - figure "Babbel - save badges, crossed-out original prices, and per-month math." [ref=e28]:
+        - img "Babbel paywall" [ref=e29]
+        - generic [ref=e30]: Babbel - save badges, crossed-out original prices, and per-month math.
+  - generic [ref=e31]:
+    - heading "Patterns" [level=2] [ref=e32]
+    - article [ref=e33]:
+      - heading "Comparison grid reduces ambiguity" [level=3] [ref=e34]
+      - paragraph [ref=e35]: Seen in AccuWeather, Perplexity, Washington Post, and The Weather Channel. Users can inspect exactly what changes when they pay.
+    - article [ref=e36]:
+      - heading "Annual anchoring changes price perception" [level=3] [ref=e37]
+      - paragraph [ref=e38]: Seen in Audible and Babbel. Per-period math makes annual commitment feel smaller than a single yearly number.
+    - article [ref=e39]:
+      - heading "Trial or guarantee creates risk reversal" [level=3] [ref=e40]
+      - paragraph [ref=e41]: Seen in Peloton and Spotify. It helps when users are interested but not yet convinced.
+  - generic [ref=e42]:
+    - heading "Anti-Patterns" [level=2] [ref=e43]
+    - list [ref=e44]:
+      - listitem [ref=e45]: Do not lead with a countdown timer; it can damage trust for a B2B SaaS upgrade.
+      - listitem [ref=e46]: Do not hide monthly pricing; forced annual defaults can read as hostile.
+      - listitem [ref=e47]: Do not stack benefits without a visual hierarchy; it creates scanning work.
+  - generic [ref=e48]:
+    - heading "Findings" [level=2] [ref=e49]
+    - table [ref=e50]:
+      - rowgroup [ref=e51]:
+        - row "Reference Supports Evidence strength" [ref=e52]:
+          - columnheader "Reference" [ref=e53]
+          - columnheader "Supports" [ref=e54]
+          - columnheader "Evidence strength" [ref=e55]
+      - rowgroup [ref=e56]:
+        - row "AccuWeather Plan comparison Directional visual evidence" [ref=e57]:
+          - cell "AccuWeather" [ref=e58]
+          - cell "Plan comparison" [ref=e59]
+          - cell "Directional visual evidence" [ref=e60]
+        - row "Perplexity Tier comparison Directional visual evidence" [ref=e61]:
+          - cell "Perplexity" [ref=e62]
+          - cell "Tier comparison" [ref=e63]
+          - cell "Directional visual evidence" [ref=e64]
+        - row "Audible Annual anchoring Directional visual evidence" [ref=e65]:
+          - cell "Audible" [ref=e66]
+          - cell "Annual anchoring" [ref=e67]
+          - cell "Directional visual evidence" [ref=e68]
+        - row "Babbel Savings badge and crossed-out prices Directional visual evidence" [ref=e69]:
+          - cell "Babbel" [ref=e70]
+          - cell "Savings badge and crossed-out prices" [ref=e71]
+          - cell "Directional visual evidence" [ref=e72]
+        - row "Peloton Trial/risk reversal Directional visual evidence" [ref=e73]:
+          - cell "Peloton" [ref=e74]
+          - cell "Trial/risk reversal" [ref=e75]
+          - cell "Directional visual evidence" [ref=e76]
+  - generic [ref=e77]:
+    - heading "Sources" [level=2] [ref=e78]
+    - paragraph [ref=e79]:
+      - generic [ref=e80]: Lazyweb
+      - text: "8 paywall flows returned by `lazyweb_get_flows`; existing prior eval references reused for this comparison fixture. The full `lazyweb_search` tool was not exposed in this implementation session."
+  - generic [ref=e81]:
+    - text: Powered by
+    - link "Lazyweb" [ref=e82] [cursor=pointer]:
+      - /url: https://www.lazyweb.com
+    - text: "- turn your agent into a design researcher... for free!"

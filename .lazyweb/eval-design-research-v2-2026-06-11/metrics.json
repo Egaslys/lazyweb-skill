@@ -1,0 +1,143 @@
+{
+  "eval": {
+    "name": "design-research-v2-upsell-pricing",
+    "date": "2026-06-11",
+    "prompt": "Research an upsell pricing page for a desktop SaaS product converting free users to paid without feeling pushy. Recommend the page structure and evidence-backed patterns.",
+    "scope_note": "Comparison fixture generated during implementation. The full live skill runner was not invoked; available Lazyweb MCP evidence calls and blind fresh-context review were recorded."
+  },
+  "reports": {
+    "reportA": {
+      "label": "Report A",
+      "revealed_as": "old",
+      "path": ".lazyweb/eval-design-research-v2-2026-06-11/old/report.html",
+      "visible_sections": [
+        "Agent Instructions",
+        "Recommendations / Next Steps",
+        "Key Examples",
+        "Patterns",
+        "Anti-Patterns",
+        "Findings",
+        "Sources"
+      ],
+      "visible_section_count": 7,
+      "visible_word_count": 425,
+      "estimated_read_seconds": 102,
+      "images": 4,
+      "expandable_details": 0,
+      "section_read_seconds": {
+        "Agent Instructions": 20,
+        "Recommendations / Next Steps": 20,
+        "Key Examples": 12,
+        "Patterns": 16,
+        "Anti-Patterns": 10,
+        "Findings": 9,
+        "Sources": 6
+      },
+      "design_references": {
+        "total_found_from_available_tools": 16,
+        "selected_unique": 4,
+        "shown_in_recommendation_cards": 0,
+        "placed_in_2x2_map": 0,
+        "screenshots_annotated": 0
+      }
+    },
+    "reportB": {
+      "label": "Report B",
+      "revealed_as": "new",
+      "path": ".lazyweb/eval-design-research-v2-2026-06-11/new/report.html",
+      "visible_sections": [
+        "Goal",
+        "Recommendation",
+        "Inspo",
+        "Interesting Patterns"
+      ],
+      "visible_section_count": 4,
+      "visible_word_count": 174,
+      "estimated_read_seconds": 42,
+      "images": 6,
+      "expandable_details": 0,
+      "section_read_seconds": {
+        "Goal": 5,
+        "Recommendation": 19,
+        "Inspo": 2,
+        "Interesting Patterns": 12
+      },
+      "design_references": {
+        "total_found_from_available_tools": 16,
+        "selected_unique": 4,
+        "shown_in_recommendation_cards": 0,
+        "placed_in_2x2_map": 4,
+        "screenshots_annotated": 2
+      }
+    }
+  },
+  "speed_comparison": {
+    "metric": "estimated visible read time at 250 words per minute",
+    "old_seconds": 102,
+    "new_seconds": 42,
+    "delta_seconds": -60,
+    "percent_change": -58.8,
+    "interpretation": "The new report is estimated to be about 60 seconds faster to parse while showing the prototype first and keeping evidence visual."
+  },
+  "available_tool_calls": {
+    "evidence_collection": {
+      "mcp__lazyweb.lazyweb_get_flows": {
+        "calls": 2,
+        "queries": [
+          "upgrade paywall upsell pricing",
+          "paywall"
+        ],
+        "results": [
+          0,
+          8
+        ],
+        "observed_wall_seconds": [
+          0.52,
+          0.70
+        ]
+      },
+      "mcp__lazyweb.lazyweb_search": {
+        "calls": 1,
+        "queries": [
+          "upsell pricing page"
+        ],
+        "results": [
+          8
+        ],
+        "observed_wall_seconds": [
+          2.23
+        ]
+      }
+    },
+    "quality_review": {
+      "multi_agent_v1.spawn_agent": 1,
+      "multi_agent_v1.wait_agent": 1,
+      "review_agent_id": "019eb72d-0c1e-7943-b0a6-035a02009425",
+      "excluded_noop_agent_calls": 1
+    }
+  },
+  "quality_review": {
+    "method": "fresh-context blind review with anonymized Report A and Report B paths; old/new revealed after scoring",
+    "scores": {
+      "reportA": {
+        "easy_to_parse": 2,
+        "sharp_recommendation": 3,
+        "actionable_design_improvement": 3,
+        "trust_in_process_evidence": 4,
+        "evidence_to_recommendation_fit": 3,
+        "average": 3.0
+      },
+      "reportB": {
+        "easy_to_parse": 5,
+        "sharp_recommendation": 5,
+        "actionable_design_improvement": 5,
+        "trust_in_process_evidence": 3,
+        "evidence_to_recommendation_fit": 4,
+        "average": 4.4
+      }
+    },
+    "winner": "reportB",
+    "winner_revealed_as": "new",
+    "review_summary": "Report B wins because it turns research into a low-pressure desktop SaaS pricing page structure the reader can act on immediately. Its tradeoff is process trust: the image-only, text-light report shows less visible corpus/source/confidence metadata than Report A."
+  }
+}

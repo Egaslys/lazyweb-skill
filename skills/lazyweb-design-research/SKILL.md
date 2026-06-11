@@ -3,7 +3,7 @@ name: lazyweb-design-research
 route: 'Design research, best practices, competitive analysis, "what do top apps do"'
 description: |
   Deep design research combining Lazyweb's screenshot database with web research.
-  Produces a structured research report with downloaded reference screenshots.
+  Produces a prototype-first HTML report with visual references and cropped patterns.
   Use when the user needs competitive analysis, best practices research, or wants
   to understand how the best apps handle a specific design problem.
   Trigger on: "best practices for", "how should I design", "what do top apps do",
@@ -22,8 +22,8 @@ allowed-tools:
 
 # Lazyweb Design Research
 
-Structured design research that identifies competitors, gathers real app screenshots,
-and produces a report with embedded visual references.
+Evidence-backed design research that gathers real product screenshots, chooses a
+single recommended direction, and renders a prototype-first HTML report.
 
 ## CRITICAL: Output Behavior
 
@@ -34,11 +34,27 @@ or not, ALWAYS:
 2. Embed Lazyweb references directly with their returned `imageUrl`/`image_url`; save only current-state and web-captured screenshots under `.lazyweb/design-research/{topic}-{date}/references/`
 3. Do NOT create `report.md` or any other Markdown report artifact
 4. Do NOT write research content into a plan file
-5. After saving, show the user a summary of findings and tell them where the files are
+5. After saving, show the user a concise summary, the recommendation, and the exact report path
 6. Ask the user if the research looks good
-7. If in plan mode, exit plan mode after the user confirms — the research is done
+7. If in plan mode, exit plan mode after the user confirms - the research is done
 8. Suggest next steps: "You can now use this research to inform your implementation,
    ask `/lazyweb` to improve your current design, or start building."
+
+The visible report must be simple: **Goal**, **Recommendation**, optional
+**Inspo**, and **Interesting Patterns**. Do not produce the older busy structure
+with standalone agent handoff, key examples, findings, sources, broad
+recommendation lists, or long prose analysis sections. When a current page or
+screenshot exists, `Recommendation` should show a stacked `Control` then
+prototype options, not a side-by-side comparison that creates awkward spacing.
+When the user's design direction is broad or taste-dependent, reason through
+2-4 alternative hypotheses, turn each viable direction into a detailed agent
+prompt, and show 2-4 prototype options for the user to choose from. For these
+visual-direction prototypes, prefer generated bitmap images over hand-coded HTML
+mockups when image generation is available; use HTML/CSS only as a fallback or
+when the user asks for implementation-ready code. Pick a default recommendation,
+but do not pretend one visual direction is obvious when the evidence supports
+multiple plausible directions. Generate prototype images in parallel at medium
+effort by default, or low effort when the user asks for speed/exploration.
 
 ## When to Use This
 
@@ -58,14 +74,17 @@ or not, ALWAYS:
 Use the hosted Lazyweb MCP tools at `https://www.lazyweb.com/mcp` for all Lazyweb database access.
 
 Required MCP tools:
-- `lazyweb_search` — text search over mobile and desktop screenshots
-- `lazyweb_find_similar` — more results like a returned Lazyweb `imageUrl` or image payload
-- `lazyweb_compare_image` — visual search from `image_base64` + `mime_type` or `image_url`
-- `lazyweb_health` — connectivity check
+- `lazyweb_search` - text search over mobile and desktop screenshots
+- `lazyweb_find_similar` - more results like a returned Lazyweb `imageUrl` or image payload
+- `lazyweb_compare_image` - visual search from `image_base64` + `mime_type` or `image_url`
+- `lazyweb_health` - connectivity check
 
-**Pass `skill: "design-research"` on every call.** Include `"skill": "design-research"` in the arguments of each `lazyweb_*` tool call — for example `{"query": "pricing page", "limit": 30, "skill": "design-research"}`. This is optional analytics metadata Lazyweb uses to understand which skills are used; never drop or change a real argument for it.
+Optional MCP tools:
+- `lazyweb_ab_test_research` - supporting experiment evidence for pricing, paywall, checkout, onboarding, and other growth/monetization screens when the live schema exposes it
 
-**Also pass `version: "<x.y.z>"` on every call.** Read `~/.lazyweb/VERSION` once per session at skill start (e.g. `cat "$HOME/.lazyweb/VERSION" 2>/dev/null || echo 0.0.0`); fall back to `"0.0.0"` if the file is missing or unreadable — never block on this. Include `"version": "<that-value>"` in the arguments of every `lazyweb_*` tool call alongside the existing `skill` arg — for example `{"query": "pricing page", "limit": 30, "skill": "design-research", "version": "0.4.5"}`. Optional analytics metadata Lazyweb uses to track which skill-pack versions are running; never drop or change a real argument for it.
+**Pass `skill: "design-research"` on every Lazyweb call.** Include `"skill": "design-research"` in the arguments of each `lazyweb_*` tool call - for example `{"query": "pricing page", "limit": 30, "skill": "design-research"}`. This is optional analytics metadata; never drop or change a real argument for it.
+
+**Also pass `version: "<x.y.z>"` on every Lazyweb call.** Read `~/.lazyweb/VERSION` once per session at skill start (e.g. `cat "$HOME/.lazyweb/VERSION" 2>/dev/null || echo 0.0.0`); fall back to `"0.0.0"` if the file is missing or unreadable. Include `"version": "<that-value>"` in every `lazyweb_*` call alongside `skill`.
 
 These are the current public gateway names. Backend/internal surfaces may also
 expose canonical tools such as `search_screenshots`, `list_filters`,
@@ -79,9 +98,8 @@ Before searching, verify MCP is available by listing tools and running
 `lazyweb_health`.
 
 **If Lazyweb MCP is not installed or auth fails:**
-Tell the user: "Lazyweb MCP is not installed. Run `curl -fsSL https://www.lazyweb.com/install.sh | bash`, reload this client, then rerun this skill. Lazyweb is free; the bearer token is
-only for no-billing UI reference tools and is okay in ignored local config."
-Then proceed with web research only — the skill still works, just without Lazyweb's database.
+Tell the user: "Lazyweb MCP is not installed. Run `curl -fsSL https://www.lazyweb.com/install.sh | bash`, reload this client, then rerun this skill. Lazyweb is free; the bearer token is only for no-billing UI reference tools and is okay in ignored local config."
+Then proceed with web research only - the skill still works, just without Lazyweb's database.
 
 ## Browse Setup (run BEFORE any web capture)
 
@@ -100,61 +118,54 @@ fi
 [ -x "$LB" ] && echo "BROWSE_READY: $LB" || echo "NO_BROWSE"
 ```
 
-If `NO_BROWSE`: Web screenshot capture is unavailable. Lazyweb results still work —
+If `NO_BROWSE`: Web screenshot capture is unavailable. Lazyweb results still work -
 just describe web examples in text without screenshots. To enable web captures,
 run: `cd ~/.lazyweb/repos/lazyweb-skill/browse && ./setup`
 
 ## Workflow
 
-### 0. Ground the search (run first)
+### 0. Ground the search
 
-Before searching, ground the work in what the user is building, and avoid guessing when a wrong guess wastes a search:
+Before searching, ground the work in what the user is building:
 
-1. **Detect context.** Run `lazyweb-context-detect` (on `PATH` when installed by setup; otherwise `~/.lazyweb/repos/lazyweb-skill/bin/lazyweb-context-detect`). It prints the project, platform (mobile/desktop), and stack. Use it to bias the `platform` filter and to caption references accurately.
-2. **Clarify only what's missing.** If it reports `platform=unknown`, or the product/screen is unclear from the request, ask ONE AskUserQuestion to pin down product/screen, mobile vs desktop, and the specific outcome. Skip anything the context already answered.
+1. Run `lazyweb-context-detect` (on `PATH` when installed by setup; otherwise `~/.lazyweb/repos/lazyweb-skill/bin/lazyweb-context-detect`). Use its project/platform/stack output to bias the `platform` filter and captions.
+2. Clarify only what cannot be inferred. If platform is unknown, or the product/screen/outcome is unclear, ask ONE AskUserQuestion to pin down product/screen, mobile vs desktop, and the specific outcome.
 
-### 1. Understand the Research Question
+### 1. Understand the research question
 
-Before searching, clarify:
-- What specific screen, flow, or feature are they researching?
-- What's their product? (app type, platform, audience)
-- Mobile or desktop/web patterns needed?
+Pin down:
+- The specific screen, flow, or feature
+- The product type, audience, and platform
+- The design outcome the recommendation should improve
 
-### 2. Capture Current State (if applicable)
+### 2. Capture current state (if applicable)
 
-If the user is researching a specific page or app they're building (not a general topic),
-capture the current state:
+If the user is researching a specific page or app they are building, capture the current state:
 
-- **Running dev server or URL available:** Use preview/browse tools to screenshot it
-- **Mobile app:** Ask user to provide a screenshot
-- **No specific page:** Skip this step
+- Running dev server or URL available: use preview/browse tools to screenshot it
+- Mobile app: ask the user to provide a screenshot
+- General topic only: skip this step
 
-Save as `$REPORT_DIR/references/current-state.png` and include it in the HTML report
-after the TL;DR using this structure:
+Save as `$REPORT_DIR/references/current-state.png`. Use it to choose prototype
+fidelity and to make the recommendation more specific, but do not create a
+separate visible "Current State" section unless the screenshot is essential proof.
 
-```html
-<section>
-  <h2>Current State</h2>
-  <figure>
-    <img src="references/current-state.png" alt="Current State">
-    <figcaption>{Brief description of what we're looking at}</figcaption>
-  </figure>
-</section>
-```
-
-This grounds the entire report — the reader sees where we are before seeing where we could go.
-
-### 3. Identify Competitors and Adjacent Companies
+### 3. Identify competitors and adjacent companies
 
 Think about two groups:
-- **Direct competitors** — apps that solve the same problem
-- **Adjacent companies with great design** — apps in related spaces known for excellent UX (e.g., researching a fintech app? Look at Stripe, Linear, Notion for general design quality)
+- Direct competitors - apps that solve the same problem
+- Adjacent companies with great design - apps in related spaces known for excellent UX
 
 ### 4. Search Lazyweb
 
-**Search discipline:** never repeat an identical query — results are deterministic; page deeper with `offset` and follow the response's `pagination.next_offset`. Read `coverage` and `warnings` on every response: on `no_matches`/`low_coverage`, use the closest result, strip the query to its core 2-6 word UI pattern, or note the coverage gap in the report — don't rephrase the same concept in a loop (style adjectives like "dark"/"minimal" are not searchable facets; judge style from the images). On `company_not_in_library`, use a suggested company or drop the filter. Researching a whole app or page? Run one search per screen/section.
+**Search discipline:** never repeat an identical query; results are deterministic.
+Page deeper with `offset` and follow the response's `pagination.next_offset`.
+Read `coverage` and `warnings` on every response. On `no_matches`/`low_coverage`,
+use the closest result, strip the query to its core 2-6 word UI pattern, or note
+the coverage gap in the report. On `company_not_in_library`, use a suggested
+company or drop the filter.
 
-Call `lazyweb_search` multiple times with different angles:
+Run 3-5 searches minimum with different angles:
 
 ```json
 {"query":"<specific screen/component>","limit":30}
@@ -163,43 +174,29 @@ Call `lazyweb_search` multiple times with different angles:
 {"query":"<screen type>","platform":"desktop","limit":30}
 {"query":"<screen type>","platform":"mobile","limit":30}
 {"query":"<different description of same thing>","limit":30}
-{"query":"<even more specific variant>","limit":30}
 ```
 
-If the live schema exposes `high_design_bar`, add it to one search when the user
-asks for high-design-bar, premium, or best-designed examples.
+Platform routing:
+- SaaS, web, desktop app, admin surface, or marketing page -> use `platform: "desktop"`
+- iPhone/Android app -> use `platform: "mobile"`
+- General research or cross-platform -> omit platform and judge returned images
 
-**Platform routing:** Lazyweb has both mobile app screenshots and desktop/web site screenshots.
-- `--platform mobile` — mobile app screenshots only
-- `--platform desktop` — desktop/web site screenshots only
-- `--platform all` (default) — search both, results grouped desktop-first then mobile
-- A mac app, SaaS dashboard, or web product → use `--platform desktop`
-- An iPhone/Android app → use `--platform mobile`
-- General research or cross-platform → omit (searches both)
+Assess quality:
+- `matchCount` 2/3 or 3/3 = strong
+- `matchCount` 1/3 = weak
+- `similarity` > 0.4 = good
 
-Each result includes a `platform` field ("mobile" or "desktop") so you know the source.
-Desktop results also include a `pageUrl` field with the original site URL.
-
-**Assess quality:** `matchCount` 2/3 or 3/3 = strong. 1/3 = weak. `similarity` > 0.4 = good.
-
-**Explore generously.** Run 3-5 searches minimum with different query angles. Cast a wide
-net — you can filter later. Don't stop at the first search.
-
-**HIGH BAR FOR REFERENCES:** Each Lazyweb result includes a `visionDescription` field —
-a text description of what's actually in the screenshot. Read it.
-
-**Rules for attaching references to the report:**
-1. Read `visionDescription` before using ANY screenshot
-2. The screenshot MUST directly illustrate the point you're making
-3. If `visionDescription` doesn't match your suggestion — DO NOT USE IT
-4. A report with 3 perfectly-matched references beats 10 loosely-related ones
-5. Better to have NO image than a mismatched one — describe the idea in text instead
-6. Never guess what's in a screenshot. If there's no visionDescription, skip it.
-7. Use `visionDescription` to write accurate captions — don't invent descriptions
+Rules for attaching references to the report:
+1. Read `visionDescription` before using ANY screenshot.
+2. The screenshot MUST directly illustrate the point it supports.
+3. If `visionDescription` does not match your suggestion, do not use it.
+4. A report with 3 perfectly matched references beats 10 loose ones.
+5. Never guess what is in a screenshot. If there is no `visionDescription`, skip it.
+6. Use `visionDescription` to write accurate captions.
 
 Mismatched references destroy user trust faster than anything else.
 
-### 5. Search Connected Inspiration Libraries
+### 5. Search connected inspiration libraries
 
 Check if `~/.lazyweb/libraries.json` exists and has connected libraries:
 
@@ -209,41 +206,27 @@ cat ~/.lazyweb/libraries.json 2>/dev/null
 
 If libraries are configured, search each one using the browse tool. For each library:
 
-1. Navigate to the library's search URL: `$LB goto "{searchUrl}"`
-2. Take a snapshot to understand the page: `$LB snapshot -i`
-3. Find the search input and type the research query: `$LB fill @eN "{query}"`
-4. Submit and wait for results: `$LB press Enter` then `$LB snapshot -i`
-5. Browse through results — click into the most relevant ones
-6. Screenshot the best results: `$LB screenshot "$REPORT_DIR/references/{library}-{company}-{screen}.png"`
-7. Note what's in each screenshot for accurate captions
+1. Navigate to the library search URL: `$LB goto "{searchUrl}"`
+2. Snapshot the page: `$LB snapshot -i`
+3. Search for the research query: `$LB fill @eN "{query}"`
+4. Submit and wait: `$LB press Enter` then `$LB snapshot -i`
+5. Screenshot only the most relevant results: `$LB screenshot "$REPORT_DIR/references/{library}-{company}-{screen}.png"`
+6. Label all library-sourced references in the report with `[Mobbin]`, `[Savee]`, etc.
 
-**Quality bar**: Same as Lazyweb — only use screenshots that directly illustrate a point
-in the report. A mismatched reference from Mobbin is just as bad as a mismatched one
-from Lazyweb.
+If a library session has expired, tell the user and skip it. Do not block the run.
 
-**If the library session has expired** (login wall, redirect to sign-in):
-- Tell the user: "Your {library} session has expired. Reconnect that inspiration source manually before relying on it."
-- Skip this library and continue with the rest — don't block the research.
+### 6. Web research and live screenshot capture
 
-Label all library-sourced references in the report with the library name: `[Mobbin]`, `[Savee]`, etc.
+Lazyweb gives curated screenshots. Web captures give the latest competitor state.
+Do both unless MCP is unavailable and the user wants a web-only fallback.
 
-### 6. Web Research + Live Screenshot Capture (REQUIRED)
-
-Lazyweb covers both mobile and desktop, but most research also needs recent trends,
-expert analysis, and live examples from competitors. **Always do web research alongside
-Lazyweb**, even when Lazyweb results are good.
-
-**Step A — Find interesting URLs via WebSearch:**
+Find URLs via WebSearch:
 - Search for "[topic] UX best practices [current year]"
 - Search for "[topic] design patterns analysis"
 - Search for "[competitor name] [screen type]"
 - Search for "best [screen type] examples"
 
-Collect 3-8 interesting URLs from the search results.
-
-**Step B — Capture live screenshots from those URLs:**
-For each interesting URL found in step A, visit the page and screenshot it.
-Save directly to the report's references folder.
+Collect 3-8 URLs. For the most useful ones, capture viewport screenshots:
 
 ```bash
 if [ -x "$LB" ]; then
@@ -252,538 +235,463 @@ if [ -x "$LB" ]; then
 fi
 ```
 
-If the browse tool is not available, use `curl` to download any publicly accessible
-screenshot URLs you find, or describe the page in the report without an image.
+If browse capture is unavailable, include web evidence only when you can describe
+it accurately from a reliable source. Do not invent a screenshot.
 
-**This is not optional.** The report should have a MIX of Lazyweb database screenshots
-AND live web captures. Lazyweb gives you curated, clean screenshots. Web captures give
-you the latest, most current state of competitor sites.
+### 7. Prepare references
 
-**Platform balance rule:** Use `--platform desktop` or `--platform mobile` to match the
-user's target platform. Aim for at least 50% same-platform references.
+Determine the absolute report directory:
 
-### 7. Download References
-
-Determine the absolute path for this report's directory:
 ```bash
 REPORT_DIR="$(pwd)/.lazyweb/design-research/{topic-slug}-{YYYY-MM-DD}"
 mkdir -p "$REPORT_DIR/references"
 ```
 
-Do not download Lazyweb database images. Use the `imageUrl`/`image_url` returned by Lazyweb
-directly in the HTML report. Supabase storage-backed image URLs are signed for
-90 days and intended for report embedding; if a selected Lazyweb result has no returned image URL, omit the
-image and rely on `visionDescription` plus text.
+Do not download Lazyweb database images. Use the returned `imageUrl`/`image_url`
+directly in HTML. Supabase storage-backed image URLs are signed for 90 days and
+intended for report embedding. If a selected Lazyweb result has no returned image
+URL, omit the image and rely on `visionDescription` plus text.
 
-For web-captured examples (from step 5B):
-```bash
-if [ -x "$LB" ]; then
-  $LB goto "https://example.com"
-  $LB screenshot "$REPORT_DIR/references/{company}-{screen-slug}.png"
-fi
-```
+For web-captured examples, save descriptive filenames such as
+`stripe-pricing-page.png` or `linear-onboarding-step1.png`. Cap the selected
+visual references at 30, but prefer fewer high-quality references.
 
-Cap at 30 visual references total. Name locally captured files descriptively:
-`stripe-pricing-page.png`, `linear-onboarding-step1.png`.
-
-Label each reference with its source in the report: `[Lazyweb]` or `[Web]` so the
-user knows the provenance.
-
-### 8. Write the HTML Report
+## Report v2 Contract
 
 Write directly to `.lazyweb/design-research/{topic-slug}-{YYYY-MM-DD}/report.html`.
 Do not create a Markdown version.
 
-**Reverse pyramid structure:** Lead with action, back into analysis. The reader should
-get the answer in the first 30 seconds, then optionally dive deeper.
+The report should make the recommendation faster to parse than the old report.
+Lead with the answer, keep copy short, and make every visible piece of evidence
+earn its place. The user should not need to read a methodology essay before
+knowing what to build.
 
-**Skip sections that don't apply.** A narrow question doesn't need all sections. Only include sections where you have real findings.
+### Visible section order
 
-**Reference presentation contract:** Do not stack every reference as full-width
-figures down the page. Key examples and recommendation evidence should use a
-`.deck` snap-carousel that lays every reference out at a glance (scroll-snaps with ◀ ▶ prev/next buttons) while keeping the recommendation in view. Each
-slide/card must include:
-- Company/product name, source label (`[Lazyweb]`, `[Web]`, `[Mobbin]`, etc.),
-  and URL when available
-- A one-line "why this is here" caption tying the reference to the specific
-  recommendation, pattern, anti-pattern, or insight
-- The key visual detail to borrow, adapt, or avoid
-
-For desktop/web landing-page screenshots, never render long full-page captures at
-natural height. Show them in a desktop viewport frame instead: use a 16:10 or
-1440x900-style crop with `overflow: hidden`, `object-fit: cover`, and
-`object-position: top`. Make that above-the-fold crop large and legible enough to understand on its own — do NOT add "open full image/page" links or any click-to-view.
-For live web captures, prefer viewport screenshots over full-page screenshots.
-Mobile/portrait screenshots must be shown WHOLE (object-fit: contain, no cropping), at a size large enough to read; cap height only to keep one shot from dominating.
-
-Use this content outline, rendered as semantic HTML:
+Render these semantic HTML sections in this order:
 
 ```text
 # Design Research: {Topic}
 
-## Agent Instructions
-{Report section #1. Emit the copy-pastable downstream-agent handoff exactly as defined in "Report essentials" below — one human sentence, then the AGENT HANDOFF block summarizing the top recommendations, what to index on vs not, and how to dive further.}
+## Goal
+{One short sentence restating the target outcome.}
 
-## Current State
-{Include ONLY if a current state screenshot was captured in step 2. Otherwise omit this section.}
-![Current State](references/current-state.png)
-*{Brief description of what we're looking at}*
+## Recommendation
+{A stacked control view plus 2-4 image-generated prototype options when direction is not already settled; otherwise one prototype that carries the recommended direction.}
 
-## Recommendations / Next Steps
-{What to implement, in priority order. Each recommendation tied to evidence below.
-This is the ACTION section — specific, implementable guidance.}
+## Inspo
+{Optional 2x2 reference map. Omit if the corpus is too thin or the axes would be fake.}
 
-1. **{Recommendation}** — {Why, with reference to evidence}
-2. **{Recommendation}** — {Why}
-3. **{Recommendation}** — {Why}
-
-**Mockups:** For each recommendation, show the proposed layout with a generated image (if an image tool is available) or an HTML/CSS mock-frame — never ASCII art. See "Report essentials → C. Mockups" below.
-
-## Key Examples
-{The visual centerpiece. Use a `.deck` snap-carousel (every reference visible at a glance, scroll-snaps with ◀ ▶ prev/next buttons), not a long vertical gallery. Mix Lazyweb and web-captured screenshots. Label each
-source. Each slide includes company, URL/source, why it is included, and the
-specific visual detail that supports the recommendation.}
-
-.deck grid (one figure per reference, all visible — scroll-snaps with ◀ ▶ prev/next buttons):
-- Stripe [Web] - why this supports the recommendation; key detail to borrow
-- Linear [Lazyweb] - why this supports the recommendation; key detail to borrow
-
-## Patterns
-{Render as `.pat` cards with a `.deck` snap-carousel (see "Operating principles & evidence components"): each pattern = name + verdict `.tag` + `.prev` count ("seen in N of M references") + one-line table-stakes claim + a `.deck` snap-carousel of 2-4 real screenshots that exhibit it (caption = company + the exact UI detail from visionDescription). Show the shared pattern; do not just list brand names.}
-
-## Anti-Patterns
-{Render as `.pat` cards with `.tag.avoid` and an "avoid" `.deck`: each anti-pattern embeds the real screenshot of the bad pattern + a one-line "what not to copy". Never name a company as anti-pattern evidence unless its screenshot is shown; if none exists in-corpus, label it "no reference captured - directional" (`.ebadge.single`).}
-
-## Unique Angles
-{Each standout MUST embed the specific cropped screenshot of that exact detail (a framed shot or one-card `.deck`), caption pointing at the precise element that is the X100 detail. The most "you have to see it" section cannot be prose-only.}
-
-## Findings
-{Inside a collapsed `<details><summary>How we got here</summary>`, include an EVIDENCE TABLE: one row per reference with company | source | matchCount | similarity | which rec/pattern it supports — so "clustered at matchCount 2-3 / similarity ~0.4-0.6" is shown data, not a sentence.}
-
-## Sources
-{Compact list. Lazyweb screenshots are cited inline above.
-Web sources listed here with URLs.}
+## Interesting Patterns
+{Only high-signal cropped reference screenshots. One useful pattern is enough; do not pad.}
 ```
 
-### 9. Report essentials (apply to the report you write)
+Do not render visible standalone sections named `Agent Instructions`,
+`Recommendations / Next Steps`, `Key Examples`, `Patterns`, `Anti-Patterns`,
+`Unique Angles`, `Findings`, or `Sources`. Provenance belongs in image `alt`
+text, hidden metadata, machine-readable handoff metadata, and the compact
+footer.
 
-Three rules keep every Lazyweb report consistent. Follow them exactly.
+### Recommendation section
 
-#### A. Agent Instructions — report section #1
+The recommendation is the product of the report. It is prototype-led in the
+visible body:
 
-The report opens with an **Agent Instructions** callout: one plain human sentence, then a copy-pastable block written FOR A DOWNSTREAM CODING AGENT (not the human reader). Emit exactly this structure:
+- For broad visual-direction work, create generated bitmap prototype images and
+  render them with `.prototype-img` inside `.prototype-option`. Do not rely on a
+  hand-coded HTML mini mockup for visual exploration when image generation is
+  available.
+- Use a live HTML/CSS `.prototype` only when image generation is unavailable, the
+  user explicitly asks for HTML, or the output needs to be implementation-ready
+  code. Never use ASCII art or a static text-only wireframe when an image or HTML
+  prototype can show the idea.
+- Prefer 2-4 alternative directions when the user asks for a new design language,
+  visual direction, style exploration, or a broad improvement goal. Each option
+  must represent a distinct hypothesis, not superficial palette swaps.
+- Still carry the decision: mark one option as `Recommended` and explain why in
+  one concise line. The other options exist so the user can choose taste/risk,
+  not because the agent refused to decide.
+- When there are 2-4 prototype options, render `.prototype-options` as a
+  horizontal snap scroller, not a vertical stack or equal-width grid. The
+  recommended/default prototype should be first and take most of the available
+  viewport width, with the next option peeking to signal horizontal scroll.
+- If a current-state screenshot or URL was captured, render a stacked comparison:
+  `Control` first, then `Prototype options` below it. Do not place control and
+  prototype side by side; the narrow columns usually make one or both look
+  broken.
+- Encode the recommendation in the prototype's structure, hierarchy, copy, and
+  controls. Product copy inside the prototype is expected; explanatory report
+  copy next to the prototype is not.
+- Keep explanatory copy to one concise line above or between the stacked views.
+  Do not render a side column, `Rec` block, `Why` block, long recommendation
+  list, or inspiration cards in this section.
+- Do not render metric or evidence-summary chips under `Recommendation`, such as
+  `8 selected references`, `3 prototypes`, or `A/B data locked`. Keep those
+  counts in hidden metadata, a footer note, or the final handoff if needed.
+- Keep chrome quiet. Labels such as `Control` and `Prototype` are enough; avoid
+  heavy cards, nested cards, shadows, and container frames around screenshots
+  unless a thin frame is needed for legibility.
+- Do not explain fidelity in prose next to the prototype. If fidelity must be
+  exposed, use hidden metadata or a tiny machine-handoff field, not visible
+  report copy.
+
+### Hypothesis-to-prompt workflow
+
+Before building prototypes:
+
+1. Draft 2-4 direction hypotheses from the user's goal and evidence corpus.
+   Examples: `Operator memo`, `Proof wall`, `Premium editorial`, `Product-led
+   demo`.
+2. For each hypothesis, reason through:
+   - the conversion/design thesis
+   - the strongest supporting references
+   - the main components it would change
+   - the risk or tradeoff
+3. Select the strongest default direction.
+4. Generate a detailed `.build-prompt` for each prototype option. The prompt
+   should be specific enough that another agent could implement the option:
+   target audience, tone, layout, hierarchy, components, copy strategy, visual
+   rules, references to borrow from, references to avoid, and conversion goal.
+5. Feed those prompts into the image-generation step in parallel and render 2-4
+   `.prototype-option` outputs with saved `.prototype-img` assets. Put the
+   detailed prompts inside collapsed `<details>` elements so the visible report
+   stays light.
+6. Save generated prototype images under
+   `$REPORT_DIR/references/prototype-{direction-slug}.png`. Leave the original
+   generated-image file in place if the host saves one elsewhere.
+
+The visible report may show compact `.hypothesis` cards or a `.hypothesis-strip`
+inside `Recommendation`, but keep each hypothesis to a name, one-line thesis,
+and a tiny evidence/risk label. Do not turn hypothesis reasoning into a long
+essay.
+
+### Fast parallel image generation
+
+Image prototypes are the slowest part of this skill. Optimize for getting the
+report in front of the user quickly:
+
+- Build all image prompts first, then launch all prototype generations in
+  parallel. Do not generate prototype images sequentially unless the host only
+  supports one job at a time.
+- Default prototype/image agents to **medium effort**. Use **low effort** when
+  the user asks for speed, quick exploration, or rough directions. Use high
+  effort only when the user explicitly asks for production-grade fidelity or a
+  final design artifact.
+- Render the report as soon as the first usable image set is available. If some
+  non-default options are still generating, include prompt-ready placeholder
+  cards and update/regenerate later rather than blocking the whole report.
+- Normal skill execution must not run full `npm test`, full browser QA, or eval
+  comparisons. Those are development/eval checks, not user-facing report steps.
+- For Codex CLI fallback, override high-effort defaults explicitly:
+  `codex exec -c model_reasoning_effort=\"medium\" --image CONTROL.png --image INSPO_A.png --image INSPO_B.png -o references/prototype-{direction}.txt \"{prompt}\"`.
+
+Provider fallback order:
+
+1. Use the native host image generation tool when available.
+2. If native imagegen is unavailable and `codex` is on `PATH`, probe with
+   `codex --help`, then spawn parallel `codex exec` jobs at medium effort with
+   image/context attachments.
+3. If Codex CLI cannot generate images, use a configured external image API such
+   as Nano Banana or Gemini when local credentials/tooling are available.
+4. If no image provider exists, render prompt-ready `.prototype-option` cards,
+   mark images as `not generated`, and keep the structured `.build-prompt`
+   visible/copyable.
+
+For non-imagegen hosts such as Claude, test provider availability in that order:
+native image tool, `codex --help`, then configured Nano Banana/Gemini env
+vars or CLIs. If multiple external providers are available, prefer the provider
+with local credentials and file-output support.
+
+Image prompt template:
+
+```text
+CONTROL
+Attachment label: CONTROL
+Describe the current page/screenshot and the current conversion goal.
+
+WHAT TO IMPROVE
+State the specific weakness in the control, for example proof arrives too late,
+the CTA is generic, or the page feels too playful for the desired trust level.
+
+HOW TO IMPROVE
+State the distinct hypothesis, conversion mechanism, information architecture,
+primary components, and trust source. This section must make the option
+structurally different from the other options.
+
+INSPIRATION
+Attachment label: INSPO A - {reference name}
+What to borrow: {specific layout/component/trust move}
+What not to borrow: {specific mismatch}
+
+Attachment label: INSPO B - {reference name}
+What to borrow: {specific layout/component/trust move}
+What not to borrow: {specific mismatch}
+
+ATTACHMENTS
+Upload/attach CONTROL plus INSPO A and INSPO B when the provider supports image
+inputs. If attachment upload is unavailable, include their image URLs and visible
+captions in the prompt.
+```
+
+Anti-collapse rules:
+
+- Reject prototype options that only vary palette, typography, theme, or tone.
+- Each option must differ from the others on at least two of: page strategy,
+  conversion mechanism, information architecture, trust source, and primary
+  component set.
+- Good option sets include structural differences such as `Operator Memo`,
+  `Proof Wall`, `Issue Library`, and `Build-in-Public Dashboard`.
+- Before launching image generation, do a quick self-check: if all prompts could
+  produce the same hero/form/card layout with different colors, rewrite them.
+
+### Prototype fidelity rules
+
+Choose fidelity from request specificity:
+
+- **High fidelity** - the user provides a current screenshot/URL or enough
+  product context plus specific screen, outcome, and style constraints. Render a
+  polished prototype with realistic layout, hierarchy, copy blocks, controls, and
+  visual treatment.
+- **Medium fidelity** - the screen and outcome are clear, but current-state or
+  brand context is thin. Render a credible layout with real section names,
+  content placeholders, and the recommended interaction model.
+- **Low fidelity** - the request is broad, exploratory, or vague. Render a clean
+  structural prototype that communicates hierarchy and flow without pretending to
+  know the brand/product details.
+
+Choose fidelity before building the prototype. Do not burden the visible report
+with fidelity rationale.
+
+### Optional Inspo section
+
+Include the `Inspo` section only when at least four comparable references can be
+positioned meaningfully. It is a 2x2 map, not a gallery, and it should not look
+like four boxed report cards.
+
+Rules:
+- Derive the x/y axes from the corpus, for example `restrained -> assertive`,
+  `serious -> playful`, `familiar -> novel`, `low density -> high density`, or
+  `utility-led -> emotion-led`.
+- Plot each reference once using `.inspo-map`, `.inspo-point`, and `.inspo-img`.
+- Every visible point is image-only. Do not show company names, source labels,
+  explanation text, or captions inside the map. Use accurate `alt` text and
+  hidden data attributes for provenance.
+- Use decisive crops for long desktop/web pages. A 2x2 map should compare the
+  relevant viewport or component, not shrink an entire long-scroll screenshot
+  into an unreadable strip. Prefer above-the-fold crops for landing pages unless
+  a lower section is the actual evidence.
+- Keep map chrome minimal: axes and image tiles only. Avoid visible card
+  containers, big borders, shadows, and captions.
+- Points may enlarge on hover, keyboard focus, and click/tap, but the expanded
+  state still shows the image rather than metadata.
+- If there are fewer than four meaningful comparable references, omit `Inspo`
+  and do not mention the omission in the report body.
+
+### Interesting Patterns section
+
+Only include patterns that actually influenced the recommendation or expose a
+surprising transferable move. Quality beats quantity, but a rich corpus should
+not feel thin. For normal desktop/web research, target 4-8 high-signal pattern
+crops after screening the corpus; use fewer only when the corpus is genuinely
+thin.
+
+Each pattern uses `.pattern-shot` with a `.pattern-crop` image:
+- Use reference screenshots from Lazyweb or web research, not the user's
+  uploaded/current/control screenshot. The uploaded/current image belongs in
+  `Recommendation` as `Control`, not in `Interesting Patterns`.
+- Crop directly to the interesting area with enough surrounding margin to
+  preserve context. Prefer actual cropped image assets when available; otherwise
+  use CSS `object-fit` / `object-position` to frame the decisive area.
+- Do not draw red bounding boxes, annotation squares, arrows, or numbered
+  callouts. The crop itself should make the interesting area visible.
+- Do not add explanatory copy under the crop. Use the pattern title to state the
+  observation; keep provenance in `alt`, `title`, `data-source`, or hidden
+  metadata.
+- Use one pattern if only one is truly interesting; do not pad to a fixed count.
+  If you found many useful references, select the strongest patterns rather than
+  showing only the four map anchors.
+
+Keep pattern crops around 320-460px wide in the default desktop layout and cap
+their visual height when needed. For mobile, desktop, and long pages, use the
+smallest legible crop that contains the evidence plus margin. Do not rely on
+click-to-view as the only way to inspect proof.
+
+### Evidence and confidence
+
+- Every claim in the visible body must have nearby evidence: a prototype
+  decision, an image-only 2x2 point, or a cropped pattern reference.
+- Before synthesizing, screen enough references that the report does not feel
+  under-evidenced. When results allow it, select 6-10 references total: four can
+  anchor the optional 2x2 map, and the rest should appear as pattern crops or
+  direct prototype evidence.
+- Quantify prevalence where useful ("3 of 7 selected references") but do not turn
+  the report into a table.
+- For growth/monetization screens, use `lazyweb_ab_test_research` when available.
+  If no experiment data is found, say "design-prevalence signal" in the relevant
+  card/caption instead of implying measured lift.
+- Label weak evidence honestly in the card or caption: `directional`,
+  `single-source`, `off-category`, or `brand inferred - verify`.
+- Never fabricate a reference, metric, company name, or screenshot content.
+
+### HTML requirements
+
+The `report.html` file should:
+
+- Be a single HTML file with inline CSS and tiny inline JS only for card/map
+  expansion; the report must still be understandable with JS disabled.
+- Use the existing Lazyweb tokens:
+  `--ink:#1f2328; --mut:#57606a; --line:#d0d7de; --soft:#eef4fb; --accent:#0969da`.
+- Include CSS for `.prototype`, `.inspo-map`, `.inspo-point`, `.inspo-img`,
+  `.pattern-shot`, `.pattern-crop`, and `.lw-foot`.
+- Use absolute Lazyweb `imageUrl`/`image_url` values for Lazyweb references.
+- Use relative paths (`references/filename.png`) only for current-state and
+  web-captured screenshots saved locally.
+- Use relative paths for generated prototype images saved under `references/`.
+  Every image-generated prototype should have accurate `alt` text and a
+  collapsed `.build-prompt` carrying the exact implementation brief because
+  generated images may mangle small text.
+- Avoid horizontal page overflow. On narrow screens, keep the prototype fluid
+  and reduce the 2x2 image points and pattern crops.
+- For current-state redesigns, stack `.control` and `.prototype-options`; do not
+  use a fixed two-column control/prototype grid.
+- Include CSS for `.hypothesis-strip`, `.hypothesis`, `.prototype-options`,
+  `.prototype-option`, `.prototype-img`, and `.build-prompt` when the report
+  includes multiple directions.
+- Open the HTML file in the user's browser: `open "$REPORT_DIR/report.html"`.
+
+Use this component shape as the baseline and adapt details to the evidence:
 
 ```html
-<section id="agent-instructions" class="agent-instructions">
-  <div class="ai-head"><span class="ai-badge">FOR THE CODING AGENT</span>
-    <button class="ai-copy" type="button" onclick="
-      var sec=this.closest('.agent-instructions'); var txt=sec.querySelector('.ai-block').innerText;
-      var done=function(ok){this.textContent=ok?'Copied':'Press Cmd/Ctrl+C';setTimeout(function(){this.textContent='Copy';}.bind(this),1500);}.bind(this);
-      if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(function(){done(true);},function(){done(false);});}
-      else{var r=document.createRange();r.selectNodeContents(sec.querySelector('.ai-block'));var s=getSelection();s.removeAllRanges();s.addRange(r);try{document.execCommand('copy');done(true);}catch(e){done(false);}}">Copy</button>
-  </div>
-  <p class="ai-human">{one human sentence: the single most important thing to do}</p>
-  <pre class="ai-block">{COPY BLOCK — fill the braces from this report}</pre>
+<section id="goal" class="goal">
+  <h2>Goal</h2>
+  <p>{one-sentence target outcome}</p>
 </section>
+
+<section id="recommendation" class="recommendation">
+  <h2>Recommendation</h2>
+  <div class="rec-stack">
+    <figure class="control">
+      <figcaption>Control</figcaption>
+      <img src="references/current-state.png" alt="{accurate current-state description}">
+    </figure>
+    <p class="rec-note">Recommended: {option name}. {one-line why}</p>
+    <div class="hypothesis-strip" aria-label="Design direction hypotheses">
+      <article class="hypothesis is-recommended"><b>{Option A}</b><span>{one-line thesis}</span></article>
+      <article class="hypothesis"><b>{Option B}</b><span>{one-line thesis}</span></article>
+      <article class="hypothesis"><b>{Option C}</b><span>{one-line thesis}</span></article>
+    </div>
+    <div class="prototype-options">
+      <figure class="prototype-option is-recommended">
+        <figcaption>{Option A} <span>Recommended</span></figcaption>
+        <img class="prototype-img" src="references/prototype-{option-a}.png" alt="{accurate generated prototype description}" loading="lazy">
+        <p class="prototype-note">Image-generated prototype. Use the prompt below for exact implementation copy and component constraints.</p>
+        <details class="build-prompt"><summary>Agent prompt</summary><p>{detailed prompt}</p></details>
+      </figure>
+      <figure class="prototype-option">
+        <figcaption>{Option B}</figcaption>
+        <img class="prototype-img" src="references/prototype-{option-b}.png" alt="{accurate generated prototype description}" loading="lazy">
+        <p class="prototype-note">Image-generated prototype. Use the prompt below for exact implementation copy and component constraints.</p>
+        <details class="build-prompt"><summary>Agent prompt</summary><p>{detailed prompt}</p></details>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section id="inspo" class="inspo">
+  <h2>Inspo</h2>
+  <div class="inspo-map" style="--x-left:'Restrained';--x-right:'Assertive';--y-top:'Playful';--y-bottom:'Serious'">
+    <button class="inspo-point" type="button" style="--x:72%;--y:31%" data-source="{provenance}">
+      <img class="inspo-img" src="{imageUrl}" alt="{accurate visionDescription-based alt}" loading="lazy">
+    </button>
+  </div>
+</section>
+
+<section id="interesting-patterns" class="patterns">
+  <h2>Interesting Patterns</h2>
+  <article class="pattern-shot">
+    <h3>{Pattern name}</h3>
+    <div class="pattern-crop" style="--pos:center 34%">
+      <img src="{imageUrl}" alt="{accurate cropped-reference description}" loading="lazy" data-source="{provenance}">
+    </div>
+  </article>
+</section>
+
+<footer class="lw-foot">Powered by <a href="https://www.lazyweb.com">Lazyweb</a> &mdash; turn your agent into a design researcher... for free!</footer>
 ```
 
-Copy-block text (keep these exact labels; fill `{REPORT_PATH}` with the absolute path of the report.html you wrote):
-
-```
-LAZYWEB REPORT — AGENT HANDOFF
-Use the report at {REPORT_PATH} as a starting point for {TASK}.
-
-TOP RECOMMENDATIONS (do first):
-1. {rec 1, one imperative line}
-2. {rec 2}
-3. {rec 3}
-
-INDEX ON: {1-3 well-evidenced signals/patterns from this report}
-DO NOT OVER-INDEX ON: {weak-evidence / single-source / aesthetic-only / non-transferable items}
-DIVE FURTHER: {next Lazyweb skill or MCP tool} — {why}
-
-Evidence basis: {Lazyweb screenshots | web captures} · {DATE}
-```
-
-For THIS skill, `{TASK}` = "implementing {topic} using competitor-validated design patterns", and `DIVE FURTHER` → "`/lazyweb-design-improve` to pressure-test your build against these references, or `lazyweb_find_similar` to widen a specific pattern".
-
-#### B. Conciseness & "show, don't tell"
-
-Write the report to be skimmed — no length target, let the evidence set the length:
-- **Lead with value** — Agent Instructions and the top recommendation come first; the reader sees what to do before any analysis.
-- **Show, don't tell** — make the case with VISUAL evidence (embedded real-app screenshots via Lazyweb `imageUrl`, and where relevant a mock-frame), not paragraphs. A screenshot that proves the point beats three sentences describing it.
-- **Index the "why" on evidence, not adjectives** — each recommendation points to a specific visual reference, never generic design-speak.
-- Cut throat-clearing and restatement; use tables/bullets where they read faster.
-
-#### C. Mockups — never ASCII art
-
-To show a proposed layout: if an image-generation tool is available to you, generate a mockup asset, save it to `references/mock-{slug}.png`, and embed it with a caption. Otherwise render an HTML/CSS **mock-frame** (a styled `<div>` wireframe). Never use ASCII/box-drawing art. Mobile mock-frame for app screens, desktop for web/SaaS; adapt the labeled boxes to the recommendation.
-
-```html
-<figure class="mock mobile"><div class="frame"><div class="notch"></div><div class="body">
-  <div class="box">Header / value prop</div>
-  <div class="row"><div class="box">Plan A</div><div class="box">Plan B</div></div>
-  <div class="box tall">Benefits / hero</div><div class="box cta">Primary CTA</div>
-</div></div><figcaption class="cap">Mock-frame — {what this proposes}</figcaption></figure>
-
-<figure class="mock desktop"><div class="frame"><div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">example.com</span></div><div class="body">
-  <div class="row"><div class="box">Logo</div><div class="box">Nav</div><div class="box">Sign in</div></div>
-  <div class="row"><div class="box">Feature</div><div class="box">Feature</div><div class="box">Feature</div></div>
-  <div class="box cta">Primary CTA</div>
-</div></div><figcaption class="cap">Mock-frame — {what this proposes}</figcaption></figure>
-```
-
-#### D. Shared CSS (include in the report `<style>`)
+Minimum CSS contract:
 
 ```css
 :root{--ink:#1f2328;--mut:#57606a;--line:#d0d7de;--soft:#eef4fb;--accent:#0969da}
-.agent-instructions{background:var(--soft);border-left:4px solid var(--accent);border-radius:8px;padding:14px 16px;margin:18px 0}
-.ai-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:8px}
-.ai-badge{font-size:11px;font-weight:700;letter-spacing:.04em;color:#0a3b78}
-.ai-copy{font:600 12px/1 inherit;cursor:pointer;border:1px solid var(--accent);color:var(--accent);background:#fff;border-radius:6px;padding:5px 11px}
-.ai-copy:hover{background:var(--accent);color:#fff}
-.ai-human{margin:0 0 10px;font-size:15px}
-.ai-block{white-space:pre-wrap;word-break:break-word;background:#fff;border:1px solid var(--line);border-radius:6px;padding:12px 13px;margin:0;font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--ink);user-select:all}
-.mock{margin:14px 0;font-family:inherit}
-.mock .frame{border:1px solid var(--line);border-radius:14px;background:#fff;box-shadow:0 1px 4px rgba(31,35,40,.06);overflow:hidden}
-.mock.mobile .frame{max-width:300px;border-radius:26px;border:8px solid #1f2328}
-.mock.desktop .frame{max-width:760px}
-.mock .bar{display:flex;align-items:center;gap:6px;padding:7px 10px;background:#f6f8fa;border-bottom:1px solid var(--line);font-size:12px;color:var(--mut)}
-.mock .dot{width:9px;height:9px;border-radius:50%;background:#d0d7de}
-.mock .url{flex:1;text-align:center;background:#fff;border:1px solid var(--line);border-radius:5px;padding:2px 8px;font-size:11px;color:var(--mut)}
-.mock .notch{width:46%;height:16px;margin:6px auto 0;background:#1f2328;border-radius:0 0 12px 12px}
-.mock .body{padding:14px;display:flex;flex-direction:column;gap:10px}
-.mock .box{background:var(--soft);border:1px dashed #b9c7d6;border-radius:8px;min-height:34px;display:flex;align-items:center;justify-content:center;color:#4a5a6a;font-size:12px;text-align:center;padding:8px}
-.mock .box.tall{min-height:120px}.mock .box.cta{background:var(--accent);border:0;color:#fff;font-weight:600;min-height:40px}
-.mock .row{display:flex;gap:10px}.mock .row>.box{flex:1}
-.mock .cap{font-size:12px;color:var(--mut);margin-top:6px;text-align:center}
+body{margin:0;font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:#fff}
+main{max-width:1120px;margin:0 auto;padding:32px 20px 48px}
+h1,h2,h3,p{letter-spacing:0} h1{font-size:34px;line-height:1.1;margin:0 0 28px} h2{font-size:24px;margin:32px 0 14px} h3{font-size:16px;margin:14px 0 6px}
+.goal p{font-size:20px;max-width:780px;margin:0;color:var(--ink)}
+.rec-stack{display:grid;gap:16px;max-width:1040px}.control,.prototype{margin:0}.control figcaption,.prototype figcaption{margin:0 0 8px;font-size:12px;font-weight:800;text-transform:uppercase;color:var(--mut)}
+.control img{display:block;width:100%;height:420px;object-fit:cover;object-position:center 42%;border:1px solid var(--line);border-radius:6px}.rec-note{max-width:860px;margin:0;font-size:16px}
+.hypothesis-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.hypothesis{border:1px solid var(--line);border-radius:6px;padding:10px;background:#fff}.hypothesis b{display:block;margin-bottom:4px}.hypothesis span{display:block;color:var(--mut);font-size:13px}.hypothesis.is-recommended{border-color:var(--accent)}
+.prototype-options{display:flex;gap:18px;overflow-x:auto;scroll-snap-type:x mandatory;padding:0 2px 10px;margin:0 -2px}.prototype-option{flex:0 0 min(920px,86vw);scroll-snap-align:start;margin:0}.prototype-option.is-recommended{flex-basis:min(980px,88vw)}.prototype-option figcaption{margin:0 0 8px;font-size:13px;font-weight:800;color:var(--ink)}.prototype-option figcaption span{color:var(--accent);font-weight:800}
+.prototype-img{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:6px;background:#fff}.prototype-note{font-size:12px;color:var(--mut);margin:6px 0 0}
+.prototype{overflow:hidden;background:#fff}.proto-frame{min-height:360px;padding:22px;background:#fff}
+.build-prompt{margin-top:8px;font-size:13px;color:var(--mut)}.build-prompt summary{cursor:pointer;font-weight:700;color:var(--ink)}
+.inspo-map{position:relative;min-height:520px;background:linear-gradient(var(--line),var(--line)) 50% 0/1px 100% no-repeat,linear-gradient(90deg,var(--line),var(--line)) 0 50%/100% 1px no-repeat,#fff}
+.inspo-map:before{content:var(--y-top);position:absolute;top:10px;left:50%;transform:translateX(-50%);color:var(--mut);font-size:12px}
+.inspo-map:after{content:var(--y-bottom);position:absolute;bottom:10px;left:50%;transform:translateX(-50%);color:var(--mut);font-size:12px}
+.inspo-point{position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,-50%);width:min(220px,36vw);padding:0;border:0;border-radius:5px;background:#fff;cursor:pointer;overflow:hidden}
+.inspo-point:hover,.inspo-point:focus{z-index:4;transform:translate(-50%,-50%) scale(1.18);outline:2px solid var(--accent);outline-offset:2px}
+.inspo-img{display:block;width:100%;aspect-ratio:16/10;object-fit:cover;object-position:top center;background:#fafbfc}
+.pattern-shot{margin:16px 0 24px}.pattern-crop{width:min(440px,100%);aspect-ratio:16/10;border:1px solid var(--line);border-radius:5px;overflow:hidden;background:#fafbfc}
+.pattern-crop img{display:block;width:100%;height:100%;object-fit:cover;object-position:var(--pos,center top)}
+.lw-foot{margin-top:34px;padding-top:14px;border-top:1px solid var(--line);text-align:center;font-size:13px;color:var(--mut)}
+@media(max-width:760px){main{padding:24px 14px}.hypothesis-strip{grid-template-columns:1fr}.prototype-option,.prototype-option.is-recommended{flex-basis:88vw}.inspo-map{min-height:420px}.inspo-point{width:min(160px,44vw)}.pattern-crop{width:min(360px,100%)}}
 ```
 
-### 10. HTML Requirements
+## Comparison Eval Contract
 
-The `report.html` file should:
-- Be a single HTML file with inline CSS (no external CSS/JS dependencies; one small inline `onclick` copy handler is allowed for the Agent Instructions block)
-- Include the Report essentials shared CSS (section 9.D) in `<style>`; use clean, readable styling: system fonts, max-width 900px, comfortable line-height
-- Use absolute Lazyweb `imageUrl`/`image_url` values for Lazyweb references
-- Use relative paths (`references/filename.png`) only for current-state and web-captured screenshots saved locally
-- Use `.deck` snap-carousels (every reference visible, scroll-snaps with ◀ ▶ prev/next buttons) instead of long vertical image stacks
-- Crop desktop/web landing-page screenshots into a fixed desktop viewport frame; do not show very long page captures at full height in the report body
-- Style images with rounded corners, subtle shadow, max-width that fits the layout, and height constraints that prevent zoomed-in or oversized visuals
-- Make the Agent Instructions block (section 9.A) the FIRST section, styled as the light-blue callout
-- Include proper semantic HTML (h1, h2, h3, p, ul, ol, table)
-- Make tables clean with light borders and header background
-- Open the HTML file in the user's browser: `open "$REPORT_DIR/report.html"`
+When validating a report re-architecture, create eval artifacts under
+`.lazyweb/eval-design-research-v2-{YYYY-MM-DD}/` and keep any old-skill copy
+outside `skills/` so it is never installed or routed as a visible mode.
 
-Tell the user where the report was saved. Mention they may want to add `.lazyweb/` to `.gitignore`.
+Use this fixed prompt for the old/new comparison:
+
+> Research an upsell pricing page for a desktop SaaS product converting free users to paid without feeling pushy. Recommend the page structure and evidence-backed patterns.
+
+Save:
+- `old-skill/SKILL.md` - copy of the old instructions
+- `old/report.html` - old report output
+- `new/report.html` - new report output
+- `compare.html` - side-by-side scorecard and links
+- `metrics.json` - machine-readable timings, tool-call counts, reference counts, and blind review scores
+
+Instrument both runs as well as the host allows:
+- Total elapsed time and old-vs-new delta
+- Per-step timing: context detection, Lazyweb search, web research/capture,
+  synthesis, prototype/report writing, and final handoff
+- Section timing where observable: `Goal`, `Recommendation`, optional `Inspo`,
+  and `Interesting Patterns`
+- Tool-call count by tool name, including Lazyweb MCP, web search,
+  browser/capture, shell, and agent calls
+- Design-reference count: total references found, references selected,
+  references shown in recommendation cards, references placed in the 2x2 map,
+  and screenshots cropped as interesting patterns
+
+For quality, ask another agent in a fresh context to review only the original
+prompt and anonymized report files labeled `Report A` and `Report B`. The judge
+scores each report 1-5 on:
+- Easy to parse
+- Sharp recommendation
+- Actionable design improvement
+- Trust in process/evidence
+- Evidence-to-recommendation fit
+
+Require short citations to visible report elements for every score. Reveal
+old/new only after scoring and include the winner plus reasoning in `compare.html`.
 
 ## Quality Calibration
 
-- Lazyweb screenshots are evidence — you can see what a real app looks like
-- Web articles are opinions — filter for quality
-- Your synthesis is interpretation — label it as such
-- Don't over-index on weak Lazyweb results (matchCount 1/3, similarity < 0.3)
-- When the corpus is weak for a topic, say so. Don't pad with irrelevant results.
-- A report with 5 strong references beats 20 weak ones
-
-
-## Operating principles & evidence components (REQUIRED - overrides convenience)
-
-## Operating principles (apply to every report you write)
-
-These four rules override convenience. A report that breaks them is non-conforming, even if every section is present.
-
-**1. Show, don't tell — every claim carries its proof.**
-Any assertion — a pattern, anti-pattern, idea, hypothesis, "what's working" item, convention check, recommendation, or A/B learning — must render the real screenshot(s) or experiment that demonstrate it, *beside the claim*, never a scroll away. When more than one reference backs a claim, render them as a **`.deck` snap-carousel** — a horizontally-scrolling strip that snaps card-to-card with ◀ ▶ prev/next buttons — so the reader can step through the proof, never hidden behind a prose list or a "see Section 5" pointer. Prevalence words ("most", "near-universal", "dominant") must be backed by a shown count ("5 of 9 references"), never an adjective alone.
-
-**2. Be opinionated; carry the decision.**
-Lead with ONE ranked recommended path, marked as the lead pick (`.lead` ribbon) in the *human-visible body* — not only in the agent copy block. Tag every other option Do / Explore / Skip (or P0/P1/P2) with a one-line "skip if". No ties among top picks; no flat undifferentiated menu. The "Skip" rows must link to the evidence (e.g. the anti-pattern screenshot) so the skip decision is shown, not just asserted.
-
-**3. Maximize confidence with evidence + data.**
-Back each recommendation with what worked for OTHER apps (real screenshots) PLUS supporting data: a prevalence count across the corpus ("seen in N of M examples") and, where the screen is growth/monetization, A/B experiment evidence via `lazyweb_ab_test_research`. If no experiment data exists, say so explicitly ("no experiment data found — recommendation is design-prevalence-based") and substitute the prevalence count as the directional signal. Never let a recommendation render with neither a visual nor a number behind it.
-
-**4. Be truth-seeking — never overclaim.**
-Label evidence strength honestly with an `.ebadge` on every claim/card/rec: **Measured** (real lift number) vs **Directional** (screenshot-diff / visual prevalence, no lift) vs **Single-source / Off-category**. Forbid comparative-performance verbs ("outperforms", "underperforms") unless a measurement backs them. Put a one-line corpus-strength banner (`.corpus`) right after Agent Instructions when evidence is single-source, thin, or context-mismatched. Tag any reference whose brand was inferred from a URL/vision-description ("brand inferred — verify"). Show absence claims with evidence-of-search (queries run × screens reviewed + the closest near-miss). Never invent a reference, a metric, or a company name. **Never use ASCII/box-drawing `<pre>` art for a layout — render the `.mock` mock-frame or a generated image.**
-
-### Evidence components (render claims with these — never prose alone)
-
-Put the CSS below in the report `<style>` and adapt the markup per claim. Reuse the existing tokens (`--ink:#1f2328; --mut:#57606a; --line:#d0d7de; --soft:#eef4fb; --accent:#0969da`).
-
-- **Patterns, Anti-Patterns (use `.tag.avoid`), Unique Angles, "What's working", Convention-check Missing/Unusual cells, hypothesis "supporting evidence", brainstorm "Applied here"** -> render as `.pat` cards: name + verdict `.tag` + `.prev` count ("seen in N of M references") + one-line claim + a `.deck` snap-carousel of 2-4 real screenshots that exhibit it (caption = company + the exact UI detail from `visionDescription`). The proof sits WITH the claim, never a scroll away. Show the pattern; don't just list brand names.
-- **The decision section** (design-research "What to build first", quick-references "Recommended path", brainstorm "Which ideas to prototype", design-improve idea order, ab-test "Recommendations", paywall "Prioritization") -> render a **Decision legend** (`.legend`, one `.legend-row` per rec in rank order — the whole ranking graspable in one glance) ABOVE a `.recs` stack of **recommendation cards** (`.rec`; the #1 card is `.rec.lead` with the START-HERE hero + browser-chrome frame). Each card carries a BIG inline-legible proof (desktop 16:10 above-the-fold crop / mobile whole-screen via `.recs.mobileset`) — never a tiny click-into thumbnail — plus a `.verdict` (Do/Explore/Skip), an `.ebadge` evidence label, a prevalence count, and a labeled `.skiprow`. NO table; exactly one lead; no ties.
-- **Honesty** -> put a `.corpus` banner right after Agent Instructions (basis / breadth / count / confidence); put an `.ebadge` (Measured | Directional | Single-source-or-off-category) on every claim, card, and recommendation. Never echo a raw "high"; never use "outperforms/underperforms" without a measured lift; tag crawl-seed/URL-inferred brands "brand inferred - verify".
-- **Control vs variant (A/B)** -> use the `.flip` two-up grid (stacks on narrow screens; scroll-snaps with ◀ ▶ prev/next buttons); if `vision_description` is empty, synthesize the caption from `what_changed` and tag it "agent-described".
-
-Every embedded screenshot must be FULLY VISIBLE and legible inline — never require a click to view, never a tiny thumbnail-as-proof, never a weird letterboxed ratio. Mobile/portrait shots: show the WHOLE screen (default `.deck` figure, no crop). Desktop/long-scroll pages: tag the figure `.shot-web` to crop to above-the-fold (16:10 from the top) at a size large enough to understand on its own. No "open full image" links. A report that asserts a claim with neither a visual nor a number behind it — or that hides its proof behind a click or a sliver crop — is non-conforming.
-
-```css
-.deckwrap{margin:8px 0}
-.deck{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;padding:4px 2px 10px;scrollbar-width:thin}
-.deck>figure{flex:0 0 86%;max-width:320px;scroll-snap-align:center;margin:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff}
-@media(min-width:620px){.deck>figure{flex-basis:46%}}
-.deck.web>figure,.deck>figure.shot-web{flex-basis:92%;max-width:560px}
-@media(min-width:620px){.deck.web>figure,.deck>figure.shot-web{flex-basis:60%}}
-.deck-nav{display:flex;gap:6px;justify-content:flex-end;margin-top:2px}
-.deck-nav button{cursor:pointer;border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:6px;width:34px;height:28px;font-size:13px;line-height:1}
-.deck-nav button:hover{background:var(--soft);border-color:var(--accent);color:var(--accent)}
-.deck>figure>img{display:block;width:100%;height:auto;max-height:620px;object-fit:contain;background:#fafbfc}
-.deck>figure.shot-web>img{aspect-ratio:16/10;max-height:none;object-fit:cover;object-position:top}
-.deck>figure.tall>img{object-fit:contain}
-.deck>figure.img-missing>img{display:none}
-.deck>figure.img-missing figcaption::after{content:' — image unavailable; see description';color:#cf222e}
-.deck .cap{font-size:12px;color:var(--mut);padding:7px 9px;line-height:1.4}
-.deck .cap b{color:var(--ink)}
-.deck .src{font-size:10.5px;font-weight:700;letter-spacing:.03em;color:var(--accent)}
-.deck-hint{font-size:11.5px;color:var(--mut);margin:-2px 0 6px}
-.pat{border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:14px 0;background:#fff}
-.pat-h{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px;margin-bottom:4px}
-.pat-h h3{margin:0;font-size:16px}
-.pat-claim{color:var(--mut);font-size:14px;margin:2px 0 10px}
-.prev{font:600 11.5px/1 inherit;color:#0a3b78;background:var(--soft);border-radius:20px;padding:4px 10px}
-.tag{font:700 10.5px/1 inherit;letter-spacing:.03em;border-radius:5px;padding:3px 7px}
-.tag.strong{color:#0a5d2a;background:#e6f4ea;border:1px solid #b7e0c4}
-.tag.directional{color:#8a5a00;background:#fff8e6;border:1px solid #f0e0b0}
-.tag.weak{color:#6e7781;background:#f6f8fa;border:1px solid var(--line)}
-.tag.avoid{color:#a40e26;background:#fdeef0;border:1px solid #f5c2c7}
-:root{
-  --ink:#1f2328; --mut:#57606a; --line:#d0d7de; --soft:#eef4fb; --accent:#0969da;
-  --do-fg:#0a5d2a; --do-bg:#e6f4ea; --do-bd:#b7e0c4;
-  --ex-fg:#8a5a00; --ex-bg:#fff8e6; --ex-bd:#f0e0b0;
-  --sk-fg:#6e7781; --sk-bg:#f6f8fa; --sk-bd:#e3e7eb;
-  --single-fg:#a40e26; --single-bg:#fdeef0; --single-bd:#f5c2c7;
-}
-
-/* ===== GRAFT 1 — DECISION LEGEND (whole ranking at a glance; degrades to anchors) ===== */
-.legend{border:1px solid var(--line);background:#fff;border-radius:12px;padding:6px;margin:0 0 26px;overflow:hidden}
-.legend-row{display:grid;grid-template-columns:34px minmax(0,1fr) auto auto;align-items:center;gap:12px;padding:9px 10px;border-radius:8px;text-decoration:none;color:inherit}
-.legend-row + .legend-row{border-top:1px solid #eef1f4}
-.legend-row:hover{background:var(--soft)}
-.legend-row.is-lead{background:linear-gradient(0deg,#fff,var(--soft))}
-.lg-rank{font:800 14px/1 inherit;text-align:center;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;background:var(--mut)}
-.legend-row.is-lead .lg-rank{background:var(--accent)}
-.lg-rank.r2{background:#3f6896}.lg-rank.r3{background:#6b7787}.lg-rank.r4{background:#8c96a1}
-.lg-name{font-weight:650;min-width:0}
-.lg-name .lg-why{display:block;font-weight:400;color:var(--mut);font-size:12px;line-height:1.35;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.lg-ev{font:700 10px/1 inherit;color:var(--mut);white-space:nowrap;letter-spacing:.02em}
-
-/* ===== shared verdict chip + evidence badge (reused everywhere) ===== */
-.verdict{font:700 10.5px/1 inherit;border-radius:6px;padding:5px 9px;white-space:nowrap;letter-spacing:.03em;text-transform:uppercase;border:1px solid transparent;display:inline-flex;align-items:center;gap:5px}
-.verdict .ico{font-size:10px;line-height:1}
-.verdict.do{color:var(--do-fg);background:var(--do-bg);border-color:var(--do-bd)}
-.verdict.explore{color:var(--ex-fg);background:var(--ex-bg);border-color:var(--ex-bd)}
-.verdict.skip{color:var(--sk-fg);background:var(--sk-bg);border-color:var(--sk-bd)}
-.ebadge{font:700 10px/1 inherit;letter-spacing:.02em;border-radius:20px;padding:5px 9px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
-.ebadge .dot{width:7px;height:7px;border-radius:50%;display:inline-block}
-.ebadge.strong{color:var(--do-fg);background:var(--do-bg);border:1px solid var(--do-bd)}.ebadge.strong .dot{background:var(--do-fg)}
-.ebadge.directional{color:var(--ex-fg);background:var(--ex-bg);border:1px solid var(--ex-bd)}.ebadge.directional .dot{background:var(--ex-fg)}
-.ebadge.single{color:var(--single-fg);background:var(--single-bg);border:1px solid var(--single-bd)}.ebadge.single .dot{background:var(--single-fg)}
-.caveat-inline{font:700 9.5px/1 inherit;color:var(--ex-fg);background:var(--ex-bg);border:1px solid var(--ex-bd);border-radius:5px;padding:3px 6px;margin-left:2px;white-space:nowrap}
-
-/* ===== RECOMMENDATION CARDS (replaces .ranked table) ===== */
-.recs{display:flex;flex-direction:column;gap:16px}
-.rec{position:relative;display:grid;grid-template-columns:minmax(0,1.18fr) minmax(0,1fr);background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:0 1px 3px rgba(31,35,40,.05)}
-
-/* GRAFT 2 — LEAD HERO treatment for #1 (replaces .lead callout) */
-.rec.lead{border:2px solid var(--accent);box-shadow:0 6px 22px rgba(9,105,218,.14);background:linear-gradient(0deg,#fff,var(--soft));margin-top:11px;grid-template-columns:minmax(0,1.32fr) minmax(0,1fr)}
-.rec.lead::before{content:'\2605 RECOMMENDED PATH \2014 START HERE';position:absolute;z-index:4;top:-11px;left:18px;background:var(--accent);color:#fff;font:700 10px/1 inherit;letter-spacing:.05em;border-radius:10px;padding:6px 11px;box-shadow:0 2px 6px rgba(9,105,218,.35)}
-
-/* proof side */
-.rec-proof{position:relative;background:#0d1117;min-width:0;line-height:0}
-.rec-proof .frame{display:block;height:100%;width:100%;border-right:1px solid var(--line);position:relative}
-.browserbar{display:flex;align-items:center;gap:6px;height:30px;padding:0 11px;background:#f6f8fa;border-bottom:1px solid var(--line);position:absolute;top:0;left:0;right:0;z-index:2;line-height:1}
-.browserbar i{width:9px;height:9px;border-radius:50%;background:#d0d7de;display:block}
-.browserbar i:nth-child(1){background:#ff5f57}.browserbar i:nth-child(2){background:#febc2e}.browserbar i:nth-child(3){background:#28c840}
-.browserbar .url{margin-left:8px;font:600 10.5px/1 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--mut);background:#fff;border:1px solid var(--line);border-radius:20px;padding:5px 12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
-/* desktop proof: 16:10 above-the-fold crop — plain <img>, legible with JS off */
-.rec-proof img{display:block;width:100%;height:100%;aspect-ratio:16/10;object-fit:cover;object-position:top;background:#161b22}
-.rec.lead .rec-proof img{aspect-ratio:16/9}
-.rank-badge{position:absolute;z-index:3;left:12px;bottom:12px;display:flex;align-items:center;gap:7px;background:rgba(13,17,23,.84);color:#fff;border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:5px 12px 5px 7px;backdrop-filter:blur(3px);line-height:1}
-.rank-badge .num{display:flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#fff;color:#0d1117;font:800 13px/1 inherit}
-.rec.lead .rank-badge .num{background:var(--accent);color:#fff}
-.rank-badge .lbl{font:700 10.5px/1 inherit;letter-spacing:.05em;text-transform:uppercase;color:#e6edf3}
-.proof-verdict{position:absolute;z-index:3;left:12px;top:42px}
-.proof-verdict .verdict{box-shadow:0 1px 6px rgba(0,0,0,.25)}
-.proof-src{position:absolute;z-index:3;right:12px;bottom:12px;background:rgba(255,255,255,.92);color:var(--mut);border:1px solid var(--line);border-radius:6px;padding:4px 8px;font:700 10px/1.3 inherit;letter-spacing:.02em}
-.proof-src b{color:var(--ink)}
-/* GRAFT 3 — honest crop tag */
-.crop-tag{position:absolute;z-index:3;right:12px;top:42px;font:700 9.5px/1 inherit;letter-spacing:.03em;color:#fff;background:rgba(31,35,40,.78);border-radius:5px;padding:4px 7px}
-/* GRAFT 4 (JS-optional) — Expand button, hidden until .has-js; proof already legible without it */
-.zoombtn{display:none;position:absolute;z-index:3;right:12px;top:38px;border:1px solid rgba(255,255,255,.35);background:rgba(13,17,23,.7);color:#fff;border-radius:6px;padding:4px 8px;font:700 10px/1 inherit;letter-spacing:.02em;cursor:pointer}
-.has-js .zoombtn{display:inline-block}
-.has-js .crop-tag{right:74px}
-/* image-missing fallback */
-.rec-proof.img-missing img{display:none}
-.rec-proof.img-missing .frame{display:flex;align-items:center;justify-content:center;aspect-ratio:16/10;background:repeating-linear-gradient(45deg,#161b22,#161b22 12px,#1b212a 12px,#1b212a 24px);color:#9aa4af;font:600 12px/1.5 inherit;text-align:center;padding:18px}
-.rec-proof .fallback{display:none}
-.rec-proof.img-missing .fallback{display:block}
-.rec-proof.img-missing .browserbar{display:none}
-
-/* decision side */
-.rec-body{padding:16px 18px 15px;display:flex;flex-direction:column;min-width:0}
-.rec.lead .rec-body{padding-top:18px}
-.rec-body h3{margin:0 0 5px;font-size:17px;line-height:1.25;letter-spacing:-.01em}
-.rec.lead .rec-body h3{font-size:19px}
-.rec-what{margin:0 0 12px;color:var(--mut);font-size:13.5px;line-height:1.5}
-.rec-what b{color:var(--ink)}
-.rec-what code{background:var(--soft);border:1px solid #cfe2fb;border-radius:4px;padding:1px 5px;font-size:12px}
-.chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px}
-.ev-note{font-size:12px;color:var(--mut);margin:-2px 0 11px}
-.ev-note b{color:var(--ink)}
-/* GRAFT 2d — labeled SKIP-IF row, bottom-pinned so cards align */
-.skiprow{margin-top:auto;padding-top:11px;border-top:1px dashed var(--line);display:flex;gap:8px;align-items:baseline}
-.rec.lead .skiprow{border-top-color:#bcd6f5}
-.skiprow .lbl{font:700 9.5px/1 inherit;letter-spacing:.04em;text-transform:uppercase;color:var(--single-fg);background:var(--single-bg);border:1px solid var(--single-bd);border-radius:5px;padding:4px 7px;white-space:nowrap;flex:0 0 auto}
-.skiprow .txt{font-size:12.5px;color:var(--mut);line-height:1.45}
-.skiprow .txt b{color:var(--ink);font-weight:700}
-
-/* responsive: stack proof above decision; collapse legend evidence col */
-@media(max-width:720px){
-  .rec, .rec.lead{grid-template-columns:1fr}
-  .rec-proof .frame{border-right:0;border-bottom:1px solid var(--line)}
-  .legend-row{grid-template-columns:30px minmax(0,1fr) auto;gap:9px}
-  .lg-ev{display:none}
-  .lg-name .lg-why{white-space:normal}
-}
-
-/* ===== MOBILE-PROOF VARIANT — portrait shown WHOLE (contain), capped, uniform ===== */
-.recs.mobileset .rec-proof{background:#0d1117;display:flex;align-items:center;justify-content:center;padding:16px 14px}
-.recs.mobileset .rec-proof .frame{width:auto;height:auto;border:0;border-right:0;display:flex;align-items:center;justify-content:center}
-.recs.mobileset .rec-proof img{width:auto;height:auto;max-height:300px;max-width:100%;aspect-ratio:auto;object-fit:contain;border:1px solid #30363d;border-radius:16px;box-shadow:0 4px 16px rgba(0,0,0,.4)}
-.recs.mobileset .rec.lead .rec-proof img{max-height:320px}
-.recs.mobileset .rank-badge{left:20px;bottom:20px}
-.recs.mobileset .proof-src{right:20px;bottom:20px}
-.recs.mobileset .proof-verdict{left:20px;top:20px}
-.recs.mobileset .rec-proof.img-missing .frame{aspect-ratio:9/16;width:170px;max-height:300px}
-
-/* ===== JS-OPTIONAL lightbox (inert without JS: display:none, no src) ===== */
-#lb{display:none;position:fixed;inset:0;z-index:50;background:rgba(13,17,23,.86);align-items:center;justify-content:center;padding:28px}
-#lb.open{display:flex}
-#lb img{max-width:96vw;max-height:92vh;border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,.55);background:#161b22}
-#lb .x{position:absolute;top:18px;right:22px;color:#fff;font:700 26px/1 inherit;cursor:pointer;background:none;border:0}
-.corpus{display:flex;gap:8px;align-items:flex-start;font-size:13px;color:#8a5a00;background:#fff8e6;border:1px solid #f0e0b0;border-radius:8px;padding:9px 12px;margin:14px 0}
-.corpus b{color:var(--ink)}
-.ebadge{font:700 10.5px/1 inherit;letter-spacing:.02em;border-radius:20px;padding:5px 9px;display:inline-flex;align-items:center;gap:6px}
-.ebadge.measured{color:#0a5d2a;background:#e6f4ea;border:1px solid #b7e0c4}
-.ebadge.directional{color:#8a5a00;background:#fff8e6;border:1px solid #f0e0b0}
-.ebadge.single{color:#a40e26;background:#fdeef0;border:1px solid #f5c2c7}
-.caveat-inline{font:700 10px/1 inherit;color:#8a5a00;background:#fff8e6;border:1px solid #f0e0b0;border-radius:5px;padding:2px 6px;margin-left:6px}
-.flip{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding-bottom:8px}
-@media(max-width:560px){.flip{grid-template-columns:1fr}}
-.flip>figure{margin:0}
-.flip>figure>img{width:100%;height:auto;max-height:580px;object-fit:contain;border:1px solid var(--line);border-radius:8px;background:#fafbfc}
-.flip figcaption{font:600 12px/1.4 inherit;margin-top:5px}
-.flip .side{display:inline-block;font:700 10px/1 inherit;letter-spacing:.04em;border-radius:5px;padding:3px 7px;margin-right:6px}
-.flip .side.c{color:#6e7781;background:#f6f8fa}
-.flip .side.v{color:#0a5d2a;background:#e6f4ea}
-.flip .vd{display:block;font-weight:400;color:var(--mut);font-size:11.5px;margin-top:3px}
-.flip figure.img-missing>img{display:none}
-.flip figure.img-missing figcaption::after{content:' — image unavailable; see description';color:#cf222e;font-weight:400}
-.rec-thumb{display:flex;gap:6px}
-.rec-thumb img{height:104px;width:auto;border:1px solid var(--line);border-radius:6px;background:#fafbfc}
-```
-
-**Markup patterns:**
-
-<!-- Patterns with evidence carousel (.deck + .pat) -->
-```html
-<div class="pat">
-  <div class="pat-h">
-    <h3>Code visible in the hero</h3>
-    <span class="tag strong">Strong</span>
-    <span class="prev">seen in 5 of 9 references</span>
-  </div>
-  <p class="pat-claim">Table stakes: the best developer-API pages put a runnable code/trace block in the first fold instead of an illustration.</p>
-
-  <div class="deckwrap">
-    <div class="deck">
-      <figure><img src="{imageUrl}" alt="Composio" loading="lazy" onerror="this.closest('figure').classList.add('img-missing')">
-        <figcaption class="cap"><span class="src">[Lazyweb]</span> <b>Composio</b> &mdash; curl snippet + inline run metrics in the hero.</figcaption></figure>
-      <figure><img src="{imageUrl}" alt="Surge" loading="lazy" onerror="this.closest('figure').classList.add('img-missing')">
-        <figcaption class="cap"><span class="src">[Lazyweb]</span> <b>Surge</b> &mdash; one-line command framed as the value prop.</figcaption></figure>
-      <figure><img src="{imageUrl}" alt="Pulumi" loading="lazy" onerror="this.closest('figure').classList.add('img-missing')">
-        <figcaption class="cap"><span class="src">[Lazyweb]</span> <b>Pulumi</b> &mdash; code tabs above the fold.</figcaption></figure>
-    </div>
-    <div class="deck-nav">
-      <button type="button" aria-label="Previous" onclick="var d=this.closest('.deck-nav').previousElementSibling,f=d.querySelector('figure');d.scrollBy({left:-((f?f.offsetWidth:300)+12),behavior:'smooth'})">&#9664;</button>
-      <button type="button" aria-label="Next" onclick="var d=this.closest('.deck-nav').previousElementSibling,f=d.querySelector('figure');d.scrollBy({left:(f?f.offsetWidth:300)+12,behavior:'smooth'})">&#9654;</button>
-    </div>
-  </div>
-</div>
-```
-
-<!-- Opinionated ranked pick — Decision legend + recommendation cards (big legible proof; replaces the .ranked table) -->
-Emit a `.legend` (one `.legend-row` per rec, in rank order — the whole ranking at a glance) ABOVE a `.recs` stack of `.rec` cards. The #1 card is `class="rec lead"` (START-HERE tab + browser-chrome bar). Desktop proof = 16:10 above-the-fold crop; for a MOBILE/portrait proof wrap the stack in `class="recs mobileset"` and omit `.browserbar`/`.crop-tag` (whole phone screen shown). Proof is a plain `<img>` — legible with JS off; the `⤢ Expand`/zoom is pure enhancement.
-```html
-<nav class="legend" aria-label="Ranking summary">
-  <a class="legend-row is-lead" href="#m1"><span class="lg-rank">1</span><span class="lg-name">Runnable code/SDK block in the hero<span class="lg-why">code is the product shot — strongest dev-tool signal</span></span><span class="verdict do"><span class="ico">✓</span> Do first</span><span class="lg-ev">STRONG · 5/9</span></a>
-  <a class="legend-row" href="#m2"><span class="lg-rank r2">2</span><span class="lg-name">3-step “how it works” grid<span class="lg-why">Send → Track → Deliver, each with a proof</span></span><span class="verdict do"><span class="ico">✓</span> Do</span><span class="lg-ev">STRONG · 5/9</span></a>
-  <a class="legend-row" href="#m3"><span class="lg-rank r3">3</span><span class="lg-name">Logos + one trust metric, high<span class="lg-why">recognizable brands; one emails-sent stat</span></span><span class="verdict explore"><span class="ico">◐</span> Explore</span><span class="lg-ev">DIRECTIONAL · 4/9</span></a>
-</nav>
-
-<div class="recs">
-  <article class="rec lead" id="m1">
-    <div class="rec-proof">
-      <a class="frame" href="{source_url}" target="_blank" rel="noopener">
-        <span class="browserbar"><i></i><i></i><i></i><span class="url">{display_domain}</span></span>
-        <img src="{imageUrl}" alt="{what the above-the-fold crop shows}" loading="lazy" onclick="if(window.__zoom)return window.__zoom(this);" onerror="this.closest('.rec-proof').classList.add('img-missing')">
-        <span class="fallback">Proof image unavailable — {one-line description of the reference}.</span>
-      </a>
-      <span class="rank-badge"><span class="num">1</span><span class="lbl">Do next</span></span>
-      <span class="proof-verdict"><span class="verdict do"><span class="ico">✓</span> Do first</span></span>
-      <span class="crop-tag">DESKTOP · 16:10 above-the-fold</span>
-      <button type="button" class="zoombtn" aria-label="Expand proof" onclick="window.__zoom && window.__zoom(this.parentNode.querySelector('img'))">⤢ Expand</button>
-      <span class="proof-src">Proof · <b>{Company}</b></span>
-    </div>
-    <div class="rec-body">
-      <h3>{recommendation title}</h3>
-      <p class="rec-what">{one–two sentence why, with <b>key terms</b> and inline <code>code</code> where useful}</p>
-      <div class="chips"><span class="ebadge strong"><span class="dot"></span> Strong evidence</span></div>
-      <p class="ev-note">{pattern} seen in <b>5 of 9</b> references reviewed; no measured lift in-corpus.</p>
-      <div class="skiprow"><span class="lbl">Skip if</span><span class="txt">{the one-line condition under which this move is wrong}.</span></div>
-    </div>
-  </article>
-  <!-- repeat <article class="rec" id="m2">…</article> per rank (no `lead`; START-HERE tab + browserbar are #1-only). Skip rows still SHOW their proof so the skip is demonstrated, not asserted. -->
-</div>
-
-<!-- MOBILE/portrait proof: <div class="recs mobileset"> … same cards, omit .browserbar + .crop-tag (whole screen shown, contain). -->
-<!-- Place once at end of <body>; JS-OPTIONAL (proof already legible without it): -->
-<div id="lb" aria-hidden="true"><button type="button" class="x" aria-label="Close">×</button><img alt="Expanded proof"></div>
-<script>document.body.classList.add('has-js');var _lb=document.getElementById('lb'),_i=_lb&&_lb.querySelector('img');window.__zoom=function(g){if(!_lb)return false;_i.src=g.currentSrc||g.src;_lb.classList.add('open');return false;};if(_lb)_lb.addEventListener('click',function(){_lb.classList.remove('open');_i.removeAttribute('src');});</script>
-```
-
-<!-- Evidence-strength badge + corpus banner (.ebadge / .corpus) -->
-```html
-<div class="corpus"><span>&#9888;</span><p style="margin:0"><b>Evidence basis:</b> 9 Lazyweb screenshots, no live web captures this run, similarity 0.4&ndash;0.6 &mdash; treat prevalence claims as <b>directional</b>, not measured.</p></div>
-
-<!-- per-claim / per-rec badge -->
-<span class="ebadge directional">Directional &middot; 5/9 refs &middot; no outcome data</span>
-<span class="ebadge measured">Measured &middot; exp 3/3 &middot; sim 0.55</span>
-<span class="ebadge single">Single-experiment &middot; off-category</span>
-
-<!-- crawl-seed / inferred-brand caveat on a deck card -->
-<figcaption class="cap"><span class="src">[Lazyweb]</span> <b>SendGrid</b> <span class="caveat-inline">brand inferred from URL/vision &mdash; verify</span> &mdash; enterprise tier hero.</figcaption>
-```
-
-<!-- Control / variant (.flip) -->
-```html
-<div class="flip">
-  <figure><img src="{control.imageUrl or control.image_url}" alt="Control" loading="lazy" onerror="this.closest('figure').classList.add('img-missing')">
-    <figcaption><span class="side c">CONTROL</span><span class="vd">{control.vision_description}</span></figcaption></figure>
-  <figure><img src="{variant.imageUrl or variant.image_url}" alt="Variant" loading="lazy" onerror="this.closest('figure').classList.add('img-missing')">
-    <figcaption><span class="side v">VARIANT</span><span class="vd">{variant.vision_description OR, if empty: a description synthesized from what_changed} <span class="caveat-inline">agent-described</span></span></figcaption></figure>
-</div>
-
-<!-- inline proof pair inside a ranked recommendation row -->
-<td class="rec-thumb"><a href="#exp-fae32674"><img src="{control.imageUrl or control.image_url}" alt="control"><img src="{variant.imageUrl or variant.image_url}" alt="variant"></a></td>
-```
-
-### Report footer (REQUIRED — the very last element of the report)
-
-End every report with this footer (add the CSS to `<style>`):
-
-```html
-<footer class="lw-foot">Powered by <a href="https://www.lazyweb.com">Lazyweb</a> — turn your agent into a design researcher… for free!</footer>
-```
-
-```css
-.lw-foot{margin-top:34px;padding-top:14px;border-top:1px solid var(--line);text-align:center;font-size:13px;color:var(--mut)}
-```
+- Lazyweb screenshots are evidence - use what is visibly in them.
+- Web articles are opinions - filter for quality.
+- Synthesis is interpretation - label it honestly.
+- Do not over-index on weak Lazyweb results (`matchCount` 1/3, similarity < 0.3).
+- When the corpus is weak, say so in the relevant card/caption and avoid padding.
+- A report with 5 strong references beats 20 weak ones.

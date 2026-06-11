@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Design Research v2 Comparison</title>
+  <style>
+    :root{--ink:#1f2328;--mut:#57606a;--line:#d0d7de;--soft:#eef4fb;--accent:#0969da}
+    body{margin:0;font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:#fff}
+    main{max-width:1080px;margin:0 auto;padding:32px 20px 48px}
+    h1{font-size:34px;line-height:1.1;margin:0 0 10px} h2{font-size:22px;margin:30px 0 12px}
+    .lede{color:var(--mut);max-width:780px}.cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:20px 0}
+    .card{border:1px solid var(--line);border-radius:8px;padding:16px;background:#fff}.card.win{border-color:var(--accent);box-shadow:0 4px 18px rgba(9,105,218,.12)}
+    .kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:18px 0}.kpi div{border:1px solid var(--line);border-radius:8px;padding:12px;background:#f6f8fa}.kpi b{display:block;font-size:22px}
+    table{width:100%;border-collapse:collapse;margin:12px 0} th,td{border:1px solid var(--line);padding:9px;text-align:left;vertical-align:top} th{background:#f6f8fa}
+    code{background:#f6f8fa;border:1px solid var(--line);border-radius:4px;padding:1px 5px}.note{color:var(--mut);font-size:13px}
+    a{color:var(--accent)}@media(max-width:760px){.cards,.kpi{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<main>
+  <h1>Design Research v2 Comparison</h1>
+  <p class="lede">Prompt: Research an upsell pricing page for a desktop SaaS product converting free users to paid without feeling pushy. Recommend the page structure and evidence-backed patterns.</p>
+
+  <div class="cards">
+    <article class="card">
+      <h2>Report A: old structure</h2>
+      <p><a href="old/report.html">Open old report</a></p>
+      <p>Seven top-level sections, visible agent handoff, broad recommendation list, carousel examples, findings table, and sources section.</p>
+    </article>
+    <article class="card win">
+      <h2>Report B: new structure</h2>
+      <p><a href="new/report.html">Open new report</a></p>
+      <p>Goal, Recommendation as prototype only, image-only 2x2 Inspo map, and compact annotated Interesting Patterns.</p>
+    </article>
+  </div>
+
+  <h2>Speed / Parsing Burden</h2>
+  <div class="kpi">
+    <div><b>102s</b> old estimated read time</div>
+    <div><b>42s</b> new estimated read time</div>
+    <div><b>-60s</b> delta</div>
+    <div><b>-58.8%</b> faster to parse</div>
+  </div>
+  <table>
+    <thead><tr><th>Report</th><th>Section / step</th><th>Estimated read seconds</th></tr></thead>
+    <tbody>
+      <tr><td>Old</td><td>Agent Instructions</td><td>20</td></tr>
+      <tr><td>Old</td><td>Recommendations / Next Steps</td><td>20</td></tr>
+      <tr><td>Old</td><td>Key Examples</td><td>12</td></tr>
+      <tr><td>Old</td><td>Patterns</td><td>16</td></tr>
+      <tr><td>Old</td><td>Anti-Patterns</td><td>10</td></tr>
+      <tr><td>Old</td><td>Findings</td><td>9</td></tr>
+      <tr><td>Old</td><td>Sources</td><td>6</td></tr>
+      <tr><td>New</td><td>Goal</td><td>5</td></tr>
+      <tr><td>New</td><td>Recommendation</td><td>19</td></tr>
+      <tr><td>New</td><td>Inspo</td><td>2</td></tr>
+      <tr><td>New</td><td>Interesting Patterns</td><td>12</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Tool Calls and References</h2>
+  <table>
+    <thead><tr><th>Metric</th><th>Old</th><th>New</th></tr></thead>
+    <tbody>
+      <tr><td>Available evidence tool calls shared by the eval</td><td colspan="2"><code>lazyweb_get_flows</code> x2, <code>lazyweb_search</code> x1</td></tr>
+      <tr><td>Evidence results found from available tools</td><td>16</td><td>16</td></tr>
+      <tr><td>Selected unique references</td><td>4</td><td>4</td></tr>
+      <tr><td>References shown in recommendation cards</td><td>0</td><td>0</td></tr>
+      <tr><td>References placed in 2x2 map</td><td>0</td><td>4</td></tr>
+      <tr><td>Annotated screenshots</td><td>0</td><td>2</td></tr>
+      <tr><td>Expandable evidence elements</td><td>0</td><td>0</td></tr>
+    </tbody>
+  </table>
+  <p class="note">Scope note: this comparison fixture did not invoke a full autonomous old/new skill runner. It records the available Lazyweb MCP evidence calls made during implementation plus visible-report metrics from the generated HTML.</p>
+
+  <h2>Blind Fresh-Context Quality Review</h2>
+  <table>
+    <thead><tr><th>Criterion</th><th>Report A</th><th>Report B</th></tr></thead>
+    <tbody>
+      <tr><td>Easy to parse</td><td>2/5 - starts with visible Agent Instructions and a handoff block.</td><td>5/5 - Goal, Recommendation, Inspo, and Interesting Patterns create a clean path.</td></tr>
+      <tr><td>Sharp recommendation</td><td>3/5 - three priorities read as a list rather than one carried decision.</td><td>5/5 - Recommendation is a concrete prototype headed "Unlock the work your team is already trying to finish."</td></tr>
+      <tr><td>Actionable design improvement</td><td>3/5 - mock-frame is directional but not design-ready.</td><td>5/5 - prototype includes value copy, monthly/annual cards, CTA labels, savings badge, and comparison rows.</td></tr>
+      <tr><td>Trust in process / evidence</td><td>4/5 - Findings and Sources explicitly cite evidence strength and counts.</td><td>3/5 - image-only Inspo and annotations show proof, but visible corpus/source/confidence metadata is intentionally sparse.</td></tr>
+      <tr><td>Evidence-to-recommendation fit</td><td>3/5 - examples map to support, but the reader has to connect them back.</td><td>4/5 - Interesting Patterns directly tie examples to upgrade delta and savings-as-nudge choices.</td></tr>
+      <tr><td>Average</td><td>3.0/5</td><td><b>4.4/5</b></td></tr>
+    </tbody>
+  </table>
+
+  <h2>Winner</h2>
+  <p><b>Report B, the new structure.</b> The fresh-context judge found that it turns research into a low-pressure desktop SaaS pricing page structure the reader can act on immediately. The tradeoff is process trust: the image-only, text-light report shows less visible corpus/source/confidence metadata than Report A.</p>
+</main>
+</body>
+</html>
