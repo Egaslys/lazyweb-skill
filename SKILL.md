@@ -154,9 +154,13 @@ These rules apply to every `lazyweb_search` call in every mode:
 - Pass `high_design_bar: true` only to tools whose live schema exposes it, and
   only when the user asks for premium, stronger, high-design-bar, or
   best-designed examples.
-- Screenshot-bearing tools return full image URLs. Supabase storage-backed URLs
+- Screenshot-bearing tools return optimized image URLs. Supabase storage-backed URLs
   are signed for 365 days. Do not request or pass screenshot IDs, and do not
   construct storage URLs from raw paths.
+- `lazyweb_ab_test_research` uses `category` as the industry filter. Treat
+  `product` and `company` as context only; do not use them to force an exact
+  company match or trust a zero-result answer caused by an exact product/company
+  filter.
 - `lazyweb_find_similar` accepts `image_url` or `image_base64` plus `mime_type`;
   it does not take a screenshot ID.
 - `lazyweb_compare_image` does real image-similarity. Always send

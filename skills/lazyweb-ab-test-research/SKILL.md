@@ -68,6 +68,13 @@ tool is unavailable or returns no matching experiments, say that experiment
 evidence was unavailable for this query, then continue with Lazyweb visual
 references when useful.
 
+`category` is the public gateway's industry filter. `product` is context for
+the user's target product and should not be treated as a Lazyweb company filter;
+do not retry exact product/company spellings or trust a zero-result response
+when warnings indicate a product/company filter was applied. If the product is
+useful context, include it, but make the retrieval query screen-pattern plus
+industry led.
+
 ### Backend/Internal Experiment Tools
 
 Some backend or internal MCP surfaces expose these richer generic experiment
@@ -168,8 +175,10 @@ Backend/internal retrieval example:
 }
 ```
 
-Use minimal filters for popular apps or broad best-practice questions. Use rich
-filters for niche apps or narrow flows.
+Use minimal filters for popular apps or broad best-practice questions. On the
+public gateway, prefer screen-pattern plus `category` for industry context; keep
+`product` as target context only, not as an exact company filter. Use richer
+filters only on backend/internal surfaces whose live schema exposes them.
 
 When the user asks for high-design-bar companies, premium examples,
 best-designed apps, or stronger taste filtering, add this only to tools whose
@@ -204,7 +213,7 @@ For ranked App Store slices, add rank filters:
 3. **Supplement with design references.** Call `lazyweb_search` for the same
    screen or flow when visual examples would make the recommendation clearer.
    Read `visionDescription` before relying on any screenshot, and embed returned
-   `imageUrl` values directly instead of downloading Lazyweb images locally.
+   optimized `imageUrl` values directly instead of downloading Lazyweb images locally.
    Never repeat an identical query — page deeper with `offset` and follow
    `pagination.next_offset`; on `no_matches`/`low_coverage` warnings use the
    closest result or note the gap instead of rephrasing in a loop, and on
@@ -289,7 +298,7 @@ fi
 
 The hosted copy is served byte-for-byte, so the report must only use:
 - inline CSS and inline `<script>` — never an external `<script src=...>`
-- images via the absolute `imageUrl`/`image_url` URLs Lazyweb returns, or
+- images via the absolute optimized `imageUrl`/`image_url` URLs Lazyweb returns, or
   relative `references/{filename}` paths for locally saved screenshots
 - no `file://` URLs and no absolute local paths (`/Users/...`, `C:\...`)
 
@@ -302,7 +311,7 @@ Per experiment in `evidence.experiments[]` (no flags needed):
 
 Top level: `recommendations[]` (each cites an `experiment_id` + `target_metric` + `guardrail_metric` + `confidence`), `strong_points`, `weak_points`, `dataset_caveat`.
 
-Experiment images are returned as full URLs. Use `control.imageUrl` or
+Experiment images are returned as optimized URLs. Use `control.imageUrl` or
 `control.image_url`, and `variant.imageUrl` or `variant.image_url`, directly.
 Some adjacent experiment objects may expose aliases such as `control_image_url`,
 `controlImageUrl`, `variant_image_url`, or `variantImageUrl`; use those directly

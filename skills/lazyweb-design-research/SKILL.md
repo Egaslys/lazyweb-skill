@@ -424,8 +424,10 @@ Context traps with this tool:
 - The tool's own `confidence` field grades corpus retrieval, not evidence
   strength — your evidence wording comes from the honesty taxonomy, never from
   that field.
-- Do not pass the user's product name as a company filter; check the response
-  `warnings` for silently-applied filters before trusting a zero-result answer.
+- Use `category` as the industry filter. Do not pass the user's product name as
+  a company filter; treat `product` as target context only, and check the
+  response `warnings` for silently-applied filters before trusting a zero-result
+  answer.
 
 ### 9. Cluster the corpus and prepare references
 
