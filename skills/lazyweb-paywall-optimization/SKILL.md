@@ -47,11 +47,13 @@ Every report is auto-published to lazyweb.com so the user can share it with
 teammates. Run this with `$REPORT_DIR` set to `.lazyweb/paywall-optimization/{topic}-{date}`:
 
 ```bash
+IDEMPOTENCY_KEY="${REPORT_DIR#.lazyweb/}"   # stable per-report key (e.g. paywall-optimization/{topic}-{date}); send the SAME value every attempt so retries dedupe to one link
 LAZYWEB_TOKEN=$(cat "$HOME/.lazyweb/lazyweb_mcp_token" 2>/dev/null || true)
 if [ -n "$LAZYWEB_TOKEN" ]; then
-  python3 - "$REPORT_DIR" "$LAZYWEB_TOKEN" "paywall-optimization" <<'PUBLISH_EOF'
+  # Tier 1 - local install: direct POST (idempotency_key dedupes a re-run)
+  python3 - "$REPORT_DIR" "$LAZYWEB_TOKEN" "paywall-optimization" "$IDEMPOTENCY_KEY" <<'PUBLISH_EOF'
 import base64, json, pathlib, sys, urllib.error, urllib.request
-report_dir, token, skill = pathlib.Path(sys.argv[1]), sys.argv[2], sys.argv[3]
+report_dir, token, skill, idem = pathlib.Path(sys.argv[1]), sys.argv[2], sys.argv[3], sys.argv[4]
 version_file = pathlib.Path.home() / ".lazyweb" / "VERSION"
 version = version_file.read_text().strip() if version_file.exists() else "0.0.0"
 html = (report_dir / "report.html").read_text(encoding="utf-8")
@@ -61,7 +63,7 @@ assets = [
     for p in (sorted(refs.iterdir()) if refs.is_dir() else [])
     if p.is_file()
 ]
-body = json.dumps({"skill": skill, "version": version, "html": html, "assets": assets}).encode()
+body = json.dumps({"skill": skill, "version": version, "html": html, "assets": assets, "idempotency_key": idem}).encode()
 req = urllib.request.Request(
     "https://www.lazyweb.com/api/reports",
     data=body,
@@ -75,16 +77,23 @@ except urllib.error.HTTPError as exc:
 except Exception as exc:
     print(f"PUBLISH_SKIPPED: {exc}")
 PUBLISH_EOF
+else
+  # Tier 2 - no local token (hosted/cloud agent): publish via the MCP tool (see below)
+  echo "PUBLISH_VIA_MCP_TOOL idempotency_key=$IDEMPOTENCY_KEY report_dir=$REPORT_DIR"
 fi
 ```
 
-- On `SHAREABLE_URL:`, include the link in the final summary next to the local
-  path: "Shareable link: {url} (unlisted — anyone with the link can view)".
-- On `PUBLISH_FAILED: 400 ...` the body names exactly what is unhostable
-  (e.g. `missing_assets` lists files, `unhostable_local_reference` quotes the
-  bad src). Fix the report and re-run the publish ONCE.
-- On `PUBLISH_SKIPPED:` or a missing token, say nothing about publishing and
-  continue — publish failure NEVER fails the skill; the local report stands.
+**Exactly one tier runs - never both.**
+
+- Tier 1 `SHAREABLE_URL:` - include the link: "Shareable link: {url} (unlisted - anyone with the link can view)".
+- Tier 1 `PUBLISH_FAILED: 400 ...` - the body names what is unhostable (e.g. `missing_assets`). Fix the report and re-run the publish ONCE.
+- Tier 1 `PUBLISH_SKIPPED:` - say nothing; the local report stands (the user has the file).
+- Tier 2 `PUBLISH_VIA_MCP_TOOL ...` - you have no local token (hosted session), so publish with the Lazyweb MCP tool instead:
+  1. Size-check first: if `report.html` plus the `references/` files together exceed ~7MB, do NOT call the tool - tell the user the report was too large to publish from a hosted session (it is saved locally) and stop.
+  2. Otherwise call `lazyweb_publish_report` with: `html` = the contents of `report.html`; `assets` = each `references/` file as `{"name": <filename>, "b64": <base64 of the bytes>}`; `report_skill` = "paywall-optimization"; `idempotency_key` = the value printed after `idempotency_key=`.
+  3. On `{ ok: true, url }` -> show "Shareable link: {url} (unlisted - anyone with the link can view)".
+  4. On `{ ok: false }` -> tell the user publishing failed and why (the `error` field); the report is saved locally. If `code` is `REPORT_VALIDATION_ERROR` and `detail` names missing assets, fix and call ONCE more; otherwise do not retry.
+  Unlike Tier 1, do NOT stay silent on a Tier-2 failure - a hosted user has no local file to fall back on, so they need the link or the reason.
 
 ### Hosting-safe HTML (the template already complies — keep it that way)
 
