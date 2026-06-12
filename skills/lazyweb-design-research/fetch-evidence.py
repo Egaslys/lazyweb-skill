@@ -302,6 +302,25 @@ def main():
     tmp.write_text(json.dumps(evidence, indent=1))
     tmp.replace(out_path)
 
+    # Compact companion for the LLM selection pass: no URLs, truncated
+    # descriptions. The full file stays the embedding source of truth.
+    summary = {
+        "coverage_summary": evidence["coverage_summary"],
+        "references": [
+            {
+                "i": i,
+                "company": r.get("company"),
+                "platform": r.get("platform"),
+                "similarity": r.get("similarity"),
+                "matchCount": r.get("matchCount"),
+                "vd": (r.get("visionDescription") or "")[:180],
+            }
+            for i, r in enumerate(deduped)
+        ],
+    }
+    sum_path = out_path.with_name(out_path.stem + "-summary.json")
+    sum_path.write_text(json.dumps(summary, indent=0))
+
     if len(ok) * 2 < len(queries):
         log(f"FETCH_FALLBACK: only {len(ok)}/{len(queries)} queries succeeded")
         return FALLBACK

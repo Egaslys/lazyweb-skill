@@ -72,9 +72,12 @@ speed/exploration.
 The publish ladder's `IDEMPOTENCY_KEY` means re-publishing updates the SAME
 URL. Use that to put a live link in the user's hands ~1 minute into the run:
 
-1. **Right after the control is captured and the goal is written**, build the
-   skeleton report from the template's SKELETON block (see the template's
-   comments): `<meta name="lazyweb-report-state" content="skeleton">` +
+1. **Right after the control is captured and the goal is written** (~2 min
+   in; browse cold-start makes "1 minute" unrealistic), build the skeleton
+   report from the template's SKELETON block (see the template's comments).
+   Extract the template's `<head>`+`<style>` verbatim — e.g.
+   `python3 -c "t=open('{skill-base-dir}/report-template.html').read(); print(t[t.index('<style>'):t.index('</style>')+8])"` —
+   never retype the CSS. Structure: `<meta name="lazyweb-report-state" content="skeleton">` +
    `<meta http-equiv="refresh" content="60">` in `<head>`; body = `<h1>` →
    `.genbar` → Goal → the compare grid with the Control image on the left and
    the `.pending-ref` tile in the right `.cmp-frame` → one `.pending-strip` →
@@ -396,15 +399,26 @@ python3 "{skill-base-dir}/fetch-evidence.py"   --plan "$REPORT_DIR/work/query-pl
 ```
 
 On success, `work/evidence.json` holds merged, same-company-deduped references
-(imageUrl + visionDescription verbatim) plus a `coverage_summary`. Then:
+(imageUrl + visionDescription verbatim) plus a `coverage_summary`, and
+`work/evidence-summary.json` holds a compact no-URL digest. Then:
 
-1. **One selection + clustering pass** (you, the main agent): select 12-20
-   references and form the 2-4 clusters from TEXT fields. You may view at most
-   the top ~10 candidate images before the final pick — never the whole corpus.
-2. **One bounded top-up round** for gaps the summary exposes (failed/low_coverage
-   queries, a missing cluster, `lazyweb_find_similar` expansion on the 2-3
-   strongest results, `lazyweb_compare_image` on the downscaled control) —
-   these image-input tools run agent-side via MCP, ONE round only.
+1. **One selection + clustering pass** (you, the main agent): READ ONLY
+   `evidence-summary.json` (indices + truncated descriptions — a fraction of
+   the tokens), select 12-20 references and form the 2-4 clusters, then pull
+   just the selected indices' full records from `evidence.json` for
+   embedding. You may view at most the top ~10 candidate images before the
+   final pick — never the whole corpus.
+2. **One bounded top-up round — ALSO through the script, never via raw MCP
+   tool calls** (the v3.4 timed run lost 12 minutes to MCP token dumps here).
+   Write a second small plan and run `fetch-evidence.py` again to
+   `work/evidence-topup.json`:
+   - `lazyweb_find_similar` on the 2-3 strongest results, passing each
+     reference's `imageUrl` string as `image_url`, `"limit": 5`;
+   - `lazyweb_compare_image` on the control via `image_url` pointing at the
+     HOSTED control from the skeleton publish
+     (`{shareable_url}references/current-state.png`) — never inline base64
+     through chat; if the skeleton publish failed, SKIP compare_image
+     entirely rather than base64-ing.
 3. **Coverage honesty:** if `coverage_summary` shows failed or low_coverage
    queries — even when the script exits 0 — carry that into the report's
    `.corpus` banner when the selected corpus lands under 8 references or a
@@ -594,6 +608,10 @@ validate or challenge a bet you already formed from reading the control. Treat
 learnings as directional unless the tool returns measured lift. If the tool is
 unavailable or returns no on-context experiments, say so in the relevant card
 ("design-prevalence signal") — never imply measured lift.
+
+Call it with `include_images: false` and a small analysis limit (e.g.
+`analysis_experiment_limit: 8`) — full responses exceed many hosts'
+tool-result caps (88KB observed) and force a dump-to-file detour.
 
 Context traps with this tool:
 - **Discard off-context experiments** (wrong platform or screen type, e.g.

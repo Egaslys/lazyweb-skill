@@ -102,6 +102,9 @@ test("fetch: happy path merges and dedupes same-company/page references", async 
   assert.equal(ev.coverage_summary.raw_references, 4);
   assert.equal(ev.coverage_summary.deduped_references, 3, "duplicate acme/pricing ref must collapse");
   assert.ok(ev.references.every((r) => r.imageUrl && r.visionDescription), "imageUrl/visionDescription verbatim");
+  const summary = JSON.parse(readFileSync(path.join(dir, "evidence-summary.json"), "utf8"));
+  assert.equal(summary.references.length, 3, "summary mirrors deduped refs");
+  assert.ok(summary.references.every((r) => r.vd.length <= 180 && !("imageUrl" in r)), "summary is compact: truncated vd, no URLs");
 });
 
 test("fetch: missing token exits 2 (fallback signal)", async () => {
