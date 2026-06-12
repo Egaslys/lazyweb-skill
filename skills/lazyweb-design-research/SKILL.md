@@ -67,6 +67,40 @@ when the user asks for implementation-ready code. Generate prototype images in
 parallel at medium effort by default, or low effort when the user asks for
 speed/exploration.
 
+## Skeleton publish (the churn hedge — publish EARLY, enrich in place)
+
+The publish ladder's `IDEMPOTENCY_KEY` means re-publishing updates the SAME
+URL. Use that to put a live link in the user's hands ~1 minute into the run:
+
+1. **Right after the control is captured and the goal is written** (~2 min
+   in; browse cold-start makes "1 minute" unrealistic), build the skeleton
+   report from the template's SKELETON block (see the template's comments).
+   Extract the template's `<head>`+`<style>` verbatim — e.g.
+   `python3 -c "t=open('{skill-base-dir}/report-template.html').read(); print(t[t.index('<style>'):t.index('</style>')+8])"` —
+   never retype the CSS. Structure: `<meta name="lazyweb-report-state" content="skeleton">` +
+   `<meta http-equiv="refresh" content="60">` in `<head>`; body = `<h1>` →
+   `.genbar` → Goal → the compare grid with the Control image on the left and
+   the `.pending-ref` tile in the right `.cmp-frame` → one `.pending-strip` →
+   footer. NO Agent Instructions block, NO option deck, NO Inspo in the
+   skeleton — it leads with the human moment, not empty plumbing.
+2. The `.genbar` copy is an honest promise: **"This report is generating.
+   Control captured · analyzing references · 3 redesign bets in progress.
+   Usually ready in 5-12 minutes · started {HH:MM} {TZ}."** Always a range
+   plus the start timestamp — never a precise ETA (a stale skeleton must
+   self-identify), and the page auto-refreshes via the meta tag (the enriched
+   publish simply lacks the tag, so reloading stops naturally).
+3. Run the contract gate (it detects skeleton mode from the state meta tag),
+   then publish with the SAME `$IDEMPOTENCY_KEY` the final publish will use.
+   **Tell the user the URL immediately** — "your report is generating at
+   {url}; it fills in as the run completes."
+4. The final enriched publish at the end of the run replaces the skeleton at
+   the same URL. The enriched report must contain NO `.genbar`, no
+   `.pending-*` elements, and no refresh/state meta tags — the gate enforces
+   this.
+
+Skeleton publish failures are non-blocking (same rules as the final publish):
+never let an early-publish error stop the run.
+
 ## Publish a Shareable Link (always, right after writing report.html)
 
 Every report is auto-published to lazyweb.com so the user can share it with
@@ -83,8 +117,23 @@ html = path.read_text(encoding="utf-8")
 # Forbidden-content checks run on RENDERED content only — HTML comments
 # (including the template's own instruction comments) don't render.
 rendered = re.sub(r"<!--[\s\S]*?-->", "", html)
+skeleton = bool(re.search(r'name=["\']lazyweb-report-state["\'] content=["\']skeleton["\']', html, re.I))
 
-required_groups = {
+if skeleton:
+    required_groups = {
+        "Generating banner": [
+            r'class=["\'][^"\']*\bgenbar\b',
+            r'report is generating',
+            r'started',
+        ],
+        "Control compare": [
+            r'class=["\'][^"\']*\bcmp\b[^"\']*\bcontrol\b|class=["\'][^"\']*\bcontrol\b',
+            r'class=["\'][^"\']*\bpending-ref\b',
+        ],
+        "Auto-refresh": [r'http-equiv=["\']refresh["\']'],
+    }
+else:
+    required_groups = {
     "Agent Instructions copy block": [
         r'class=["\'][^"\']*\bagent-instructions\b',
         r'FOR THE CODING AGENT',
@@ -94,7 +143,7 @@ required_groups = {
         r'class=["\'][^"\']*\bprototype-option\b',
         r'Recommended',
     ],
-}
+    }
 missing = []
 for label, patterns in required_groups.items():
     for pattern in patterns:
@@ -110,6 +159,9 @@ for label, pattern in {
     "old prototype wrapper": r'class=["\'][^"\']*\bprototype-image\b',
     "old evidence sections": r'Reference Evidence|Source Notes|Key Examples|<h2[^>]*>\s*Findings\s*</h2>|<h2[^>]*>\s*Sources\s*</h2>',
     "removed patterns section": r'class=["\'][^"\']*\bpattern-shot\b|class=["\'][^"\']*\bpatterns-grid\b|<h2[^>]*>\s*Interesting Patterns\s*</h2>',
+    **({} if skeleton else {
+        "skeleton leftovers in final report": r'class=["\'][^"\']*\bgenbar\b|class=["\'][^"\']*\bpending-ref\b|class=["\'][^"\']*\bpending-strip\b|http-equiv=["\']refresh["\']|lazyweb-report-state',
+    }),
     "unfilled template example content": r'EXAMPLE-|picsum\.photos|placehold\.co|\bdata-ex=|\{\{[A-Z0-9_]+\}\}',
 }.items():
     if re.search(pattern, rendered, re.I):
@@ -330,28 +382,63 @@ Think about two groups:
 
 ### 5. Search Lazyweb (go deep — the corpus is the product)
 
-**Run evidence gathering in PARALLEL.** When the host has a subagent/Agent
-tool, dispatch THREE gatherers concurrently in a single message:
+**Fast path (default): run the evidence script, not agent gatherers.**
+A deterministic fetcher ships next to this skill: `fetch-evidence.py` (python3
+stdlib only). Build the full Pass A + Pass B query plan as JSON first, then run
+it once — all queries fire in parallel (capped at 6 in-flight, 20s timeouts,
+one Retry-After-honoring retry on 429/5xx):
 
-- **G1 — median mapper:** runs Pass A below; returns the in-category baseline.
-- **G2 — edge hunter:** runs Pass B below plus the `lazyweb_find_similar`
-  expansion; returns outliers with mechanism notes.
-- **G3 — web + control:** runs the step-7 web research (capture URLs +
-  screenshots into `work/`) and, when a control exists, `lazyweb_compare_image`
-  on the downscaled control.
+```bash
+cat > "$REPORT_DIR/work/query-plan.json" <<'PLAN'
+{"skill":"design-research","version":"<from ~/.lazyweb/VERSION>","queries":[
+ {"id":"a1","pass":"A","tool":"lazyweb_search","args":{"query":"<screen/component>","platform":"desktop","limit":15}},
+ {"id":"b1","pass":"B","tool":"lazyweb_search","args":{"query":"<underlying function>","platform":"desktop","limit":15}}
+]}
+PLAN
+python3 "{skill-base-dir}/fetch-evidence.py"   --plan "$REPORT_DIR/work/query-plan.json"   --out  "$REPORT_DIR/work/evidence.json" || echo "FETCH_FALLBACK"
+```
 
-Each gatherer writes structured JSON to `$REPORT_DIR/work/gatherer-{n}.json`
-(references with `visionDescription`, image URLs, coverage notes, queries run)
-and returns a compact summary. The main agent merges, dedupes, and clusters.
-Gatherer prompts MUST state: (a) the output directory already exists — use the
-Write tool only, never Bash/mkdir (denied permissions stall the run); (b) copy
-each returned `imageUrl` string VERBATIM into the JSON — a reference without
-its imageUrl cannot be embedded; (c) expansion results lacking a
-`visionDescription` are not dropped wholesale — keep the top ≤5 as
-`pending_vision` entries for the main agent to vision-verify after the merge.
-Hosts WITHOUT a subagent tool follow the same three roles as sequential
-phases, batching independent tool calls into single messages wherever the host
-allows.
+On success, `work/evidence.json` holds merged, same-company-deduped references
+(imageUrl + visionDescription verbatim) plus a `coverage_summary`, and
+`work/evidence-summary.json` holds a compact no-URL digest. Then:
+
+1. **One selection + clustering pass** (you, the main agent): READ ONLY
+   `evidence-summary.json` (indices + truncated descriptions — a fraction of
+   the tokens), select 12-20 references and form the 2-4 clusters, then pull
+   just the selected indices' full records from `evidence.json` for
+   embedding. You may view at most the top ~10 candidate images before the
+   final pick — never the whole corpus.
+2. **One bounded top-up round — ALSO through the script, never via raw MCP
+   tool calls** (the v3.4 timed run lost 12 minutes to MCP token dumps here).
+   Write a second small plan and run `fetch-evidence.py` again to
+   `work/evidence-topup.json`:
+   - `lazyweb_find_similar` on the 2-3 strongest results, passing each
+     reference's `imageUrl` string as `image_url`, `"limit": 5`;
+   - `lazyweb_compare_image` on the control via `image_url` pointing at the
+     HOSTED control from the skeleton publish
+     (`{shareable_url}references/current-state.png`) — never inline base64
+     through chat; if the skeleton publish failed, SKIP compare_image
+     entirely rather than base64-ing.
+   Expect top-up results to be description-less near-dupes more often than
+   not: budget at most 2 vision-verifications from the round, and when it
+   yields nothing attachable, record it as saturation confirmation (your
+   corpus was already complete) rather than a failure.
+3. **Coverage honesty:** if `coverage_summary` shows failed or low_coverage
+   queries — even when the script exits 0 — carry that into the report's
+   `.corpus` banner when the selected corpus lands under 8 references or a
+   whole pass came back thin.
+
+**Agent fallback (REQUIRED to keep working — do not remove):** when the script
+exits non-zero, prints FETCH_FALLBACK, emits invalid JSON, or python3 is
+missing, gather via the Lazyweb MCP tools yourself instead: run the same
+Pass A/Pass B plan as batched agent tool calls — three roles (median mapper /
+edge hunter / web + control) dispatched as parallel subagents when the host
+has an Agent tool, sequential phases otherwise. Gatherer prompts MUST state:
+(a) the output directory already exists — use the Write tool only, never
+Bash/mkdir; (b) copy each returned `imageUrl` string VERBATIM — a reference
+without it cannot be embedded; (c) expansion results lacking a
+`visionDescription` are kept (top ≤5) as `pending_vision` entries for the main
+agent to vision-verify after the merge.
 
 **Text before image (hard rule, applies to every gatherer):** select and rank
 references from TEXT — `visionDescription`, captions, `coverage`, `warnings`,
@@ -525,6 +612,11 @@ validate or challenge a bet you already formed from reading the control. Treat
 learnings as directional unless the tool returns measured lift. If the tool is
 unavailable or returns no on-context experiments, say so in the relevant card
 ("design-prevalence signal") — never imply measured lift.
+
+Run it THROUGH `fetch-evidence.py` (add it as an entry in the top-up plan —
+the script speaks generic tools/call) so the response lands in a file instead
+of a tool-result dump; even capped calls (`include_images: false`,
+`analysis_experiment_limit: 8`) have returned 98KB, past most hosts' caps.
 
 Context traps with this tool:
 - **Discard off-context experiments** (wrong platform or screen type, e.g.
@@ -758,9 +850,11 @@ report in front of the user quickly:
 Provider priority order — **image generation first, HTML last**:
 
 1. Native host image generation tool.
-2. **Codex CLI image generation** — `codex exec` asked to generate and save a
-   bitmap prototype to a file path.
-3. External image API (Nano Banana / Gemini) when local credentials exist.
+2. **OpenAI Images API** (`gpt-image-*` via `generate-prototypes.py` below) —
+   the primary working route in practice.
+3. Codex CLI / external image APIs (Nano Banana, Gemini) when the probe finds
+   them capable of emitting bitmaps (Codex CLI currently cannot — the probe
+   records its health for when that changes).
 4. **Rasterized HTML prototype (last resort):** hand-build each bet as a
    standalone HTML/CSS page (using the bet's `.build-prompt` as the spec),
    load it with the browse binary, and screenshot it to
@@ -772,31 +866,33 @@ Provider priority order — **image generation first, HTML last**:
    marked `not generated` and the structured `.build-prompt` visible/copyable.
    The compare's right slot must never be empty when a control exists.
 
-**Capability probe — run ONCE, cache the result.** Probing dead routes on
-every run burns minutes. Before generating, read
-`~/.lazyweb/imagegen-capability.json`; if it exists and `checked_at` is under
-7 days old, use the best route marked `ok` and skip all probing. Otherwise
-probe each route quickly (~30s total) and write the cache:
+**Capability probe + generation: use `generate-prototypes.py`** (ships next
+to this skill, python3 stdlib). Never improvise the probe or API calls.
 
-- native: is a host image-generation tool callable?
-- codex: does `codex exec "reply OK"` succeed (a broken config fails here —
-  e.g. an invalid `service_tier` in `~/.codex/config.toml`), and can it
-  actually emit a bitmap file when asked? Codex's bitmap ability is
-  machine-dependent — settle it empirically, never assume either way.
-- api: are Gemini/Nano Banana credentials present (env vars/CLIs)?
+```bash
+# probe (cached at ~/.lazyweb/imagegen-capability.json; busts on >7 days,
+# skill-version change, or a pre-v3.4 cache; --force to re-probe manually)
+python3 "{skill-base-dir}/generate-prototypes.py" probe   --native <ok|dead: is a host image tool callable?>   --skill-version "$(cat ~/.lazyweb/VERSION 2>/dev/null || echo 0.0.0)"
 
-```json
-{"checked_at":"<ISO date>","native":"ok|dead","codex":"ok|dead","api":"ok|dead"}
+# generate — one image per bet, IN PARALLEL (cap 3), de-branded retry on
+# policy refusal, per-bet status for targeted HTML fallback
+python3 "{skill-base-dir}/generate-prototypes.py" generate   --bets "$REPORT_DIR/work/bets.json"   --out-dir "$REPORT_DIR/references"   --status "$REPORT_DIR/work/proto-status.json"
 ```
 
-Tell the user which route was used. To force a re-probe (e.g. after fixing
-Codex), delete the cache file. All prototype generations for the 2-4 bets run
-IN PARALLEL on whichever route wins — parallel subagents/background jobs, or
-concurrent `codex exec`/API calls; sequential only when the host genuinely
-cannot run concurrent jobs. **Route-4 split:** builder subagents WRITE the
-HTML files only; the MAIN agent rasterizes them with the browse binary
-sequentially afterwards (~5s each) — the browse daemon is one shared tab,
-never driven by multiple agents concurrently.
+`bets.json`: `[{"slug":"...","prompt":"...","debranded_prompt":"..."}]` — the
+prompt is the bet's image brief (template below); `debranded_prompt` is the
+same brief with brand names replaced by category descriptions, used
+automatically if the branded prompt is policy-refused. The OpenAI key is read
+from `OPENAI_API_KEY` or `~/.lazyweb/openai_api_key` (chmod 600) — never
+commit, echo, or log it. The script discovers the newest `gpt-image-*` model
+dynamically (`gpt-image-2` today) — never hardcode a model name.
+
+Read `work/proto-status.json` after generation: bets with `"status":"ok"`
+have real generated prototypes; bets with `"status":"failed"` fall back to a
+rasterized-HTML prototype FOR THAT BET ONLY (mixed-route reports are
+sanctioned — the compare slot must never be empty). If the probe reports the
+openai route dead and no other image route is live, all bets take route 4.
+Tell the user which route was used.
 
 Image prompt template:
 
@@ -1124,7 +1220,11 @@ Rules for filling it:
 - Avoid horizontal page overflow at every scale setting and viewport width.
 - Fill with plain string replacement, not regex substitution — `re.sub`
   raises `bad escape` when replacement text contains backslashes (the `_vars`
-  block will); use `str.replace` or a lambda replacement.
+  block will); use `str.replace` or a lambda replacement. Slice between the
+  template's STABLE landmarks when replacing whole sections — section
+  boundaries like `<div class="compare">`, `<h3 class="why-h">`,
+  `<section id="inspo"`, and `<footer class="lw-foot">` are guaranteed; do
+  not assume closing-tag positions.
 - **Verification is the contract gate, nothing more.** Do not browse-load,
   screenshot, or vision-inspect the finished report — the template is
   render-tested and the publish gate catches contract violations. Run the

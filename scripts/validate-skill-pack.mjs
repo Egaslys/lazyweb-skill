@@ -199,6 +199,15 @@ const designResearchText = read("skills/lazyweb-design-research/SKILL.md");
 const designResearchTemplate = read("skills/lazyweb-design-research/report-template.html");
 const designResearchAll = designResearchText + "\n" + designResearchTemplate;
 assert.match(designResearchText, /report-template\.html/, "design-research skill must reference its report template");
+for (const scriptName of ["fetch-evidence.py", "generate-prototypes.py"]) {
+  const sp = path.join(root, "skills/lazyweb-design-research", scriptName);
+  assert.ok(existsSync(sp), `missing skills/lazyweb-design-research/${scriptName}`);
+  assert.ok(statSync(sp).mode & 0o111, `${scriptName} must be executable`);
+  assert.match(designResearchText, new RegExp(scriptName.replace(".", "\\.")), `design-research skill must reference ${scriptName}`);
+}
+for (const skeletonPattern of [/\.genbar/, /\.pending-ref/, /\.pending-strip/, /lazyweb-report-state/, /usually ready in 5-12 min/]) {
+  assert.match(designResearchAll, skeletonPattern, `skeleton-publish machinery missing: ${skeletonPattern}`);
+}
 assert.match(designResearchText, /unfilled template example content/, "publish gate must block unfilled template example content");
 assert.match(designResearchText, /picsum\\\.photos|picsum\.photos/, "publish gate must name picsum.photos as forbidden in final reports");
 for (const templatePattern of [
@@ -283,7 +292,9 @@ for (const pattern of [
   /Provider priority order/,
   /Capability probe/,
   /imagegen-capability\.json/,
-  /Codex CLI image generation/,
+  /OpenAI Images API/,
+  /generate-prototypes\.py/,
+  /fetch-evidence\.py/,
   /native host image generation tool/i,
   /Nano Banana/,
   /Gemini/,
