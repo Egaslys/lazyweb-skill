@@ -56,3 +56,22 @@ test("gate FAILS when removed Patterns markup reappears", () => {
   assert.equal(res.ok, false, "patterns markup should fail the gate");
   assert.match(res.out, /removed patterns section/);
 });
+
+test("gate: in-progress leftovers in a final report fail (skeleton machinery removed, guard stays)", () => {
+  let filled = template
+    .replace(/\s*data-ex="[^"]*"/g, "")
+    .replace(/https:\/\/picsum\.photos\/seed\/([a-z0-9-]+)\/(\d+)\/(\d+)/g, "references/$1.png")
+    .replace(/<!--~[\s\S]*?~-->/g, "");
+  for (const [leftover, label] of [
+    ['<div class="genbar">generating</div>', "genbar"],
+    ['<div class="pending-ref">pending</div>', "pending-ref"],
+    ['<meta http-equiv="refresh" content="60">', "meta refresh"],
+    ['<meta name="lazyweb-report-state" content="skeleton">', "state tag"],
+  ]) {
+    const res = runGate(filled.replace("</main>", leftover + "</main>"));
+    assert.equal(res.ok, false, `${label} must fail the gate`);
+    assert.match(res.out, /in-progress leftovers/, `${label} flagged as in-progress leftover`);
+  }
+  const clean = runGate(filled);
+  assert.equal(clean.ok, true, "clean final report still passes");
+});

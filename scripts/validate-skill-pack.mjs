@@ -205,9 +205,11 @@ for (const scriptName of ["fetch-evidence.py", "generate-prototypes.py", "fill-r
   assert.ok(statSync(sp).mode & 0o111, `${scriptName} must be executable`);
   assert.match(designResearchText, new RegExp(scriptName.replace(".", "\\.")), `design-research skill must reference ${scriptName}`);
 }
-for (const removedSkeletonToken of [/\.genbar/, /\.pending-ref/, /\.pending-strip/, /lazyweb-report-state/, /Skeleton publish/i]) {
-  assert.doesNotMatch(designResearchAll, removedSkeletonToken, `removed skeleton-publish machinery must not reappear: ${removedSkeletonToken}`);
+for (const removedSkeletonToken of [/genbar/, /pending-ref/, /pending-strip/, /lazyweb-report-state/]) {
+  assert.doesNotMatch(designResearchTemplate, removedSkeletonToken, `removed skeleton-publish markup must not reappear in the template: ${removedSkeletonToken}`);
 }
+assert.doesNotMatch(designResearchText, /Skeleton publish|publish a SKELETON/i, "skeleton-publish instructions must not reappear in the skill");
+assert.match(designResearchText, /in-progress leftovers/, "publish gate must reject in-progress markers in final reports");
 assert.match(designResearchText, /ONCE, when it is complete/, "publish section must state reports publish only when complete");
 assert.match(designResearchText, /unfilled template example content/, "publish gate must block unfilled template example content");
 assert.match(designResearchText, /picsum\\\.photos|picsum\.photos/, "publish gate must name picsum.photos as forbidden in final reports");

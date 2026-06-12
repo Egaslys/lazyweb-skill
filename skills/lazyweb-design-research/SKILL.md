@@ -110,6 +110,7 @@ for label, pattern in {
     "old prototype wrapper": r'class=["\'][^"\']*\bprototype-image\b',
     "old evidence sections": r'Reference Evidence|Source Notes|Key Examples|<h2[^>]*>\s*Findings\s*</h2>|<h2[^>]*>\s*Sources\s*</h2>',
     "removed patterns section": r'class=["\'][^"\']*\bpattern-shot\b|class=["\'][^"\']*\bpatterns-grid\b|<h2[^>]*>\s*Interesting Patterns\s*</h2>',
+    "in-progress leftovers (reports publish only when complete)": r'class=["\'][^"\']*\b(?:genbar|pending-ref|pending-strip)\b|http-equiv=["\']refresh["\']|lazyweb-report-state',
     "unfilled template example content": r'EXAMPLE-|picsum\.photos|placehold\.co|\bdata-ex=|\{\{[A-Z0-9_]+\}\}',
 }.items():
     if re.search(pattern, rendered, re.I):
