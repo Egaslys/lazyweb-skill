@@ -366,10 +366,13 @@ On success, `work/evidence.json` holds merged, same-company-deduped references
      yield and payload-hostile — inline base64 through chat costs more than
      it returns). Only the agent-fallback path may use it, with the
      downscaled ≤500px viewport-crop JPEG.
-   Expect top-up results to be description-less near-dupes more often than
-   not: budget at most 2 vision-verifications from the round, and when it
-   yields nothing attachable, record it as saturation confirmation (your
-   corpus was already complete) rather than a failure.
+   Read ONLY the script's stderr verdict line (`TOPUP_SATURATED:` /
+   `TOPUP: N attachable`) and `evidence-topup-summary.json` — never the raw
+   top-up file (its signed URLs are payload-hostile). Expect description-less
+   near-dupes more often than not: budget at most 2 vision-verifications,
+   and treat an empty yield as saturation confirmation (your corpus was
+   already complete), not failure. When ab_test_research returns 0
+   references, its prose learnings are in the queries' `analysis` fields.
 3. **Coverage honesty:** if `coverage_summary` shows failed or low_coverage
    queries — even when the script exits 0 — carry that into the report's
    `.corpus` banner when the selected corpus lands under 8 references or a
@@ -1142,45 +1145,36 @@ from scratch.**
 cp "{skill-base-dir}/report-template.html" "$REPORT_DIR/report.html"
 ```
 
-Rules for filling it:
+Fill it with `fill-report.py` — **never read the template and never write
+fill code.** Author `work/report-data.json` (content only: topic, goal,
+rec_intro {what, why}, control, optional corpus_banner, handoff block, 2-4
+bets with deck refs and build_prompts, inspo map or null — the full schema is
+in the script's docstring: `head -60 "{skill-base-dir}/fill-report.py"`),
+then:
 
-- Example content is marked with `data-ex` attributes and `picsum.photos`
-  image URLs. **Replace every example value and delete every `data-ex`
-  attribute as you go.** The publish contract gate BLOCKS any report still
-  containing `data-ex`, `picsum.photos`, `placehold.co`, `EXAMPLE-`, or a
-  leftover `{{PLACEHOLDER}}`.
-- Everything that is not example content stays byte-identical. The CSS and JS
-  are render-tested at 1500px/800px across S/M/L scales — do not restyle,
-  "improve", or trim them.
-- `<!--~ REPEAT ... ~-->` comments mark blocks to duplicate per bet /
-  reference / point; `<!--~ OPTIONAL ... ~-->` and `<!--~ VARIANT ... ~-->`
-  blocks are kept, swapped, or deleted as their comment says (corpus banner,
-  Inspo section, `tall`/`mobileset` compare variants, greenfield no-control
-  case). Remove the `~` comments themselves from the final report.
-- Update the `_vars` array to exactly the bets you shipped (one entry per bet,
-  recommended first) and **escape interpolated strings** as the template's
-  comments instruct — apostrophes/backslashes in JS literals; `"` `<` `>` as
-  entities in attributes and captions.
-- Lazyweb references use absolute `imageUrl`/`image_url` values; local assets
-  (control, prototypes, web captures) use relative `references/{filename}`
-  paths only.
-- Avoid horizontal page overflow at every scale setting and viewport width.
-- Fill with plain string replacement, not regex substitution — `re.sub`
-  raises `bad escape` when replacement text contains backslashes (the `_vars`
-  block will); use `str.replace` or a lambda replacement. Slice between the
-  template's STABLE landmarks when replacing whole sections — section
-  boundaries like `<div class="compare">`, `<h3 class="why-h">`,
-  `<section id="inspo"`, and `<footer class="lw-foot">` are guaranteed; do
-  not assume closing-tag positions.
+```bash
+python3 "{skill-base-dir}/fill-report.py"   --data "$REPORT_DIR/work/report-data.json"   --template "{skill-base-dir}/report-template.html"   --out "$REPORT_DIR/report.html"
+```
+
+Rules:
+
+- All strings in `report-data.json` are RAW — the script does every bit of
+  HTML-attribute and JS-string escaping. Never pre-escape.
+- The recommended bet is `bets[0]` with `"recommended": true`; prevalence or
+  whitespace counts go in the FIRST deck entry's `detail`.
+- `"inspo": null` omits the section (fewer than 8 comparable references).
+- On `FILL_FAILED: missing <field>`, fix the data file and re-run — never
+  hand-edit the generated HTML.
+- The demo example content in the template never enters your context and
+  cannot leak; the publish gate still verifies the output.
 - **Verification is the contract gate, nothing more.** Do not browse-load,
-  screenshot, or vision-inspect the finished report — the template is
-  render-tested and the publish gate catches contract violations. Run the
-  gate, fix what it names, publish.
+  screenshot, or vision-inspect the finished report. Run the gate, fix what
+  it names, publish.
 - Open the HTML file in the user's browser: `open "$REPORT_DIR/report.html"` —
   skip this in a headless/CI/no-GUI environment and just report the path.
-  Similarly, when you cannot ask the user (an unattended or non-interactive
-  run), make the closest reasonable assumption and state it in the handoff
-  block.
+  Similarly, when the run is unattended or the host cannot ask the user a
+  clarifying question, make the closest reasonable assumption and state it
+  in the handoff block.
 
 CSS gotcha (if you must add a style): never write `font:700 10px/1 inherit` —
 `inherit` is not a valid font-family inside the `font` shorthand and browsers

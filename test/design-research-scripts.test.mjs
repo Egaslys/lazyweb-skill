@@ -248,3 +248,59 @@ test("generate: missing key exits 2 (route-level fallback)", async () => {
   assert.equal(res.code, 2);
   assert.match(res.out, /GEN_FALLBACK: no OpenAI key/);
 });
+
+const FILL = path.join(root, "skills/lazyweb-design-research/fill-report.py");
+const TEMPLATE = path.join(root, "skills/lazyweb-design-research/report-template.html");
+
+const FILL_DATA = {
+  topic: "Acme's \"Pricing\" <Test>",
+  goal: "More upgrades.",
+  rec_intro: { what: "Swap the hero", why: "buyers' trust needs <proof>" },
+  control: { src: "references/current-state.png", alt: 'control "shot"' },
+  handoff: { report_path: "/x/report.html", task: "redesigning Acme's page",
+    recs: ["Ship the trust band", "Print the SLA", "Add the data room"],
+    index_on: "i", dont_index: "d", dive: "v", evidence_basis: "19 refs" },
+  bets: [
+    { name: "Founder's Letter", slug: "fl", recommended: true,
+      img: "references/prototype-fl.png", alt: "letter with 'quotes'",
+      what: "Letter replaces hero.", why: "Trust via voice.",
+      deck: [
+        { src: "https://i/1.png", alt: "1", source: "Lazyweb", company: "Beta<Co>", detail: "letter hero. 0 of 19." },
+        { src: "https://i/2.png", alt: "2", source: "Web", company: "G", detail: "x" },
+        { src: "https://i/3.png", alt: "3", source: "Lazyweb", company: "D", detail: "y" }],
+      build_prompt: "Brief with \\ and 'quotes'." },
+    { name: "Plain", slug: "p", recommended: false, img: "references/prototype-p.png",
+      alt: "p", what: "W.", why: "Y.", deck: [], build_prompt: "B." }],
+  inspo: null,
+};
+
+test("fill-report: produces a gate-passing report with correct escaping", async () => {
+  const dir = mkdtempSync(path.join(tmpdir(), "lw-fill-"));
+  writeFileSync(path.join(dir, "data.json"), JSON.stringify(FILL_DATA));
+  const out = path.join(dir, "report.html");
+  const res = await runPy(FILL, ["--data", path.join(dir, "data.json"), "--template", TEMPLATE, "--out", out], {});
+  assert.equal(res.code, 0, res.out);
+  const html = readFileSync(out, "utf8");
+  assert.match(html, /n:'Recommended — Founder\\'s Letter'/, "JS apostrophe escaping in _vars");
+  assert.match(html, /Beta&lt;Co&gt;/, "HTML escaping in captions");
+  assert.ok(!html.includes("<section id=\"inspo\""), "inspo:null omits the section");
+  const body = html.slice(html.indexOf("<body>"));
+  const art1 = body.slice(body.indexOf("<article"), body.indexOf("</article>"));
+  assert.ok(art1.includes("deck-nav"), "3-figure mini deck carries nav");
+  // run the real publish gate from SKILL.md against the output
+  const skill = readFileSync(path.join(root, "skills/lazyweb-design-research/SKILL.md"), "utf8");
+  const gatePy = skill.match(/<<'REPORT_CONTRACT_EOF'\n([\s\S]*?)\nREPORT_CONTRACT_EOF/)[1];
+  writeFileSync(path.join(dir, "gate.py"), gatePy);
+  const gate = await runPy(path.join(dir, "gate.py"), [out], {});
+  assert.equal(gate.code, 0, gate.out);
+  assert.match(gate.out, /REPORT_CONTRACT_OK/);
+});
+
+test("fill-report: missing required field fails with a named field", async () => {
+  const dir = mkdtempSync(path.join(tmpdir(), "lw-fill-"));
+  const bad = { ...FILL_DATA, bets: [{ ...FILL_DATA.bets[0], what: "" }, FILL_DATA.bets[1]] };
+  writeFileSync(path.join(dir, "data.json"), JSON.stringify(bad));
+  const res = await runPy(FILL, ["--data", path.join(dir, "data.json"), "--template", TEMPLATE, "--out", path.join(dir, "r.html")], {});
+  assert.equal(res.code, 1);
+  assert.match(res.out, /FILL_FAILED: missing bets\[0\]\.what/);
+});

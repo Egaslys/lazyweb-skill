@@ -199,7 +199,7 @@ const designResearchText = read("skills/lazyweb-design-research/SKILL.md");
 const designResearchTemplate = read("skills/lazyweb-design-research/report-template.html");
 const designResearchAll = designResearchText + "\n" + designResearchTemplate;
 assert.match(designResearchText, /report-template\.html/, "design-research skill must reference its report template");
-for (const scriptName of ["fetch-evidence.py", "generate-prototypes.py"]) {
+for (const scriptName of ["fetch-evidence.py", "generate-prototypes.py", "fill-report.py"]) {
   const sp = path.join(root, "skills/lazyweb-design-research", scriptName);
   assert.ok(existsSync(sp), `missing skills/lazyweb-design-research/${scriptName}`);
   assert.ok(statSync(sp).mode & 0o111, `${scriptName} must be executable`);
