@@ -1,6 +1,6 @@
 ---
 name: lazyweb-design-research
-route: "Design research, best practices, competitive analysis"
+route: "Best practices / competitive analysis for a screen or flow"
 description: |
   Deep design research combining Lazyweb's screenshot database with web research.
   Produces a prototype-first HTML report with side-by-side prototypes and a clustered inspo map.

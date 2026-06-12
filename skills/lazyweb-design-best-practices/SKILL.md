@@ -1,6 +1,6 @@
 ---
 name: lazyweb-design-best-practices
-route: "Apply the best community design skill for an aspect (typography, color, motion…)"
+route: "Best practices for a design craft: typography, color, motion, forms, tables"
 description: |
   Lazyweb's curated router to the best design skills in the world — used as
   context, never installed. 19 design aspects (web animation, frontend

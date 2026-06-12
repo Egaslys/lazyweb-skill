@@ -76,3 +76,30 @@ prior live run is in `claude-0.4.6.md`.
 - **“Data tables — what’s the best way the top people do it?”** → `lazyweb-design-research` (expected `lazyweb-design-best-practices`). “Best way the top people do it” reads as best-practices research; design-research returns real data-table references, an acceptable answer.
 
 Re-run controlled eval: `Workflow lazyweb-routing-eval`. Re-run a single live probe: `bash test/routing-eval-probe.sh "<prompt>"`.
+
+## Addendum — v0.7.1 row refinement (best-practices ↔ research overlap)
+
+Audit follow-up on the `lazyweb-design-best-practices` ↔ `lazyweb-design-research`
+overlap. Both leaned on the phrase "best practices," and `design-research` won
+ties because its row literally contained those words while best-practices said
+"Apply the best community design skill for an aspect." Reworded both rows to
+bind "best practices" to the **object** (the discriminator), keeping each row
+the same length or shorter (budget unchanged — codex 1787 B < 1800):
+
+- `lazyweb-design-research`: `Best practices / competitive analysis for a screen or flow`
+- `lazyweb-design-best-practices`: `Best practices for a design craft: typography, color, motion, forms, tables`
+
+Targeted re-checks against the reworded block (fresh agent per prompt):
+
+| Prompt | Routed to | Note |
+|---|---|---|
+| Do my typography the way the best designers would. | `lazyweb-design-best-practices` | clean craft query lands right |
+| What are the best practices for color contrast and accessibility? | `lazyweb-design-best-practices` | craft |
+| What do the best apps do for onboarding? Competitive analysis. | `lazyweb-design-research` | no regression |
+| Research best practices for designing a settings screen. | `lazyweb-design-research` | screen → research, no regression |
+| How should I design my checkout flow? What top apps do. | `lazyweb-design-research` | no regression |
+| Redesigning our dashboard — what works across the market? | `lazyweb-design-research` | no regression |
+| I'm building data tables — best way the top people do it? | `lazyweb-design-research` | accepted: "what top people do" is competitively framed; research returns real data-table screenshots |
+
+Net: regression-free, cleaner screen-vs-craft separation for the ambiguous
+long tail. The two original borderline misroutes (di4, bp4) remain defensible.
