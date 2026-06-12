@@ -1,6 +1,6 @@
 ---
 name: lazyweb-design-improve
-route: "Improve or critique an existing screen or design"
+route: "Improve or critique existing UI"
 description: |
   Capture a screenshot of the user's current design, find similar screens in Lazyweb,
   and generate concrete improvement ideas backed by real references. Use when the user
@@ -58,8 +58,8 @@ Before searching, ground the work in what the user is building, and avoid guessi
 
 ## When NOT to Use This
 
-- User hasn't built anything yet and wants research -> route to `lazyweb-design-research`
-- User wants to see examples of a specific screen type -> route to `lazyweb-quick-references`
+- User hasn't built anything yet and wants research -> route to `lazyweb-deep-design-research`
+- User wants to see examples of a specific screen type -> route to `lazyweb-lite-design-research`
 - User wants creative/unconventional ideas -> route to `lazyweb-design-brainstorm`
 
 ## Lazyweb MCP Setup
@@ -382,7 +382,7 @@ DIVE FURTHER: {next Lazyweb skill or MCP tool} — {why}
 Evidence basis: {Lazyweb screenshots | web captures} · {DATE}
 ```
 
-For THIS skill, `{TASK}` = "revising the {screen} to close the gaps found against best-in-class references", and `DIVE FURTHER` → "`/lazyweb-ab-test-research` if this is a growth/monetization screen, or `/lazyweb-design-research` for deeper competitive grounding".
+For THIS skill, `{TASK}` = "revising the {screen} to close the gaps found against best-in-class references", and `DIVE FURTHER` → "`/lazyweb-ab-test-research` if this is a growth/monetization screen, or `/lazyweb-deep-design-research` for deeper competitive grounding".
 
 #### B. Conciseness & "show, don't tell"
 
@@ -480,7 +480,7 @@ Label evidence strength honestly with an `.ebadge` on every claim/card/rec: **Me
 Put the CSS below in the report `<style>` and adapt the markup per claim. Reuse the existing tokens (`--ink:#1f2328; --mut:#57606a; --line:#d0d7de; --soft:#eef4fb; --accent:#0969da`).
 
 - **Patterns, Anti-Patterns (use `.tag.avoid`), Unique Angles, "What's working", Convention-check Missing/Unusual cells, hypothesis "supporting evidence", brainstorm "Applied here"** -> render as `.pat` cards: name + verdict `.tag` + `.prev` count ("seen in N of M references") + one-line claim + a `.deck` snap-carousel of 2-4 real screenshots that exhibit it (caption = company + the exact UI detail from `visionDescription`). The proof sits WITH the claim, never a scroll away. Show the pattern; don't just list brand names.
-- **The decision section** (design-research "What to build first", quick-references "Recommended path", brainstorm "Which ideas to prototype", design-improve idea order, ab-test "Recommendations", paywall "Prioritization") -> render a **Decision legend** (`.legend`, one `.legend-row` per rec in rank order — the whole ranking graspable in one glance) ABOVE a `.recs` stack of **recommendation cards** (`.rec`; the #1 card is `.rec.lead` with the START-HERE hero + browser-chrome frame). Each card carries a BIG inline-legible proof (desktop 16:10 above-the-fold crop / mobile whole-screen via `.recs.mobileset`) — never a tiny click-into thumbnail — plus a `.verdict` (Do/Explore/Skip), an `.ebadge` evidence label, a prevalence count, and a labeled `.skiprow`. NO table; exactly one lead; no ties.
+- **The decision section** (deep-design-research "What to build first", lite-design-research "Recommended path", brainstorm "Which ideas to prototype", design-improve idea order, ab-test "Recommendations", optimize-paywall "Prioritization") -> render a **Decision legend** (`.legend`, one `.legend-row` per rec in rank order — the whole ranking graspable in one glance) ABOVE a `.recs` stack of **recommendation cards** (`.rec`; the #1 card is `.rec.lead` with the START-HERE hero + browser-chrome frame). Each card carries a BIG inline-legible proof (desktop 16:10 above-the-fold crop / mobile whole-screen via `.recs.mobileset`) — never a tiny click-into thumbnail — plus a `.verdict` (Do/Explore/Skip), an `.ebadge` evidence label, a prevalence count, and a labeled `.skiprow`. NO table; exactly one lead; no ties.
 - **Honesty** -> put a `.corpus` banner right after Agent Instructions (basis / breadth / count / confidence); put an `.ebadge` (Measured | Directional | Single-source-or-off-category) on every claim, card, and recommendation. Never echo a raw "high"; never use "outperforms/underperforms" without a measured lift; tag crawl-seed/URL-inferred brands "brand inferred - verify".
 - **Control vs variant (A/B)** -> use the `.flip` two-up grid (stacks on narrow screens; scroll-snaps with ◀ ▶ prev/next buttons); if `vision_description` is empty, synthesize the caption from `what_changed` and tag it "agent-described".
 

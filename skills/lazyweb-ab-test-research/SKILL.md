@@ -1,6 +1,6 @@
 ---
 name: lazyweb-ab-test-research
-route: "A/B tests, experiments, pricing/monetization strategy"
+route: "A/B tests and monetization"
 description: |
   Research growth, monetization, onboarding, checkout, paywall, cancellation,
   pricing, activation, or other product A/B tests using Lazyweb experiment
@@ -414,13 +414,13 @@ DIVE FURTHER: {next Lazyweb skill or MCP tool} — {why}
 Evidence basis: A/B experiments (screenshot-diff) · {DATE}
 ```
 
-For THIS skill, `{TASK}` = "prioritizing and shipping {flow} experiments grounded in what comparable apps have already tested", and `DIVE FURTHER` → "`/lazyweb-paywall-optimization` to turn a paywall learning into a falsifiable redesign, or `lazyweb_ab_test_research operation=grab` with the cited experiment_id(s)".
+For THIS skill, `{TASK}` = "prioritizing and shipping {flow} experiments grounded in what comparable apps have already tested", and `DIVE FURTHER` → "`/lazyweb-optimize-paywall` to turn a paywall learning into a falsifiable redesign, or `lazyweb_ab_test_research operation=grab` with the cited experiment_id(s)".
 
 #### B. Conciseness & "show, don't tell"
 
 No length target — let the evidence set the length. Lead with value (Agent Instructions + the ranked Recommendations table). Show, don't tell: the centerpiece is the real control/variant screenshots, not prose. Index every recommendation on a named `experiment_id` + its `learning`, never generic growth-speak. If you must illustrate a proposed variant layout that no screenshot shows, use the mock-frame component (mobile/desktop) — never ASCII art.
 
-#### C. HTML requirements (LIGHT theme — match `lazyweb-design-research`)
+#### C. HTML requirements (LIGHT theme — match `lazyweb-deep-design-research`)
 
 - Single HTML file, inline CSS (no external CSS/JS dependencies; the one inline `onclick` copy handler above is allowed).
 - **Light/white design — do NOT use a dark/black theme.** System fonts, `max-width:900px`, white background, comfortable line-height, light borders, `#f6f8fa` table headers.
@@ -478,7 +478,7 @@ Label evidence strength honestly with an `.ebadge` on every claim/card/rec: **Me
 Put the CSS below in the report `<style>` and adapt the markup per claim. Reuse the existing tokens (`--ink:#1f2328; --mut:#57606a; --line:#d0d7de; --soft:#eef4fb; --accent:#0969da`).
 
 - **Patterns, Anti-Patterns (use `.tag.avoid`), Unique Angles, "What's working", Convention-check Missing/Unusual cells, hypothesis "supporting evidence", brainstorm "Applied here"** -> render as `.pat` cards: name + verdict `.tag` + `.prev` count ("seen in N of M references") + one-line claim + a `.deck` snap-carousel of 2-4 real screenshots that exhibit it (caption = company + the exact UI detail from `visionDescription`). The proof sits WITH the claim, never a scroll away. Show the pattern; don't just list brand names.
-- **The decision section** (design-research "What to build first", quick-references "Recommended path", brainstorm "Which ideas to prototype", design-improve idea order, ab-test "Recommendations", paywall "Prioritization") -> render a **Decision legend** (`.legend`, one `.legend-row` per rec in rank order — the whole ranking graspable in one glance) ABOVE a `.recs` stack of **recommendation cards** (`.rec`; the #1 card is `.rec.lead` with the START-HERE hero + browser-chrome frame). Each card carries a BIG inline-legible proof (desktop 16:10 above-the-fold crop / mobile whole-screen via `.recs.mobileset`) — never a tiny click-into thumbnail — plus a `.verdict` (Do/Explore/Skip), an `.ebadge` evidence label, a prevalence count, and a labeled `.skiprow`. NO table; exactly one lead; no ties.
+- **The decision section** (deep-design-research "What to build first", lite-design-research "Recommended path", brainstorm "Which ideas to prototype", design-improve idea order, ab-test "Recommendations", optimize-paywall "Prioritization") -> render a **Decision legend** (`.legend`, one `.legend-row` per rec in rank order — the whole ranking graspable in one glance) ABOVE a `.recs` stack of **recommendation cards** (`.rec`; the #1 card is `.rec.lead` with the START-HERE hero + browser-chrome frame). Each card carries a BIG inline-legible proof (desktop 16:10 above-the-fold crop / mobile whole-screen via `.recs.mobileset`) — never a tiny click-into thumbnail — plus a `.verdict` (Do/Explore/Skip), an `.ebadge` evidence label, a prevalence count, and a labeled `.skiprow`. NO table; exactly one lead; no ties.
 - **Honesty** -> put a `.corpus` banner right after Agent Instructions (basis / breadth / count / confidence); put an `.ebadge` (Measured | Directional | Single-source-or-off-category) on every claim, card, and recommendation. Never echo a raw "high"; never use "outperforms/underperforms" without a measured lift; tag crawl-seed/URL-inferred brands "brand inferred - verify".
 - **Control vs variant (A/B)** -> use the `.flip` two-up grid (stacks on narrow screens; scroll-snaps with ◀ ▶ prev/next buttons); if `vision_description` is empty, synthesize the caption from `what_changed` and tag it "agent-described".
 

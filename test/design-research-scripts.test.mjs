@@ -7,8 +7,8 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 
 const root = path.resolve(new URL("..", import.meta.url).pathname);
-const FETCH = path.join(root, "skills/lazyweb-design-research/fetch-evidence.py");
-const GEN = path.join(root, "skills/lazyweb-design-research/generate-prototypes.py");
+const FETCH = path.join(root, "skills/lazyweb-deep-design-research/fetch-evidence.py");
+const GEN = path.join(root, "skills/lazyweb-deep-design-research/generate-prototypes.py");
 
 // 1x1 transparent PNG
 const PNG_B64 =
@@ -72,7 +72,7 @@ function mcpHandler(perQuery) {
 }
 
 function plan(queries) {
-  return { skill: "design-research", version: "0.0.0-test", queries };
+  return { skill: "deep-design-research", version: "0.0.0-test", queries };
 }
 
 const REF = (company, page, n) => ({
@@ -249,8 +249,8 @@ test("generate: missing key exits 2 (route-level fallback)", async () => {
   assert.match(res.out, /GEN_FALLBACK: no OpenAI key/);
 });
 
-const FILL = path.join(root, "skills/lazyweb-design-research/fill-report.py");
-const TEMPLATE = path.join(root, "skills/lazyweb-design-research/report-template.html");
+const FILL = path.join(root, "skills/lazyweb-deep-design-research/fill-report.py");
+const TEMPLATE = path.join(root, "skills/lazyweb-deep-design-research/report-template.html");
 
 const FILL_DATA = {
   topic: "Acme's \"Pricing\" <Test>",
@@ -288,7 +288,7 @@ test("fill-report: produces a gate-passing report with correct escaping", async 
   const art1 = body.slice(body.indexOf("<article"), body.indexOf("</article>"));
   assert.ok(art1.includes("deck-nav"), "3-figure mini deck carries nav");
   // run the real publish gate from SKILL.md against the output
-  const skill = readFileSync(path.join(root, "skills/lazyweb-design-research/SKILL.md"), "utf8");
+  const skill = readFileSync(path.join(root, "skills/lazyweb-deep-design-research/SKILL.md"), "utf8");
   const gatePy = skill.match(/<<'REPORT_CONTRACT_EOF'\n([\s\S]*?)\nREPORT_CONTRACT_EOF/)[1];
   writeFileSync(path.join(dir, "gate.py"), gatePy);
   const gate = await runPy(path.join(dir, "gate.py"), [out], {});

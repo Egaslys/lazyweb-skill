@@ -131,9 +131,20 @@ install_skills_to_root() {
   rm -rf "$skills_root/lazyweb"
   mkdir -p "$skills_root/lazyweb"
   link_or_copy "$ROOT/SKILL.md" "$skills_root/lazyweb/SKILL.md"
+  # Remove renamed skill directories from older installs so stale slash
+  # commands do not remain visible after `lazyweb-update` runs setup.
+  local legacy_skill_dir
+  for legacy_skill_dir in \
+    lazyweb-design-research \
+    lazyweb-quick-references \
+    lazyweb-paywall-optimization \
+    lazyweb-signup-optimization
+  do
+    rm -rf "$skills_root/$legacy_skill_dir"
+  done
   # Iterate every skill directory under $ROOT/skills. Avoids the
   # hardcoded-list trap that left lazyweb-paywall-cta and
-  # lazyweb-signup-optimization stranded on disk after 0.4.0.
+  # lazyweb-optimize-sign-up stranded on disk after 0.4.0.
   local skill_dir_path skill_dir
   for skill_dir_path in "$ROOT/skills"/*/; do
     [ -d "$skill_dir_path" ] || continue
@@ -352,9 +363,10 @@ Lazyweb gives your agent real product screenshots, product flows, and UI pattern
 
 Try these first:
   1. Ask what the main Lazyweb usage modes are.
-  2. Ask for quick references for a specific screen, like onboarding welcome screens, pricing pages, paywalls, dashboards, checkout, or settings.
-  3. Ask for deeper design research before changing a landing page, app flow, onboarding, paywall, checkout, dashboard, or settings screen.
-  4. Ask Lazyweb to compare your current UI against strong product examples and turn the patterns into concrete changes.
+  2. Ask for lite design research on a specific screen, like onboarding welcome screens, pricing pages, paywalls, dashboards, checkout, or settings.
+  3. Ask for deep design research before changing a landing page, app flow, onboarding, paywall, checkout, dashboard, or settings screen.
+  4. Ask for quick search before designing when you only need a few direct Lazyweb MCP references.
+  5. Ask Lazyweb to compare your current UI against strong product examples and turn the patterns into concrete changes.
 
 Token file:
   $TOKEN_FILE

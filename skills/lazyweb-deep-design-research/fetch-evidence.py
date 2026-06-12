@@ -8,7 +8,7 @@ Usage:
   fetch-evidence.py --plan plan.json --out work/evidence.json
 
 Plan format (JSON):
-  {"skill": "design-research", "version": "0.6.0",
+  {"skill": "deep-design-research", "version": "0.6.0",
    "queries": [
      {"id": "a1", "pass": "A", "tool": "lazyweb_search",
       "args": {"query": "pricing page", "platform": "desktop", "limit": 15}},

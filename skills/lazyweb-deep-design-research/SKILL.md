@@ -1,6 +1,6 @@
 ---
-name: lazyweb-design-research
-route: "Best practices / competitive analysis for a screen or flow"
+name: lazyweb-deep-design-research
+route: "Deep UI research / competitive analysis"
 description: |
   Deep design research combining Lazyweb's screenshot database with web research.
   Produces a prototype-first HTML report with side-by-side prototypes and a clustered inspo map.
@@ -20,7 +20,7 @@ allowed-tools:
   - Agent
 ---
 
-# Lazyweb Design Research
+# Lazyweb Deep Design Research
 
 Evidence-backed design research that reads the user's current screen, names its
 frictions, forms 2-4 genuinely divergent redesign bets, and renders a visual-first
@@ -35,8 +35,8 @@ clutter, no legend tables, no explanatory paragraphs next to the proof.
 **This skill produces FILES, not a plan.** Regardless of whether you are in plan mode
 or not, ALWAYS:
 
-1. Write the HTML report to `.lazyweb/design-research/{topic}-{date}/report.html`
-2. Embed Lazyweb references directly with their returned `imageUrl`/`image_url`; save only current-state and web-captured screenshots under `.lazyweb/design-research/{topic}-{date}/references/`
+1. Write the HTML report to `.lazyweb/deep-design-research/{topic}-{date}/report.html`
+2. Embed Lazyweb references directly with their returned `imageUrl`/`image_url`; save only current-state and web-captured screenshots under `.lazyweb/deep-design-research/{topic}-{date}/references/`
 3. Do NOT create `report.md` or any other Markdown report artifact
 4. Do NOT write research content into a plan file
 5. Publish a shareable link (see "Publish a Shareable Link" below) - automatic, non-blocking
@@ -52,7 +52,7 @@ and optional **Inspo** — in that order. Do not produce
 the older busy structure with key examples, findings, sources, broad
 recommendation lists, or long prose analysis sections.
 
-The Recommendation is built like `lazyweb-paywall-optimization`'s hypothesis
+The Recommendation is built like `lazyweb-optimize-paywall`'s hypothesis
 engine, with screenshot evidence taking the role experiment evidence plays
 there: read the control, name its specific frictions, form 2-4 falsifiable and
 structurally divergent bets (Safe bet / Bold bet / Wild card — a thinking
@@ -72,7 +72,7 @@ speed/exploration.
 Every report is auto-published to lazyweb.com so the user can share it with
 teammates — ONCE, when it is complete. Never publish partial, skeleton, or
 in-progress states; the user sees a report only when it is done. Before publishing, run this contract gate with `$REPORT_DIR` set to
-`.lazyweb/design-research/{topic}-{date}`:
+`.lazyweb/deep-design-research/{topic}-{date}`:
 
 ```bash
 REPORT_HTML="$REPORT_DIR/report.html"
@@ -128,16 +128,16 @@ REPORT_CONTRACT_EOF
 
 Only proceed when stdout contains `REPORT_CONTRACT_OK`. If it fails, rewrite
 the report once against the "Report v3 Contract" below and rerun this gate.
-Never publish a `lazyweb-design-research` report that fails this gate.
+Never publish a `lazyweb-deep-design-research` report that fails this gate.
 
 Then run this with the same `$REPORT_DIR`:
 
 ```bash
-IDEMPOTENCY_KEY="${REPORT_DIR##*.lazyweb/}"   # stable per-report key (e.g. design-research/{topic}-{date}) — works for absolute and relative $REPORT_DIR; send the SAME value every attempt so retries dedupe to one link
+IDEMPOTENCY_KEY="${REPORT_DIR##*.lazyweb/}"   # stable per-report key (e.g. deep-design-research/{topic}-{date}) — works for absolute and relative $REPORT_DIR; send the SAME value every attempt so retries dedupe to one link
 LAZYWEB_TOKEN=$(cat "$HOME/.lazyweb/lazyweb_mcp_token" 2>/dev/null || true)
 if [ -n "$LAZYWEB_TOKEN" ]; then
   # Tier 1 - local install: direct POST (idempotency_key dedupes a re-run)
-  python3 - "$REPORT_DIR" "$LAZYWEB_TOKEN" "design-research" "$IDEMPOTENCY_KEY" <<'PUBLISH_EOF'
+  python3 - "$REPORT_DIR" "$LAZYWEB_TOKEN" "deep-design-research" "$IDEMPOTENCY_KEY" <<'PUBLISH_EOF'
 import base64, json, pathlib, sys, urllib.error, urllib.request
 report_dir, token, skill, idem = pathlib.Path(sys.argv[1]), sys.argv[2], sys.argv[3], sys.argv[4]
 version_file = pathlib.Path.home() / ".lazyweb" / "VERSION"
@@ -176,7 +176,7 @@ fi
 - Tier 1 `PUBLISH_SKIPPED:` - say nothing; the local report stands (the user has the file).
 - Tier 2 `PUBLISH_VIA_MCP_TOOL ...` - you have no local token (hosted session), so publish with the Lazyweb MCP tool instead:
   1. Size-check first: if `report.html` plus the `references/` files together exceed ~7MB, do NOT call the tool - tell the user the report was too large to publish from a hosted session (it is saved locally) and stop.
-  2. Otherwise call `lazyweb_publish_report` with: `html` = the contents of `report.html`; `assets` = each `references/` file as `{"name": <filename>, "b64": <base64 of the bytes>}`; `report_skill` = "design-research"; `idempotency_key` = the value printed after `idempotency_key=`.
+  2. Otherwise call `lazyweb_publish_report` with: `html` = the contents of `report.html`; `assets` = each `references/` file as `{"name": <filename>, "b64": <base64 of the bytes>}`; `report_skill` = "deep-design-research"; `idempotency_key` = the value printed after `idempotency_key=`.
   3. On `{ ok: true, url }` -> show "Shareable link: {url} (unlisted - anyone with the link can view)".
   4. On `{ ok: false }` -> tell the user publishing failed and why (the `error` field); the report is saved locally. If `code` is `REPORT_VALIDATION_ERROR` and `detail` names missing assets, fix and call ONCE more; otherwise do not retry.
   Unlike Tier 1, do NOT stay silent on a Tier-2 failure - a hosted user has no local file to fall back on, so they need the link or the reason.
@@ -198,7 +198,7 @@ The hosted copy is served byte-for-byte, so the report must only use:
 
 ## When NOT to Use This
 
-- User just wants to see a few screenshots quickly -> route to `lazyweb-quick-references`
+- User just wants to see a few screenshots quickly -> route to `lazyweb-lite-design-research`
 - User has an existing design and wants improvement ideas -> route to `lazyweb-design-improve`
 - User wants creative/unconventional ideas -> route to `lazyweb-design-brainstorm`
 
@@ -216,9 +216,9 @@ Optional MCP tools:
 - `lazyweb_ab_test_research` - supporting experiment evidence for pricing, paywall, checkout, onboarding, and other growth/monetization screens when the live schema exposes it
 - `lazyweb_publish_report` - hosted-session publish path (see Tier 2 above)
 
-**Pass `skill: "design-research"` on every Lazyweb call.** Include `"skill": "design-research"` in the arguments of each `lazyweb_*` tool call - for example `{"query": "pricing page", "limit": 30, "skill": "design-research"}`. This is optional analytics metadata; never drop or change a real argument for it.
+**Pass `skill: "deep-design-research"` on every Lazyweb call.** Include `"skill": "deep-design-research"` in the arguments of each `lazyweb_*` tool call - for example `{"query": "pricing page", "limit": 30, "skill": "deep-design-research"}`. This is optional analytics metadata; never drop or change a real argument for it.
 
-**Also pass `version: "<x.y.z>"` on every call.** Read `~/.lazyweb/VERSION` once per session at skill start (e.g. `cat "$HOME/.lazyweb/VERSION" 2>/dev/null || echo 0.0.0`); fall back to `"0.0.0"` if the file is missing or unreadable — never block on this. Include `"version": "<that-value>"` in the arguments of every `lazyweb_*` tool call alongside the existing `skill` arg — for example `{"query": "pricing page", "limit": 30, "skill": "design-research", "version": "0.4.5"}`. Optional analytics metadata Lazyweb uses to track which skill-pack versions are running; never drop or change a real argument for it.
+**Also pass `version: "<x.y.z>"` on every call.** Read `~/.lazyweb/VERSION` once per session at skill start (e.g. `cat "$HOME/.lazyweb/VERSION" 2>/dev/null || echo 0.0.0`); fall back to `"0.0.0"` if the file is missing or unreadable — never block on this. Include `"version": "<that-value>"` in the arguments of every `lazyweb_*` tool call alongside the existing `skill` arg — for example `{"query": "pricing page", "limit": 30, "skill": "deep-design-research", "version": "0.4.5"}`. Optional analytics metadata Lazyweb uses to track which skill-pack versions are running; never drop or change a real argument for it.
 
 These are the current public gateway names. Backend/internal surfaces may also
 expose canonical tools such as `search_screenshots`, `list_filters`,
@@ -293,7 +293,7 @@ If the user is researching a specific page or app they are building, capture the
 Define the report directory FIRST (steps 2-7 write into it):
 
 ```bash
-REPORT_DIR="$(pwd)/.lazyweb/design-research/{topic-slug}-{YYYY-MM-DD}"
+REPORT_DIR="$(pwd)/.lazyweb/deep-design-research/{topic-slug}-{YYYY-MM-DD}"
 mkdir -p "$REPORT_DIR/references" "$REPORT_DIR/work"
 ```
 
@@ -304,7 +304,7 @@ in the side-by-side Recommendation comparison. Do not create a separate visible
 ### 3. Read the control (required when a current state exists)
 
 Before any searching or ideation, read the control the way
-`lazyweb-paywall-optimization` reads a paywall. Identify:
+`lazyweb-optimize-paywall` reads a paywall. Identify:
 
 - **Components present:** header, hero, value prop, proof, pricing, CTAs, trust
   signals, navigation, FAQ, footer — whatever the screen type implies
@@ -339,7 +339,7 @@ one Retry-After-honoring retry on 429/5xx):
 
 ```bash
 cat > "$REPORT_DIR/work/query-plan.json" <<'PLAN'
-{"skill":"design-research","version":"<from ~/.lazyweb/VERSION>","queries":[
+{"skill":"deep-design-research","version":"<from ~/.lazyweb/VERSION>","queries":[
  {"id":"a1","pass":"A","tool":"lazyweb_search","args":{"query":"<screen/component>","platform":"desktop","limit":15}},
  {"id":"b1","pass":"B","tool":"lazyweb_search","args":{"query":"<underlying function>","platform":"desktop","limit":15}}
 ]}
@@ -608,7 +608,7 @@ search logs) live in `$REPORT_DIR/work/`, which is never uploaded.
 ## Hypothesis Engine (the core of the Recommendation)
 
 The unit of analysis is a falsifiable bet, not a component list and not a theme.
-This mirrors `lazyweb-paywall-optimization`, with the screenshot corpus playing
+This mirrors `lazyweb-optimize-paywall`, with the screenshot corpus playing
 the role of the experiment corpus — and it **indexes on creativity**: the value
 of this report over a competent designer's first instinct is the bets a median
 competitor would never generate. A set of three reasonable suggestions is a
@@ -901,7 +901,7 @@ with fidelity rationale.
 
 ## Report v3 Contract
 
-Write directly to `.lazyweb/design-research/{topic-slug}-{YYYY-MM-DD}/report.html`.
+Write directly to `.lazyweb/deep-design-research/{topic-slug}-{YYYY-MM-DD}/report.html`.
 Do not create a Markdown version.
 
 The report should make the recommendation faster to parse than prose ever
@@ -1240,7 +1240,7 @@ expansion are enhancements, not the only way to see the evidence.
 ## Comparison Eval Contract
 
 When validating a report re-architecture, create eval artifacts under
-`.lazyweb/eval-design-research-v3-{YYYY-MM-DD}/` and keep any old-skill copy
+`.lazyweb/eval-deep-design-research-v3-{YYYY-MM-DD}/` and keep any old-skill copy
 outside `skills/` so it is never installed or routed as a visible mode.
 
 Use this fixed prompt for the old/new comparison:

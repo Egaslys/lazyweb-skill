@@ -6,7 +6,7 @@ const root = path.resolve(new URL("..", import.meta.url).pathname);
 
 // Discover mode skills by iterating skills/*/ instead of a hardcoded list.
 // A hardcoded list is the exact trap that left lazyweb-paywall-cta and
-// lazyweb-signup-optimization unvalidated (and undocumented) after 0.4.0:
+// lazyweb-optimize-sign-up unvalidated (and undocumented) after 0.4.0:
 // a new mode must be picked up by adding its directory, nothing else.
 const visibleModeSkillDirs = readdirSync(path.join(root, "skills"), { withFileTypes: true })
   .filter((entry) => entry.isDirectory() && existsSync(path.join(root, "skills", entry.name, "SKILL.md")))
@@ -193,15 +193,15 @@ for (const relativePath of ["README.md", "SKILL.md", ...visibleModeSkillDirs.map
   }
 }
 
-const designResearchText = read("skills/lazyweb-design-research/SKILL.md");
+const designResearchText = read("skills/lazyweb-deep-design-research/SKILL.md");
 // The render-tested report skeleton/CSS/JS lives in the template file the
 // skill instructs agents to copy; component assertions check both.
-const designResearchTemplate = read("skills/lazyweb-design-research/report-template.html");
+const designResearchTemplate = read("skills/lazyweb-deep-design-research/report-template.html");
 const designResearchAll = designResearchText + "\n" + designResearchTemplate;
 assert.match(designResearchText, /report-template\.html/, "design-research skill must reference its report template");
 for (const scriptName of ["fetch-evidence.py", "generate-prototypes.py", "fill-report.py"]) {
-  const sp = path.join(root, "skills/lazyweb-design-research", scriptName);
-  assert.ok(existsSync(sp), `missing skills/lazyweb-design-research/${scriptName}`);
+  const sp = path.join(root, "skills/lazyweb-deep-design-research", scriptName);
+  assert.ok(existsSync(sp), `missing skills/lazyweb-deep-design-research/${scriptName}`);
   assert.ok(statSync(sp).mode & 0o111, `${scriptName} must be executable`);
   assert.match(designResearchText, new RegExp(scriptName.replace(".", "\\.")), `design-research skill must reference ${scriptName}`);
 }
@@ -291,7 +291,7 @@ for (const pattern of [
   /option-panel/,
   /Reference Evidence/,
   /Source Notes/,
-  /Never publish a `lazyweb-design-research` report that fails this gate/,
+  /Never publish a `lazyweb-deep-design-research` report that fails this gate/,
   /Provider priority order/,
   /Capability probe/,
   /imagegen-capability\.json/,

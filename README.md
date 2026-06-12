@@ -43,13 +43,14 @@ The installer exposes a hybrid skill surface:
 | Skill | Use when |
 |---|---|
 | `/lazyweb` | You want the compatibility entry point or are unsure which Lazyweb mode fits. |
-| `/lazyweb-design-research` | Competitive analysis, best-practices research, or a full report with references. |
-| `/lazyweb-quick-references` | Quick examples, UI references, or screenshots without a full report. |
+| `/lazyweb-deep-design-research` | Deep competitive analysis, best-practices research, or a full report with references. |
+| `/lazyweb-lite-design-research` | Lite grouped examples, UI references, or screenshots without a full report. |
+| `/lazyweb-quick-search` | Quick direct `lazyweb_search` preflight before designing; no report. |
 | `/lazyweb-design-improve` | Improve, critique, or compare an existing design. |
 | `/lazyweb-design-brainstorm` | Creative cross-category ideas or unconventional directions. |
-| `/lazyweb-paywall-optimization` | Paywall screen redesign, critique, or conversion optimization. |
+| `/lazyweb-optimize-paywall` | Optimize a paywall screen for paid conversion. |
 | `/lazyweb-paywall-cta` | Rewrite, evaluate, or stress-test ONE paywall CTA (button copy, not layout). |
-| `/lazyweb-signup-optimization` | Sign-up / registration screen redesign, critique, or signup-conversion optimization. |
+| `/lazyweb-optimize-sign-up` | Optimize a sign-up / registration screen for completion rate. |
 | `/lazyweb-ab-test-research` | A/B tests, experiments, pricing, lifecycle, or monetization strategy. |
 | `/lazyweb-design-best-practices` | Design best practices for X — live review sweep (skills.sh, design Twitter/X, Reddit, forums) finds the top-rated skill, fetches its instructions, and applies them as context. No install. |
 | `/lazyweb-update` | Update the local Lazyweb skill pack and reinstall it into agentic IDEs. |

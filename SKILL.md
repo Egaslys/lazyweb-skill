@@ -65,24 +65,27 @@ Choose exactly one mode:
 
 | User intent | Read and run |
 |---|---|
-| Competitive analysis, best-practices research, or a full report with references | `skills/lazyweb-design-research/SKILL.md` |
-| Quick examples, UI references, or screenshots without a full report | `skills/lazyweb-quick-references/SKILL.md` |
+| Deep competitive analysis, best-practices research, or a full report with references | `skills/lazyweb-deep-design-research/SKILL.md` |
+| Lite grouped examples, UI references, or screenshots without a full report | `skills/lazyweb-lite-design-research/SKILL.md` |
+| Quick direct `lazyweb_search` preflight before designing, no report | `skills/lazyweb-quick-search/SKILL.md` |
 | Improve, critique, or compare an existing design | `skills/lazyweb-design-improve/SKILL.md` |
 | Creative cross-category ideas or unconventional directions | `skills/lazyweb-design-brainstorm/SKILL.md` |
-| Paywall screen redesign, critique, or conversion optimization | `skills/lazyweb-paywall-optimization/SKILL.md` |
+| Optimize a paywall screen for paid conversion | `skills/lazyweb-optimize-paywall/SKILL.md` |
 | Rewrite, evaluate, or stress-test ONE paywall CTA (button copy, not layout) | `skills/lazyweb-paywall-cta/SKILL.md` |
-| Sign-up / registration screen redesign, critique, or signup-conversion optimization | `skills/lazyweb-signup-optimization/SKILL.md` |
+| Optimize a sign-up / registration screen for completion rate | `skills/lazyweb-optimize-sign-up/SKILL.md` |
 | A/B tests, experiment examples, pricing, trials, lifecycle, or monetization strategy | `skills/lazyweb-ab-test-research/SKILL.md` |
 | Design best practices for X — find the top community-rated skill online and apply it as context (no install) | `skills/lazyweb-design-best-practices/SKILL.md` |
 | Update local Lazyweb skills, reinstall Lazyweb, or sync Lazyweb into agentic IDEs | `skills/lazyweb-update/SKILL.md` |
 
 For a bare `/lazyweb` request, briefly explain the modes above and ask which
-one the user wants. Recommend `lazyweb-design-research` when they want deep
-guidance, `lazyweb-quick-references` when they want speed, and
+one the user wants. Recommend `lazyweb-deep-design-research` when they want deep
+guidance, `lazyweb-lite-design-research` when they want speed, and
 `lazyweb-design-improve` when they already have a non-paywall screen to critique.
+Use `lazyweb-quick-search` when they need direct MCP search context before
+designing and do not want a report.
 Route CTA copy questions to `lazyweb-paywall-cta` only when the ask is about
 the button text itself; a broader paywall redesign goes to
-`lazyweb-paywall-optimization` even if the CTA is part of it. Route explicit
+`lazyweb-optimize-paywall` even if the CTA is part of it. Route explicit
 install, update, refresh, or stale slash-command requests to `lazyweb-update`.
 Route "design best practices for X" / "what's the best skill for animation,
 landing pages, typography…" asks to `lazyweb-design-best-practices`, which

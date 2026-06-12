@@ -108,7 +108,7 @@
 ## 1. Problem & goal
 
 Today, Lazyweb modes fire in two ways: the user explicitly invokes a skill
-(`/lazyweb`, `/lazyweb-quick-references`, …) or the host agent happens to
+(`/lazyweb`, `/lazyweb-lite-design-research`, …) or the host agent happens to
 trigger on a SKILL.md `description`. Description-matching is unreliable and
 inconsistent across hosts: Claude Code and Codex do implicit skill matching,
 but Cursor rules, Gemini CLI, opencode, Kiro, Factory, etc. either don't, or do
@@ -158,9 +158,9 @@ Non-goals: changing how the modes themselves work; replacing the root router
 **Carve-out (M4) — the one mode-body change that is in scope.** The router is
 host-neutral, but it routes agents *into* mode `SKILL.md` files, and four of
 those bodies currently instruct the agent to "ask ONE **AskUserQuestion**"
-([design-research/SKILL.md:113](../skills/lazyweb-design-research/SKILL.md),
+([design-research/SKILL.md:113](../skills/lazyweb-deep-design-research/SKILL.md),
 [design-improve:48](../skills/lazyweb-design-improve/SKILL.md),
-[quick-references:46](../skills/lazyweb-quick-references/SKILL.md),
+[quick-references:46](../skills/lazyweb-lite-design-research/SKILL.md),
 [design-brainstorm:52](../skills/lazyweb-design-brainstorm/SKILL.md)) — a
 Claude-only tool name. On Codex/Cursor/opencode the autorouter would faithfully
 deliver the user into a mode that then names a tool the host doesn't have, so
@@ -320,13 +320,13 @@ whether a UI request matches, route it.
 
 | The user asks for… | Skill |
 |---|---|
-| Design research, best practices, competitive analysis, "what do top apps do" | `lazyweb-design-research` |
-| Quick examples / screenshots / UI references, no full report | `lazyweb-quick-references` |
+| Design research, best practices, competitive analysis, "what do top apps do" | `lazyweb-deep-design-research` |
+| Quick examples / screenshots / UI references, no full report | `lazyweb-lite-design-research` |
 | Feedback on / improvement of an existing screen or design | `lazyweb-design-improve` |
 | Creative, unconventional, cross-category design ideas | `lazyweb-design-brainstorm` |
-| Paywall redesign or paywall conversion optimization | `lazyweb-paywall-optimization` |
+| Paywall redesign or paywall conversion optimization | `lazyweb-optimize-paywall` |
 | Rewriting or stress-testing one paywall CTA (button copy only) | `lazyweb-paywall-cta` |
-| Sign-up / registration screen optimization | `lazyweb-signup-optimization` |
+| Sign-up / registration screen optimization | `lazyweb-optimize-sign-up` |
 | A/B tests, experiments, pricing/trial/monetization strategy | `lazyweb-ab-test-research` |
 | Anything UI-related that fits none of the above | `lazyweb` (the router skill picks the mode) |
 
@@ -356,7 +356,7 @@ One line, rendered per host, sitting above the table. Table cells stay bare.
 
 | Host class | `{{ACT_PREAMBLE}}` rendering | Why |
 |---|---|---|
-| Claude Code | `To act on a row, invoke that skill (e.g. /lazyweb-design-research).` | Skill tool + slash commands are native; naming the skill is enough. |
+| Claude Code | `To act on a row, invoke that skill (e.g. /lazyweb-deep-design-research).` | Skill tool + slash commands are native; naming the skill is enough. |
 | Codex | `To act on a row, invoke that skill by name, or read ~/.codex/skills/<skill>/SKILL.md and follow it.` | Native skills with implicit invocation; the read-path covers older builds. |
 | Cursor | `To act on a row, read ~/.cursor/skills/<skill>/SKILL.md and follow it.` | No reliable global skill invocation; file-read phrasing always works. |
 | opencode / Kiro / Factory / Slate / Hermes | `To act on a row, read {{SKILLS_ROOT}}/<skill>/SKILL.md and follow it.` | Instruction-file-only hosts; the file path is the only portable handle. |
@@ -379,7 +379,7 @@ iterates `skills/*/SKILL.md`, reads each frontmatter `name` + a one-line
 route hint (new frontmatter key `route:`, falling back to the first sentence
 of `description`), and emits one row per skill. This is the same lesson as
 the `install_skills_to_root()` comment about the "hardcoded list trap that
-left lazyweb-paywall-cta and lazyweb-signup-optimization stranded after
+left lazyweb-paywall-cta and lazyweb-optimize-sign-up stranded after
 0.4.0" — and that trap was *still live* in `validate-skill-pack.mjs` and the
 README at review time (both listed six of eight modes); both were converted to
 directory iteration in the B2 pass. A new mode must appear in the router by

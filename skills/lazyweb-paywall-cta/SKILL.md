@@ -1,6 +1,6 @@
 ---
 name: lazyweb-paywall-cta
-route: "Rewrite one paywall CTA (button copy only)"
+route: "Rewrite one paywall CTA"
 description: |
   Critique and rewrite a paywall primary CTA (and adjacent microcopy) by
   reading the target screen, diagnosing CTA-level conversion friction, and
@@ -40,7 +40,7 @@ mode or not, ALWAYS:
 6. Ask the user which direction looks right
 7. If in plan mode, exit plan mode after the user confirms
 8. Suggest next steps: "Ship the strongest candidate as an A/B test against the
-   current CTA, or ask `/lazyweb-paywall-optimization` for a full paywall
+   current CTA, or ask `/lazyweb-optimize-paywall` for a full paywall
    redesign, or `/lazyweb-ab-test-research` for deeper experiment mining."
 
 ## When to Use This
@@ -53,8 +53,8 @@ mode or not, ALWAYS:
 
 ## When NOT to Use This
 
-- Full paywall redesign / layout / pricing rework → route to `lazyweb-paywall-optimization`
-- Onboarding / signup / non-paywall CTAs → route to `lazyweb-design-research` or `lazyweb-quick-references`
+- Full paywall redesign / layout / pricing rework → route to `lazyweb-optimize-paywall`
+- Onboarding / signup / non-paywall CTAs → route to `lazyweb-deep-design-research` or `lazyweb-lite-design-research`
 - "Find me A/B experiments about pricing copy" → route to `lazyweb-ab-test-research`
 
 ## Lazyweb MCP Setup
@@ -215,7 +215,7 @@ A/B FRAMING:
 Replacing "{current}" with "{top_recommended}" should lift {metric} because {mechanism}.
 
 DO NOT OVER-INDEX ON: median corpus phrases, brand-name CTAs when the brand is already free, generic verbs without an offer/benefit referent.
-DIVE FURTHER: `/lazyweb-paywall-optimization` for a full paywall redesign, `/lazyweb-ab-test-research` for deeper experiment mining.
+DIVE FURTHER: `/lazyweb-optimize-paywall` for a full paywall redesign, `/lazyweb-ab-test-research` for deeper experiment mining.
 
 Evidence basis: {Lazyweb paywall CTA corpus + curated A/B observations} · {DATE}
 ```
@@ -245,7 +245,7 @@ table{border-collapse:collapse;width:100%;font-size:14px}th,td{border:1px solid 
 /* Mock CTA button for rendering candidate copy */
 .mock-cta{display:inline-block;background:var(--accent);color:#fff;font:700 14px/1.1 inherit;border-radius:8px;padding:12px 24px;margin:6px 0}
 .mock-cta.secondary{background:#fff;color:var(--accent);border:1.5px solid var(--accent)}
-/* Standard evidence components reused from paywall-optimization skill: .deck, .pat, .prev, .tag, .verdict, .ebadge, .corpus, .flip — include the CSS block from lazyweb-paywall-optimization SKILL.md verbatim in <style>. */
+/* Standard evidence components reused from optimize-paywall skill: .deck, .pat, .prev, .tag, .verdict, .ebadge, .corpus, .flip — include the CSS block from lazyweb-optimize-paywall SKILL.md verbatim in <style>. */
 .lw-foot{margin-top:34px;padding-top:14px;border-top:1px solid var(--line);text-align:center;font-size:13px;color:var(--mut)}
 ```
 

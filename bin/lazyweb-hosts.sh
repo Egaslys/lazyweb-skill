@@ -88,7 +88,7 @@ _lw_tilde() { case "$1" in "$HOME"/*) printf '~%s' "${1#"$HOME"}" ;; *) printf '
 host_act_preamble() {
   case "$1" in
     claude)
-      printf '%s' 'To act on a row, invoke that skill (e.g. /lazyweb-design-research).'
+      printf '%s' 'To act on a row, invoke that skill (e.g. /lazyweb-deep-design-research).'
       ;;
     codex)
       printf 'To act on a row, invoke that skill by name, or read %s/<skill>/SKILL.md and follow it.' "$(_lw_tilde "$(host_skills_root codex)")"

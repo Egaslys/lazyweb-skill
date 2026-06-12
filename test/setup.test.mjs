@@ -45,6 +45,9 @@ test("setup installs visible skills and direct MCP config into detected local cl
     assert.match(first.stdout, /Welcome to Lazyweb/);
     assert.match(first.stdout, /Hey, Ali here through your agent/);
     assert.match(first.stdout, /Ask what the main Lazyweb usage modes are/);
+    assert.match(first.stdout, /Ask for lite design research/);
+    assert.match(first.stdout, /Ask for deep design research/);
+    assert.match(first.stdout, /Ask for quick search before designing/);
     assert.match(first.stdout, /lazyweb_get_workflows/);
     assert.match(first.stdout, /first run Lazyweb capabilities/);
     assert.match(first.stdout, /Do not call lazyweb_get_flows for the first-run capability guide/);
@@ -59,12 +62,14 @@ test("setup installs visible skills and direct MCP config into detected local cl
     for (const skillsRoot of expectedSkillRoots) {
       for (const skillName of [
         "lazyweb",
-        "lazyweb-design-research",
-        "lazyweb-quick-references",
+        "lazyweb-deep-design-research",
+        "lazyweb-lite-design-research",
+        "lazyweb-quick-search",
         "lazyweb-design-improve",
         "lazyweb-design-brainstorm",
-        "lazyweb-paywall-optimization",
+        "lazyweb-optimize-paywall",
         "lazyweb-ab-test-research",
+        "lazyweb-optimize-sign-up",
         "lazyweb-update"
       ]) {
         const skillPath = path.join(skillsRoot, skillName, "SKILL.md");
@@ -74,6 +79,30 @@ test("setup installs visible skills and direct MCP config into detected local cl
         } else {
           assert.ok(lstatSync(path.dirname(skillPath)).isSymbolicLink(), `${skillName} should be symlinked for updates`);
         }
+      }
+
+      for (const oldSkillName of [
+        "lazyweb-design-research",
+        "lazyweb-quick-references",
+        "lazyweb-paywall-optimization",
+        "lazyweb-signup-optimization"
+      ]) {
+        const staleDir = path.join(skillsRoot, oldSkillName);
+        mkdirSync(staleDir, { recursive: true });
+        writeFileSync(path.join(staleDir, "SKILL.md"), "stale");
+      }
+    }
+
+    const cleanup = runSetup(home, fakeBin);
+    assert.equal(cleanup.status, 0, cleanup.stderr || cleanup.stdout);
+    for (const skillsRoot of expectedSkillRoots) {
+      for (const oldSkillName of [
+        "lazyweb-design-research",
+        "lazyweb-quick-references",
+        "lazyweb-paywall-optimization",
+        "lazyweb-signup-optimization"
+      ]) {
+        assert.equal(existsSync(path.join(skillsRoot, oldSkillName)), false, `${oldSkillName} should be cleaned up from ${skillsRoot}`);
       }
     }
 

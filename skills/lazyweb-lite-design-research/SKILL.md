@@ -1,6 +1,6 @@
 ---
-name: lazyweb-quick-references
-route: "Quick UI examples / screenshots / references, no report"
+name: lazyweb-lite-design-research
+route: "Lite UI examples / refs, no report"
 description: |
   Find app screenshots and UI references quickly. Embeds Lazyweb results by
   storage-backed URL and groups them by pattern. Use when the user wants to see examples of a specific
@@ -19,18 +19,18 @@ allowed-tools:
   - Agent
 ---
 
-# Lazyweb Quick References
+# Lazyweb Lite Design Research
 
 Find real app screenshots fast, embed Lazyweb images by URL, and group by pattern.
-Lighter than design-research — no competitive analysis, no anti-patterns. Just find → group → show.
+Lighter than deep design research — no competitive analysis, no anti-patterns. Just find → group → show.
 
 ## CRITICAL: Output Behavior
 
 **This skill produces FILES, not a plan.** Regardless of whether you are in plan mode
 or not, ALWAYS:
 
-1. Write the HTML report to `.lazyweb/quick-references/{topic}-{date}/report.html`
-2. Embed Lazyweb references directly with their returned `imageUrl`/`image_url`; save only current-state and web-captured screenshots under `.lazyweb/quick-references/{topic}-{date}/references/`
+1. Write the HTML report to `.lazyweb/lite-design-research/{topic}-{date}/report.html`
+2. Embed Lazyweb references directly with their returned `imageUrl`/`image_url`; save only current-state and web-captured screenshots under `.lazyweb/lite-design-research/{topic}-{date}/references/`
 3. Do NOT create `report.md` or any other Markdown report artifact
 4. Do NOT write research content into a plan file
 5. Publish a shareable link (see "Publish a Shareable Link" below) — automatic, non-blocking
@@ -44,14 +44,14 @@ or not, ALWAYS:
 ## Publish a Shareable Link (always, right after writing report.html)
 
 Every report is auto-published to lazyweb.com so the user can share it with
-teammates. Run this with `$REPORT_DIR` set to `.lazyweb/quick-references/{topic}-{date}`:
+teammates. Run this with `$REPORT_DIR` set to `.lazyweb/lite-design-research/{topic}-{date}`:
 
 ```bash
-IDEMPOTENCY_KEY="${REPORT_DIR#.lazyweb/}"   # stable per-report key (e.g. quick-references/{topic}-{date}); send the SAME value every attempt so retries dedupe to one link
+IDEMPOTENCY_KEY="${REPORT_DIR#.lazyweb/}"   # stable per-report key (e.g. lite-design-research/{topic}-{date}); send the SAME value every attempt so retries dedupe to one link
 LAZYWEB_TOKEN=$(cat "$HOME/.lazyweb/lazyweb_mcp_token" 2>/dev/null || true)
 if [ -n "$LAZYWEB_TOKEN" ]; then
   # Tier 1 - local install: direct POST (idempotency_key dedupes a re-run)
-  python3 - "$REPORT_DIR" "$LAZYWEB_TOKEN" "quick-references" "$IDEMPOTENCY_KEY" <<'PUBLISH_EOF'
+  python3 - "$REPORT_DIR" "$LAZYWEB_TOKEN" "lite-design-research" "$IDEMPOTENCY_KEY" <<'PUBLISH_EOF'
 import base64, json, pathlib, sys, urllib.error, urllib.request
 report_dir, token, skill, idem = pathlib.Path(sys.argv[1]), sys.argv[2], sys.argv[3], sys.argv[4]
 version_file = pathlib.Path.home() / ".lazyweb" / "VERSION"
@@ -90,7 +90,7 @@ fi
 - Tier 1 `PUBLISH_SKIPPED:` - say nothing; the local report stands (the user has the file).
 - Tier 2 `PUBLISH_VIA_MCP_TOOL ...` - you have no local token (hosted session), so publish with the Lazyweb MCP tool instead:
   1. Size-check first: if `report.html` plus the `references/` files together exceed ~7MB, do NOT call the tool - tell the user the report was too large to publish from a hosted session (it is saved locally) and stop.
-  2. Otherwise call `lazyweb_publish_report` with: `html` = the contents of `report.html`; `assets` = each `references/` file as `{"name": <filename>, "b64": <base64 of the bytes>}`; `report_skill` = "quick-references"; `idempotency_key` = the value printed after `idempotency_key=`.
+  2. Otherwise call `lazyweb_publish_report` with: `html` = the contents of `report.html`; `assets` = each `references/` file as `{"name": <filename>, "b64": <base64 of the bytes>}`; `report_skill` = "lite-design-research"; `idempotency_key` = the value printed after `idempotency_key=`.
   3. On `{ ok: true, url }` -> show "Shareable link: {url} (unlisted - anyone with the link can view)".
   4. On `{ ok: false }` -> tell the user publishing failed and why (the `error` field); the report is saved locally. If `code` is `REPORT_VALIDATION_ERROR` and `detail` names missing assets, fix and call ONCE more; otherwise do not retry.
   Unlike Tier 1, do NOT stay silent on a Tier-2 failure - a hosted user has no local file to fall back on, so they need the link or the reason.
@@ -120,7 +120,7 @@ Before searching, ground the work in what the user is building, and avoid guessi
 
 ## When NOT to Use This
 
-- User wants deep analysis, competitive research, or best practices -> route to `lazyweb-design-research`
+- User wants deep analysis, competitive research, or best practices -> route to `lazyweb-deep-design-research`
 - User has an existing design and wants feedback -> route to `lazyweb-design-improve`
 - User wants creative/unconventional ideas -> route to `lazyweb-design-brainstorm`
 
@@ -134,9 +134,9 @@ Required MCP tools:
 - `lazyweb_compare_image` — visual search from `image_base64` + `mime_type` or `image_url`
 - `lazyweb_health` — connectivity check
 
-**Pass `skill: "quick-references"` on every call.** Include `"skill": "quick-references"` in the arguments of each `lazyweb_*` tool call — for example `{"query": "pricing page", "limit": 30, "skill": "quick-references"}`. This is optional analytics metadata Lazyweb uses to understand which skills are used; never drop or change a real argument for it.
+**Pass `skill: "lite-design-research"` on every call.** Include `"skill": "lite-design-research"` in the arguments of each `lazyweb_*` tool call — for example `{"query": "pricing page", "limit": 30, "skill": "lite-design-research"}`. This is optional analytics metadata Lazyweb uses to understand which skills are used; never drop or change a real argument for it.
 
-**Also pass `version: "<x.y.z>"` on every call.** Read `~/.lazyweb/VERSION` once per session at skill start (e.g. `cat "$HOME/.lazyweb/VERSION" 2>/dev/null || echo 0.0.0`); fall back to `"0.0.0"` if the file is missing or unreadable — never block on this. Include `"version": "<that-value>"` in the arguments of every `lazyweb_*` tool call alongside the existing `skill` arg — for example `{"query": "pricing page", "limit": 30, "skill": "quick-references", "version": "0.4.5"}`. Optional analytics metadata Lazyweb uses to track which skill-pack versions are running; never drop or change a real argument for it.
+**Also pass `version: "<x.y.z>"` on every call.** Read `~/.lazyweb/VERSION` once per session at skill start (e.g. `cat "$HOME/.lazyweb/VERSION" 2>/dev/null || echo 0.0.0`); fall back to `"0.0.0"` if the file is missing or unreadable — never block on this. Include `"version": "<that-value>"` in the arguments of every `lazyweb_*` tool call alongside the existing `skill` arg — for example `{"query": "pricing page", "limit": 30, "skill": "lite-design-research", "version": "0.4.5"}`. Optional analytics metadata Lazyweb uses to track which skill-pack versions are running; never drop or change a real argument for it.
 
 These are the current public gateway names. Backend/internal surfaces may also
 expose canonical tools such as `search_screenshots`, `list_filters`,
@@ -263,7 +263,7 @@ If libraries are configured, search each one using the browse tool. For each lib
 5. Browse through results — screenshot the most relevant ones
 6. Save to: `$LB screenshot "$REPORT_DIR/references/{library}-{company}-{screen}.png"`
 
-**Keep it fast**: This is the quick-references skill. Don't deep-dive into every result.
+**Keep it fast**: This is the lite design research skill. Don't deep-dive into every result.
 Grab the best 3-5 screenshots per library and move on.
 
 **If the library session has expired** (login wall, redirect to sign-in):
@@ -296,7 +296,7 @@ If the browse tool is not available, describe web examples in the report without
 ### 5. Download References
 
 ```bash
-REPORT_DIR="$(pwd)/.lazyweb/quick-references/{topic-slug}-{YYYY-MM-DD}"
+REPORT_DIR="$(pwd)/.lazyweb/lite-design-research/{topic-slug}-{YYYY-MM-DD}"
 mkdir -p "$REPORT_DIR/references"
 ```
 
@@ -315,7 +315,7 @@ fi
 
 ### 6. Write HTML Reference Report
 
-Write directly to `.lazyweb/quick-references/{topic-slug}-{YYYY-MM-DD}/report.html`.
+Write directly to `.lazyweb/lite-design-research/{topic-slug}-{YYYY-MM-DD}/report.html`.
 Do not create a Markdown version.
 
 **Reverse pyramid:** Lead with the patterns (the answer), then show the evidence.
@@ -399,7 +399,7 @@ DIVE FURTHER: {next Lazyweb skill or MCP tool} — {why}
 Evidence basis: {Lazyweb screenshots | web captures} · {DATE}
 ```
 
-For THIS skill, `{TASK}` = "building {screen/component} using these grouped real-app references as a visual baseline", and `DIVE FURTHER` → "`/lazyweb-design-research` for full competitive analysis + recommendations, or `lazyweb_find_similar` on the closest reference".
+For THIS skill, `{TASK}` = "building {screen/component} using these grouped real-app references as a visual baseline", and `DIVE FURTHER` → "`/lazyweb-deep-design-research` for full competitive analysis + recommendations, or `lazyweb_find_similar` on the closest reference".
 
 #### B. Conciseness & "show, don't tell"
 
@@ -500,7 +500,7 @@ Label evidence strength honestly with an `.ebadge` on every claim/card/rec: **Me
 Put the CSS below in the report `<style>` and adapt the markup per claim. Reuse the existing tokens (`--ink:#1f2328; --mut:#57606a; --line:#d0d7de; --soft:#eef4fb; --accent:#0969da`).
 
 - **Patterns, Anti-Patterns (use `.tag.avoid`), Unique Angles, "What's working", Convention-check Missing/Unusual cells, hypothesis "supporting evidence", brainstorm "Applied here"** -> render as `.pat` cards: name + verdict `.tag` + `.prev` count ("seen in N of M references") + one-line claim + a `.deck` snap-carousel of 2-4 real screenshots that exhibit it (caption = company + the exact UI detail from `visionDescription`). The proof sits WITH the claim, never a scroll away. Show the pattern; don't just list brand names.
-- **The decision section** (design-research "What to build first", quick-references "Recommended path", brainstorm "Which ideas to prototype", design-improve idea order, ab-test "Recommendations", paywall "Prioritization") -> render a **Decision legend** (`.legend`, one `.legend-row` per rec in rank order — the whole ranking graspable in one glance) ABOVE a `.recs` stack of **recommendation cards** (`.rec`; the #1 card is `.rec.lead` with the START-HERE hero + browser-chrome frame). Each card carries a BIG inline-legible proof (desktop 16:10 above-the-fold crop / mobile whole-screen via `.recs.mobileset`) — never a tiny click-into thumbnail — plus a `.verdict` (Do/Explore/Skip), an `.ebadge` evidence label, a prevalence count, and a labeled `.skiprow`. NO table; exactly one lead; no ties.
+- **The decision section** (deep-design-research "What to build first", lite-design-research "Recommended path", brainstorm "Which ideas to prototype", design-improve idea order, ab-test "Recommendations", optimize-paywall "Prioritization") -> render a **Decision legend** (`.legend`, one `.legend-row` per rec in rank order — the whole ranking graspable in one glance) ABOVE a `.recs` stack of **recommendation cards** (`.rec`; the #1 card is `.rec.lead` with the START-HERE hero + browser-chrome frame). Each card carries a BIG inline-legible proof (desktop 16:10 above-the-fold crop / mobile whole-screen via `.recs.mobileset`) — never a tiny click-into thumbnail — plus a `.verdict` (Do/Explore/Skip), an `.ebadge` evidence label, a prevalence count, and a labeled `.skiprow`. NO table; exactly one lead; no ties.
 - **Honesty** -> put a `.corpus` banner right after Agent Instructions (basis / breadth / count / confidence); put an `.ebadge` (Measured | Directional | Single-source-or-off-category) on every claim, card, and recommendation. Never echo a raw "high"; never use "outperforms/underperforms" without a measured lift; tag crawl-seed/URL-inferred brands "brand inferred - verify".
 - **Control vs variant (A/B)** -> use the `.flip` two-up grid (stacks on narrow screens; scroll-snaps with ◀ ▶ prev/next buttons); if `vision_description` is empty, synthesize the caption from `what_changed` and tag it "agent-described".
 

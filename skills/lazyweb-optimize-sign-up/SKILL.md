@@ -1,6 +1,6 @@
 ---
-name: lazyweb-signup-optimization
-route: 'Sign-up / registration screen optimization'
+name: lazyweb-optimize-sign-up
+route: 'Optimize sign-up conversion'
 description: |
   Optimize a sign-up / registration screen by reading the target screen,
   diagnosing signup friction, and producing 2-4 falsifiable redesign
@@ -19,7 +19,7 @@ allowed-tools:
   - Agent
 ---
 
-# Sign-up Optimization
+# Optimize Sign Up
 
 Optimize a sign-up screen with evidence-backed completion hypotheses, not
 generic form advice.
@@ -48,13 +48,13 @@ when matching evidence is available.
 ## When NOT to Use This
 
 - User is asking about a paywall (post-signup, paid conversion) →
-  `lazyweb-paywall-optimization`
+  `lazyweb-optimize-paywall`
 - User wants just CTA button copy on a sign-up screen → still use this
   skill if the question is whole-screen optimization; route to
   `lazyweb-paywall-cta` is wrong (CTA skill is paywall-specific)
 - User wants only A/B test examples on signup → `lazyweb-ab-test-research`
 - User wants generic form best practices outside an app sign-up screen
-  → `lazyweb-design-research`
+  → `lazyweb-deep-design-research`
 
 ## Lazyweb MCP Setup
 
@@ -78,9 +78,9 @@ Required public tools:
 
 **Search discipline:** never repeat an identical `lazyweb_search` query — results are deterministic; page deeper with `offset` and follow `pagination.next_offset`. On `no_matches`/`low_coverage` warnings, use the closest result or note the coverage gap — don't rephrase the same concept in a loop. On `company_not_in_library`, use a suggested company or drop the filter.
 
-**Pass `skill: "signup-optimization"` on every call.** Include `"skill": "signup-optimization"` in the arguments of each `lazyweb_*` tool call — for example `{"query": "pricing page", "limit": 30, "skill": "signup-optimization"}`. This is optional analytics metadata Lazyweb uses to understand which skills are used; never drop or change a real argument for it.
+**Pass `skill: "optimize-sign-up"` on every call.** Include `"skill": "optimize-sign-up"` in the arguments of each `lazyweb_*` tool call — for example `{"query": "pricing page", "limit": 30, "skill": "optimize-sign-up"}`. This is optional analytics metadata Lazyweb uses to understand which skills are used; never drop or change a real argument for it.
 
-**Also pass `version: "<x.y.z>"` on every call.** Read `~/.lazyweb/VERSION` once per session at skill start (e.g. `cat "$HOME/.lazyweb/VERSION" 2>/dev/null || echo 0.0.0`); fall back to `"0.0.0"` if the file is missing or unreadable — never block on this. Include `"version": "<that-value>"` in the arguments of every `lazyweb_*` tool call alongside the existing `skill` arg — for example `{"query": "pricing page", "limit": 30, "skill": "signup-optimization", "version": "0.4.5"}`. Optional analytics metadata Lazyweb uses to track which skill-pack versions are running; never drop or change a real argument for it.
+**Also pass `version: "<x.y.z>"` on every call.** Read `~/.lazyweb/VERSION` once per session at skill start (e.g. `cat "$HOME/.lazyweb/VERSION" 2>/dev/null || echo 0.0.0`); fall back to `"0.0.0"` if the file is missing or unreadable — never block on this. Include `"version": "<that-value>"` in the arguments of every `lazyweb_*` tool call alongside the existing `skill` arg — for example `{"query": "pricing page", "limit": 30, "skill": "optimize-sign-up", "version": "0.4.5"}`. Optional analytics metadata Lazyweb uses to track which skill-pack versions are running; never drop or change a real argument for it.
 
 If Lazyweb MCP is not installed or auth fails, tell the user: "Lazyweb MCP
 is not installed. Run `curl -fsSL https://www.lazyweb.com/install.sh | bash`,

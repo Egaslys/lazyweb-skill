@@ -1,6 +1,6 @@
 ---
 name: lazyweb-design-best-practices
-route: "Best practices for a design craft: typography, color, motion, forms, tables"
+route: "Design craft best practices"
 description: |
   Lazyweb's curated router to the best design skills in the world — used as
   context, never installed. 19 design aspects (web animation, frontend
@@ -60,9 +60,9 @@ counts and stars are as displayed on skills.sh/GitHub on that date.
 
 When the task is about *screen-level UI evidence* — what real apps' paywalls,
 onboarding, sign-up, pricing, or checkout screens look like, or A/B test
-data — route to the sibling Lazyweb modes instead (`/lazyweb-design-research`,
-`/lazyweb-quick-references`, `/lazyweb-paywall-optimization`,
-`/lazyweb-signup-optimization`, `/lazyweb-ab-test-research`): verify
+data — route to the sibling Lazyweb modes instead (`/lazyweb-deep-design-research`,
+`/lazyweb-lite-design-research`, `/lazyweb-optimize-paywall`,
+`/lazyweb-optimize-sign-up`, `/lazyweb-ab-test-research`): verify
 connectivity with `lazyweb_health` first, and pass
 `"skill": "design-best-practices"` plus `"version"` (from
 `cat "$HOME/.lazyweb/VERSION" 2>/dev/null || echo 0.0.0`) in every
@@ -223,7 +223,7 @@ skills below.
 
 *Skip:* sleekdotdesign sleek-design-mobile-apps (~199K installs but it's a REST wrapper for a paid platform requiring an API key); awesome-skills/mobile-app-design (dormant, shallower duplicate of ehmo's pack).
 
-For what real mobile apps' screens actually look like (evidence, not rules), pair with `/lazyweb-quick-references` or `/lazyweb-design-research`. For exact Apple HIG measurements or Liquid Glass implementation, see `HIGAgentSkills` and `claude-code-apple-skills` under Hidden gems.
+For what real mobile apps' screens actually look like (evidence, not rules), pair with `/lazyweb-lite-design-research` or `/lazyweb-deep-design-research`. For exact Apple HIG measurements or Liquid Glass implementation, see `HIGAgentSkills` and `claude-code-apple-skills` under Hidden gems.
 
 ---
 
