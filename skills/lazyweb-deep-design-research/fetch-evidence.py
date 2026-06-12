@@ -191,7 +191,7 @@ def extract_results(result):
         "coverage": payload.get("coverage"),
         "warnings": payload.get("warnings"),
         "pagination": payload.get("pagination"),
-        # ab_test_research and friends return prose learnings even when the
+        # search_ab_tests and friends return prose learnings even when the
         # reference list is empty — surface them instead of hiding behind count:0
         "analysis": payload.get("analysis") or payload.get("summary") or payload.get("learnings"),
     }

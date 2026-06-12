@@ -122,7 +122,7 @@ Use hosted Lazyweb MCP tools at `https://www.lazyweb.com/mcp` for database-backe
 
 Required public tools:
 - `lazyweb_health` - verify Lazyweb MCP connectivity
-- `lazyweb_ab_test_research` - retrieve and synthesize paywall/conversion experiment evidence
+- `lazyweb_search_ab_tests` - retrieve and synthesize mobile-only paywall/conversion experiment evidence
 - `lazyweb_search` - find paywall references and convention examples
 - `lazyweb_compare_image` - find visually similar screens when the target paywall image is available as `image_base64` + `mime_type` or `image_url`
 - `lazyweb_find_similar` - expand from a strong Lazyweb result by passing its returned `imageUrl`
@@ -137,7 +137,7 @@ not installed. Run `curl -fsSL https://www.lazyweb.com/install.sh | bash`,
 reload this client, then rerun this skill." Continue with web research only if
 the user wants a degraded fallback.
 
-The public A/B wrapper is included free. If `lazyweb_ab_test_research` is
+The public A/B wrapper is included free. If `lazyweb_search_ab_tests` is
 available, call it directly and use the returned experiment evidence. If the
 tool is unavailable or returns no matching experiments, clearly label the report
 as reference-grounded but not experiment-backed, then continue with Lazyweb
@@ -163,7 +163,7 @@ Read the paywall first. Identify:
 Use multiple evidence angles:
 
 1. **Visual references (grounding).** Run 3-5 `lazyweb_search` queries for paywalls matching the product category, user state, conversion goal, and layout. Read `visionDescription` before using a result. These references ground the redesign — they show the conventions THIS paywall should or should not adopt.
-2. **Experiment evidence (validation).** Call `lazyweb_ab_test_research` with the category as the industry filter, plus conversion goal, constraints, and target paywall description or image URL. Include the product name only as target context, not as an exact company filter. Use the tool to **validate or challenge** a hypothesis you already formed from reading THIS paywall — not as the starting point. Treat learnings as directional (screenshot-diff, not measured lift). If the corpus has no on-context experiment, say so and proceed on reference + convention grounding.
+2. **Experiment evidence (validation).** Call `lazyweb_search_ab_tests` for mobile-only A/B evidence with the category as the industry filter, plus conversion goal, constraints, and target paywall description or image URL. Include the product name only as target context, not as an exact company filter. Use the tool to **validate or challenge** a hypothesis you already formed from reading THIS paywall — not as the starting point. Treat learnings as directional (screenshot-diff, not measured lift). If the corpus has no on-context experiment, say so and proceed on reference + convention grounding.
 3. **Visual similarity.** If the target image is available and `lazyweb_compare_image` is exposed, retrieve structurally similar paywalls.
 4. **Flows.** If the question depends on sequencing, call `lazyweb_get_flows` for paywall, checkout, onboarding, upgrade, or cancellation journeys.
 5. **Divergent moves.** Search outside the obvious category when the user asks for bolder options. Extract the mechanism, not the literal design.
@@ -299,7 +299,7 @@ Any assertion — a pattern, anti-pattern, idea, hypothesis, "what's working" it
 Lead with ONE ranked recommended path, marked as the lead pick (`.lead` ribbon) in the *human-visible body* — not only in the agent copy block. Tag every other option Do / Explore / Skip (or P0/P1/P2) with a one-line "skip if". No ties among top picks; no flat undifferentiated menu. The "Skip" rows must link to the evidence (e.g. the anti-pattern screenshot) so the skip decision is shown, not just asserted.
 
 **3. Maximize confidence with evidence + data.**
-Back each recommendation with what worked for OTHER apps (real screenshots) PLUS supporting data: a prevalence count across the corpus ("seen in N of M examples") and, where the screen is growth/monetization, A/B experiment evidence via `lazyweb_ab_test_research`. If no experiment data exists, say so explicitly ("no experiment data found — recommendation is design-prevalence-based") and substitute the prevalence count as the directional signal. Never let a recommendation render with neither a visual nor a number behind it.
+Back each recommendation with what worked for OTHER apps (real screenshots) PLUS supporting data: a prevalence count across the corpus ("seen in N of M examples") and, where the screen is growth/monetization, A/B experiment evidence via `lazyweb_search_ab_tests`. If no experiment data exists, say so explicitly ("no experiment data found — recommendation is design-prevalence-based") and substitute the prevalence count as the directional signal. Never let a recommendation render with neither a visual nor a number behind it.
 
 **4. Be truth-seeking — never overclaim.**
 Label evidence strength honestly with an `.ebadge` on every claim/card/rec: **Measured** (real lift number) vs **Directional** (screenshot-diff / visual prevalence, no lift) vs **Single-source / Off-category**. Forbid comparative-performance verbs ("outperforms", "underperforms") unless a measurement backs them. Put a one-line corpus-strength banner (`.corpus`) right after Agent Instructions when evidence is single-source, thin, or context-mismatched. Tag any reference whose brand was inferred from a URL/vision-description ("brand inferred — verify"). Show absence claims with evidence-of-search (queries run × screens reviewed + the closest near-miss). Never invent a reference, a metric, or a company name. **Never use ASCII/box-drawing `<pre>` art for a layout — render the `.mock` mock-frame or a generated image.**

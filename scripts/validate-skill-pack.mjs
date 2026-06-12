@@ -28,8 +28,7 @@ const documentedLazywebTools = new Set([
   "lazyweb_find_similar",
   "lazyweb_compare_image",
   "lazyweb_list_categories",
-  "lazyweb_list_collections",
-  "lazyweb_ab_test_research",
+  "lazyweb_search_ab_tests",
   "lazyweb_paywall_cta_research",
   "lazyweb_get_workflows",
   "lazyweb_get_flows",
@@ -87,7 +86,7 @@ const allSkillText = ["SKILL.md", ...visibleModeSkillDirs.map((dir) => `${dir}/S
 const allInstructionText = ["README.md", "AGENTS.md", "CLAUDE.md", "SKILL.md", ...visibleModeSkillDirs.map((dir) => `${dir}/SKILL.md`)]
   .map((relativePath) => read(relativePath))
   .join("\n");
-for (const match of allSkillText.matchAll(/\b(?:lazyweb_(?:health|search|find_similar|compare_image|list_categories|list_collections|ab_test_research|paywall_cta_research|get_workflows|get_flows|find_experiments|recent_experiments)|search_screenshots|list_filters|list_all_filters|vision_screenshots|metadata_screenshots|get_company_details|list_companies_by_categories)\b/g)) {
+for (const match of allSkillText.matchAll(/\b(?:lazyweb_(?:health|search|find_similar|compare_image|list_categories|search_ab_tests|paywall_cta_research|get_workflows|get_flows|find_experiments|recent_experiments)|search_screenshots|list_filters|list_all_filters|vision_screenshots|metadata_screenshots|get_company_details|list_companies_by_categories)\b/g)) {
   assert.ok(documentedLazywebTools.has(match[0]), `skill docs mention unknown Lazyweb MCP tool: ${match[0]}`);
 }
 

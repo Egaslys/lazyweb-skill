@@ -2,8 +2,8 @@
 name: lazyweb-ab-test-research
 route: "A/B tests and monetization"
 description: |
-  Research growth, monetization, onboarding, checkout, paywall, cancellation,
-  pricing, activation, or other product A/B tests using Lazyweb experiment
+  Research mobile growth, monetization, onboarding, checkout, paywall,
+  cancellation, pricing, activation, or other product A/B tests using Lazyweb experiment
   evidence. Use when the user asks for A/B tests, experiments, test ideas,
   growth hypotheses, or PM strategy based on what other apps have tried.
 allowed-tools:
@@ -19,7 +19,7 @@ allowed-tools:
 
 # Lazyweb A/B Test Research
 
-Use Lazyweb experiment evidence to answer growth PM questions. The public
+Use Lazyweb mobile-only experiment evidence to answer growth PM questions. The public
 gateway and the richer backend/internal MCP surfaces are not identical, so start
 from the live tool schema before choosing how to retrieve evidence.
 
@@ -29,10 +29,10 @@ Use hosted Lazyweb MCP tools for all database-backed evidence. First list the
 available tools and run `lazyweb_health`.
 
 - `lazyweb_health` — verify Lazyweb MCP connectivity.
-- `lazyweb_ab_test_research` — current public gateway for A/B Test Agent research, included free.
+- `lazyweb_search_ab_tests` — current public mobile-only gateway for A/B Test Agent research, included free.
 - `lazyweb_search` — pull visual design references to pair with experiment evidence.
 - `lazyweb_compare_image` / `lazyweb_find_similar` — visual reference retrieval when the target screen or adjacent examples would clarify the recommendation.
-- `lazyweb_list_categories` / `lazyweb_list_collections` — public browsing helpers.
+- `lazyweb_list_categories` — public category browsing helper.
 
 **Pass `skill: "ab-test-research"` on every call.** Include `"skill": "ab-test-research"` in the arguments of each `lazyweb_*` tool call — for example `{"query": "pricing page", "limit": 30, "skill": "ab-test-research"}`. This is optional analytics metadata Lazyweb uses to understand which skills are used; never drop or change a real argument for it.
 
@@ -43,7 +43,7 @@ not installed. Run `curl -fsSL https://www.lazyweb.com/install.sh | bash`,
 reload this client, then rerun this skill." Then continue with general web
 research only if the user wants a degraded fallback.
 
-Current public `lazyweb_ab_test_research` arguments:
+Current public `lazyweb_search_ab_tests` arguments:
 
 ```json
 {
@@ -58,22 +58,24 @@ Current public `lazyweb_ab_test_research` arguments:
   "target_image_url": "https://example.com/screen.png",
   "limit": 25,
   "analysis_experiment_limit": 10,
-  "visual_inspection_budget": 0
+  "visual_inspection_budget": 0,
+  "interesting_learning": false,
+  "high_design_bar": false
 }
 ```
 
-The public A/B wrapper is included free. If `lazyweb_ab_test_research` is
+The public A/B wrapper is included free. If `lazyweb_search_ab_tests` is
 available, call it directly and use the returned experiment evidence. If the
 tool is unavailable or returns no matching experiments, say that experiment
 evidence was unavailable for this query, then continue with Lazyweb visual
 references when useful.
 
-`category` is the public gateway's industry filter. `product` is context for
-the user's target product and should not be treated as a Lazyweb company filter;
-do not retry exact product/company spellings or trust a zero-result response
-when warnings indicate a product/company filter was applied. If the product is
-useful context, include it, but make the retrieval query screen-pattern plus
-industry led.
+`category` is the public gateway's industry filter. `product` is forwarded as
+target context for the user's app, not as a reason to force exact company
+matching; do not retry exact product/company spellings or trust a zero-result
+response when warnings indicate a product/company filter was applied. If the
+product is useful context, include it, but make the retrieval query
+screen-pattern plus industry led.
 
 ### Backend/Internal Experiment Tools
 
@@ -124,12 +126,12 @@ Full `lazyweb_recent_experiments` filter matrix:
 }
 ```
 
-Backend/internal `lazyweb_ab_test_research` may also expose
-`interesting_learning` and `high_design_bar`. Leave `interesting_learning` as
-`false` by default. Set it to `true` only when the user explicitly asks for
-uncommon, surprising, or contrarian learnings; clearly label those as limited
-evidence. Do not pass `interesting_learning` or `high_design_bar` to the public
-gateway unless the live tool schema includes those fields.
+`lazyweb_search_ab_tests` exposes `interesting_learning` and
+`high_design_bar`. Leave `interesting_learning` as `false` by default. Set it
+to `true` only when the user explicitly asks for uncommon, surprising, or
+contrarian learnings; clearly label those as limited evidence. Set
+`high_design_bar` only when the user asks for premium, stronger,
+high-design-bar, or best-designed examples.
 
 Do not route through legacy paywall-specific research tools. If a paywall appears
 in the evidence, treat it as one screen type among many.
@@ -141,7 +143,7 @@ in the evidence, treat it as one screen type among many.
 
 2. **Choose the available evidence path.**
    - If the current MCP surface only exposes the public gateway, call
-     `lazyweb_ab_test_research`.
+     `lazyweb_search_ab_tests`.
    - If `lazyweb_find_experiments` is exposed, retrieve generic experiment rows
      with the strongest filters available.
    - If the user asks for recent/latest tests and `lazyweb_recent_experiments` is
@@ -302,7 +304,7 @@ The hosted copy is served byte-for-byte, so the report must only use:
   relative `references/{filename}` paths for locally saved screenshots
 - no `file://` URLs and no absolute local paths (`/Users/...`, `C:\...`)
 
-### Fields `lazyweb_ab_test_research` (operation `research`) returns by default
+### Fields `lazyweb_search_ab_tests` (operation `research`) returns by default
 
 Per experiment in `evidence.experiments[]` (no flags needed):
 - `company.company_name`, `company.category`, `company.subcategory`, `company.app_store_ranking`
@@ -414,7 +416,7 @@ DIVE FURTHER: {next Lazyweb skill or MCP tool} — {why}
 Evidence basis: A/B experiments (screenshot-diff) · {DATE}
 ```
 
-For THIS skill, `{TASK}` = "prioritizing and shipping {flow} experiments grounded in what comparable apps have already tested", and `DIVE FURTHER` → "`/lazyweb-optimize-paywall` to turn a paywall learning into a falsifiable redesign, or `lazyweb_ab_test_research operation=grab` with the cited experiment_id(s)".
+For THIS skill, `{TASK}` = "prioritizing and shipping {flow} experiments grounded in what comparable apps have already tested", and `DIVE FURTHER` → "`/lazyweb-optimize-paywall` to turn a paywall learning into a falsifiable redesign, or `lazyweb_search_ab_tests operation=grab` with the cited experiment_id(s)".
 
 #### B. Conciseness & "show, don't tell"
 
@@ -468,7 +470,7 @@ Any assertion — a pattern, anti-pattern, idea, hypothesis, "what's working" it
 Lead with ONE ranked recommended path, marked as the lead pick (`.lead` ribbon) in the *human-visible body* — not only in the agent copy block. Tag every other option Do / Explore / Skip (or P0/P1/P2) with a one-line "skip if". No ties among top picks; no flat undifferentiated menu. The "Skip" rows must link to the evidence (e.g. the anti-pattern screenshot) so the skip decision is shown, not just asserted.
 
 **3. Maximize confidence with evidence + data.**
-Back each recommendation with what worked for OTHER apps (real screenshots) PLUS supporting data: a prevalence count across the corpus ("seen in N of M examples") and, where the screen is growth/monetization, A/B experiment evidence via `lazyweb_ab_test_research`. If no experiment data exists, say so explicitly ("no experiment data found — recommendation is design-prevalence-based") and substitute the prevalence count as the directional signal. Never let a recommendation render with neither a visual nor a number behind it.
+Back each recommendation with what worked for OTHER apps (real screenshots) PLUS supporting data: a prevalence count across the corpus ("seen in N of M examples") and, where the screen is growth/monetization, A/B experiment evidence via `lazyweb_search_ab_tests`. If no experiment data exists, say so explicitly ("no experiment data found — recommendation is design-prevalence-based") and substitute the prevalence count as the directional signal. Never let a recommendation render with neither a visual nor a number behind it.
 
 **4. Be truth-seeking — never overclaim.**
 Label evidence strength honestly with an `.ebadge` on every claim/card/rec: **Measured** (real lift number) vs **Directional** (screenshot-diff / visual prevalence, no lift) vs **Single-source / Off-category**. Forbid comparative-performance verbs ("outperforms", "underperforms") unless a measurement backs them. Put a one-line corpus-strength banner (`.corpus`) right after Agent Instructions when evidence is single-source, thin, or context-mismatched. Tag any reference whose brand was inferred from a URL/vision-description ("brand inferred — verify"). Show absence claims with evidence-of-search (queries run × screens reviewed + the closest near-miss). Never invent a reference, a metric, or a company name. **Never use ASCII/box-drawing `<pre>` art for a layout — render the `.mock` mock-frame or a generated image.**

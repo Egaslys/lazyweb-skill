@@ -163,14 +163,14 @@ These rules apply to every `lazyweb_search` call in every mode:
   backend/internal aliases are available.
 - The current public gateway normally exposes `lazyweb_health`,
   `lazyweb_search`, `lazyweb_find_similar`, `lazyweb_compare_image`,
-  `lazyweb_list_categories`, `lazyweb_list_collections`,
-  `lazyweb_get_workflows`, `lazyweb_get_flows`, `lazyweb_ab_test_research`,
-  and `lazyweb_paywall_cta_research`. The full-pipeline run tools
+  `lazyweb_list_categories`, `lazyweb_get_workflows`, `lazyweb_get_flows`,
+  `lazyweb_search_ab_tests`, and `lazyweb_paywall_cta_research`. The
+  full-pipeline run tools
   `paywall_design_run` / `paywall_design_check_status` (and the parallel
   `signup_design_run` / `signup_design_check_status`) are gated behind
   env flags and may also be exposed — check the live tool list.
 - All current public Lazyweb MCP tools and visible workflow skills are free,
-  including `lazyweb_ab_test_research`, `lazyweb_paywall_cta_research`,
+  including `lazyweb_search_ab_tests`, `lazyweb_paywall_cta_research`,
   `paywall_design_run`, and `signup_design_run` when those run tools are
   exposed by the live schema. If a tool is missing or returns no matching
   evidence, treat that as an availability or coverage issue, not a billing gate.
@@ -184,10 +184,10 @@ These rules apply to every `lazyweb_search` call in every mode:
 - Screenshot-bearing tools return optimized image URLs. Supabase storage-backed URLs
   are signed for 365 days. Do not request or pass screenshot IDs, and do not
   construct storage URLs from raw paths.
-- `lazyweb_ab_test_research` uses `category` as the industry filter. Treat
-  `product` and `company` as context only; do not use them to force an exact
-  company match or trust a zero-result answer caused by an exact product/company
-  filter.
+- `lazyweb_search_ab_tests` is mobile-only A/B test evidence. It uses
+  `category` as the industry filter and forwards `product`/`company` as target
+  context. Do not use them to force an exact company match or trust a
+  zero-result answer caused by an exact product/company filter.
 - `lazyweb_find_similar` accepts `image_url` or `image_base64` plus `mime_type`;
   it does not take a screenshot ID.
 - `lazyweb_compare_image` does real image-similarity. Always send

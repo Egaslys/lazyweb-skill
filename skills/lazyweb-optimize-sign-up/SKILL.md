@@ -73,7 +73,7 @@ Required public tools:
 - `lazyweb_search` — find sign-up references and convention examples
 - `lazyweb_compare_image` — find visually similar sign-up screens when the
   target image is available
-- `lazyweb_ab_test_research` — broader A/B evidence (signup
+- `lazyweb_search_ab_tests` — mobile-only broader A/B evidence (signup
   experiments, lifecycle, activation)
 
 **Search discipline:** never repeat an identical `lazyweb_search` query — results are deterministic; page deeper with `offset` and follow `pagination.next_offset`. On `no_matches`/`low_coverage` warnings, use the closest result or note the coverage gap — don't rephrase the same concept in a loop. On `company_not_in_library`, use a suggested company or drop the filter.

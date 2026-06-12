@@ -70,7 +70,7 @@ Required current public MCP tools:
 - `lazyweb_search` — text search over mobile and desktop screenshots
 - `lazyweb_find_similar` — more results like a returned Lazyweb `imageUrl` or image payload
 - `lazyweb_compare_image` — visual search from `image_base64` + `mime_type` or `image_url`
-- `lazyweb_ab_test_research` — public paid A/B Test Agent wrapper when growth experiment evidence is needed
+- `lazyweb_search_ab_tests` — public mobile-only A/B Test Agent wrapper when growth experiment evidence is needed
 - `lazyweb_health` — connectivity check
 
 **Pass `skill: "design-improve"` on every call.** Include `"skill": "design-improve"` in the arguments of each `lazyweb_*` tool call — for example `{"query": "pricing page", "limit": 30, "skill": "design-improve"}`. This is optional analytics metadata Lazyweb uses to understand which skills are used; never drop or change a real argument for it.
@@ -184,7 +184,7 @@ Mismatched references destroy user trust faster than anything else.
 
 When the user is optimizing a growth, monetization, onboarding, checkout, paywall,
 activation, or cancellation screen, first inspect the live Lazyweb tool list. If
-only the current public gateway is exposed, call `lazyweb_ab_test_research` with
+only the current public gateway is exposed, call `lazyweb_search_ab_tests` with
 the target screen, product/category context, conversion goal, and constraints.
 If backend/internal tools are exposed, call `lazyweb_find_experiments` with the
 same screen/category filters, and use `lazyweb_recent_experiments` for
@@ -470,7 +470,7 @@ Any assertion — a pattern, anti-pattern, idea, hypothesis, "what's working" it
 Lead with ONE ranked recommended path, marked as the lead pick (`.lead` ribbon) in the *human-visible body* — not only in the agent copy block. Tag every other option Do / Explore / Skip (or P0/P1/P2) with a one-line "skip if". No ties among top picks; no flat undifferentiated menu. The "Skip" rows must link to the evidence (e.g. the anti-pattern screenshot) so the skip decision is shown, not just asserted.
 
 **3. Maximize confidence with evidence + data.**
-Back each recommendation with what worked for OTHER apps (real screenshots) PLUS supporting data: a prevalence count across the corpus ("seen in N of M examples") and, where the screen is growth/monetization, A/B experiment evidence via `lazyweb_ab_test_research`. If no experiment data exists, say so explicitly ("no experiment data found — recommendation is design-prevalence-based") and substitute the prevalence count as the directional signal. Never let a recommendation render with neither a visual nor a number behind it.
+Back each recommendation with what worked for OTHER apps (real screenshots) PLUS supporting data: a prevalence count across the corpus ("seen in N of M examples") and, where the screen is growth/monetization, A/B experiment evidence via `lazyweb_search_ab_tests`. If no experiment data exists, say so explicitly ("no experiment data found — recommendation is design-prevalence-based") and substitute the prevalence count as the directional signal. Never let a recommendation render with neither a visual nor a number behind it.
 
 **4. Be truth-seeking — never overclaim.**
 Label evidence strength honestly with an `.ebadge` on every claim/card/rec: **Measured** (real lift number) vs **Directional** (screenshot-diff / visual prevalence, no lift) vs **Single-source / Off-category**. Forbid comparative-performance verbs ("outperforms", "underperforms") unless a measurement backs them. Put a one-line corpus-strength banner (`.corpus`) right after Agent Instructions when evidence is single-source, thin, or context-mismatched. Tag any reference whose brand was inferred from a URL/vision-description ("brand inferred — verify"). Show absence claims with evidence-of-search (queries run × screens reviewed + the closest near-miss). Never invent a reference, a metric, or a company name. **Never use ASCII/box-drawing `<pre>` art for a layout — render the `.mock` mock-frame or a generated image.**

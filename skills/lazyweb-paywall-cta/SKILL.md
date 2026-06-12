@@ -66,7 +66,7 @@ database-backed evidence. First list the available tools and run
 Required public tools:
 - `lazyweb_health` — verify Lazyweb MCP connectivity
 - `lazyweb_paywall_cta_research` — the core retrieval for this skill. Returns the CTA framework SOP plus the corpus slice, divergent examples, convention stats, brand-own references, and the broad pool of CTA-changed A/B observations the agent curates into "Strongest Matches."
-- `lazyweb_ab_test_research` — broader paywall A/B evidence when the user asks "what experiments have shipped on this?"
+- `lazyweb_search_ab_tests` — mobile-only broader paywall A/B evidence when the user asks "what experiments have shipped on this?"
 - `lazyweb_search` — visual paywall references and convention examples
 - `lazyweb_compare_image` — visual similarity over the user's paywall image
 
@@ -125,7 +125,7 @@ Use the corpus as a **mechanism library**, not a text catalog:
 - `cta_experiments` — curate ~10 Strongest Matches by IDEA (not lexical overlap). AFTER must be interesting. The 10 picks must be DIVERGENT from each other.
 
 When the user asks for broader paywall A/B evidence (mechanism context outside
-CTA-only copy), call `lazyweb_ab_test_research`. Treat learnings as
+CTA-only copy), call `lazyweb_search_ab_tests`. Treat learnings as
 directional, not measured lift.
 
 ## Critique framework

@@ -213,7 +213,7 @@ Required MCP tools:
 - `lazyweb_health` - connectivity check
 
 Optional MCP tools:
-- `lazyweb_ab_test_research` - supporting experiment evidence for pricing, paywall, checkout, onboarding, and other growth/monetization screens when the live schema exposes it
+- `lazyweb_search_ab_tests` - mobile-only supporting experiment evidence for pricing, paywall, checkout, onboarding, and other growth/monetization screens when the live schema exposes it
 - `lazyweb_publish_report` - hosted-session publish path (see Tier 2 above)
 
 **Pass `skill: "deep-design-research"` on every Lazyweb call.** Include `"skill": "deep-design-research"` in the arguments of each `lazyweb_*` tool call - for example `{"query": "pricing page", "limit": 30, "skill": "deep-design-research"}`. This is optional analytics metadata; never drop or change a real argument for it.
@@ -372,7 +372,7 @@ On success, `work/evidence.json` holds merged, same-company-deduped references
    top-up file (its signed URLs are payload-hostile). Expect description-less
    near-dupes more often than not: budget at most 2 vision-verifications,
    and treat an empty yield as saturation confirmation (your corpus was
-   already complete), not failure. When ab_test_research returns 0
+   already complete), not failure. When search_ab_tests returns 0
    references, its prose learnings are in the queries' `analysis` fields.
 3. **Coverage honesty:** if `coverage_summary` shows failed or low_coverage
    queries — even when the script exits 0 — carry that into the report's
@@ -558,7 +558,7 @@ broken capture as evidence; keep originals in `$REPORT_DIR/work/`, not
 ### 8. Experiment evidence (growth/monetization screens only)
 
 For landing pages, pricing, paywalls, checkout, onboarding, referral, and other
-growth/monetization screens, call `lazyweb_ab_test_research` when available to
+growth/monetization screens, call `lazyweb_search_ab_tests` when available to
 validate or challenge a bet you already formed from reading the control. Treat
 learnings as directional unless the tool returns measured lift. If the tool is
 unavailable or returns no on-context experiments, say so in the relevant card
@@ -1096,7 +1096,7 @@ Rules:
   decision, an image-only map point, or a deck card.
 - Quantify prevalence ("7 of 14 selected references") instead of asserting it
   ("near-universal"). Counts always refer to the selected corpus.
-- For growth/monetization screens, use `lazyweb_ab_test_research` when available.
+- For growth/monetization screens, use `lazyweb_search_ab_tests` when available.
   If no experiment data is found, say "design-prevalence signal" in the relevant
   sentence instead of implying measured lift.
 - Evidence strength is carried **in plain words inside the description
@@ -1213,7 +1213,7 @@ bets; Bold/Wild bets are backed by mechanism proof from outlier or
 cross-category references plus the stated in-category absence ("0 of 14
 in-category references do this"), with evidence-of-search behind the absence.
 For growth/monetization screens add experiment learnings via
-`lazyweb_ab_test_research` when available; when unavailable, say so. Never
+`lazyweb_search_ab_tests` when available; when unavailable, say so. Never
 ship a bet with no visual and no number behind it — but the number for a
 creative bet may legitimately be the whitespace count, not a prevalence count.
 Low in-category prevalence is not weak evidence for a Bold bet; it is the point.
