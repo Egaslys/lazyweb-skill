@@ -57,37 +57,21 @@ test("gate FAILS when removed Patterns markup reappears", () => {
   assert.match(res.out, /removed patterns section/);
 });
 
-const SKELETON_FIXTURE = `<!doctype html><html><head>
-<meta name="lazyweb-report-state" content="skeleton">
-<meta http-equiv="refresh" content="60">
-<title>t</title></head><body><main>
-<h1>Design Research: T</h1>
-<div class="genbar"><span class="pulse"></span><span><b>This report is generating.</b></span>
-<span class="eta">usually ready in 5-12 min · started 21:42 PST</span></div>
-<section class="goal"><h2>Goal</h2><p>g</p></section>
-<div class="compare">
-<figure class="cmp control"><figcaption>Control</figcaption><div class="cmp-frame"><img src="references/current-state.png" alt="c"></div></figure>
-<figure class="cmp is-recommended"><figcaption>Recommended — generating</figcaption><div class="cmp-frame"><div class="pending-ref"><span class="spin"></span><p class="pt">3 redesign bets are being generated</p></div></div></figure>
-</div></main></body></html>`;
-
-test("gate skeleton mode: valid skeleton passes", () => {
-  const res = runGate(SKELETON_FIXTURE);
-  assert.equal(res.ok, true, res.out);
-});
-
-test("gate skeleton mode: skeleton without genbar/timestamp fails", () => {
-  const res = runGate(SKELETON_FIXTURE.replace(/started 21:42 PST/, "soon"));
-  assert.equal(res.ok, false);
-  assert.match(res.out, /Generating banner/);
-});
-
-test("gate full mode: skeleton leftovers in a final report fail", () => {
+test("gate: in-progress leftovers in a final report fail (skeleton machinery removed, guard stays)", () => {
   let filled = template
     .replace(/\s*data-ex="[^"]*"/g, "")
     .replace(/https:\/\/picsum\.photos\/seed\/([a-z0-9-]+)\/(\d+)\/(\d+)/g, "references/$1.png")
-    .replace(/<!--~[\s\S]*?~-->/g, "")
-    .replace("</main>", '<div class="genbar">leftover</div></main>');
-  const res = runGate(filled);
-  assert.equal(res.ok, false);
-  assert.match(res.out, /skeleton leftovers/);
+    .replace(/<!--~[\s\S]*?~-->/g, "");
+  for (const [leftover, label] of [
+    ['<div class="genbar">generating</div>', "genbar"],
+    ['<div class="pending-ref">pending</div>', "pending-ref"],
+    ['<meta http-equiv="refresh" content="60">', "meta refresh"],
+    ['<meta name="lazyweb-report-state" content="skeleton">', "state tag"],
+  ]) {
+    const res = runGate(filled.replace("</main>", leftover + "</main>"));
+    assert.equal(res.ok, false, `${label} must fail the gate`);
+    assert.match(res.out, /in-progress leftovers/, `${label} flagged as in-progress leftover`);
+  }
+  const clean = runGate(filled);
+  assert.equal(clean.ok, true, "clean final report still passes");
 });

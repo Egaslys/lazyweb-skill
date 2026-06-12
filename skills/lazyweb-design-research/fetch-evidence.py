@@ -191,6 +191,9 @@ def extract_results(result):
         "coverage": payload.get("coverage"),
         "warnings": payload.get("warnings"),
         "pagination": payload.get("pagination"),
+        # ab_test_research and friends return prose learnings even when the
+        # reference list is empty — surface them instead of hiding behind count:0
+        "analysis": payload.get("analysis") or payload.get("summary") or payload.get("learnings"),
     }
     return refs, meta
 
@@ -326,6 +329,18 @@ def main():
         return FALLBACK
     log(f"FETCH_OK: {len(ok)}/{len(queries)} queries, {len(deduped)} references "
         f"({len(failed)} failed, {len(low_coverage)} low-coverage)")
+    # Top-up verdict: when the plan contains expansion/analysis tools, print a
+    # one-line verdict so the agent never opens the raw (signed-URL-laden) file.
+    if any(q.get("tool") != "lazyweb_search" for q in queries):
+        attachable = sum(1 for r in deduped if r.get("visionDescription"))
+        analyses = sum(1 for q in results.values() if q.get("analysis"))
+        if attachable == 0:
+            log(f"TOPUP_SATURATED: 0 of {len(deduped)} returned refs are attachable "
+                f"(no visionDescription) — treat as saturation confirmation; "
+                f"analysis text: {analyses} (in evidence.json 'analysis' fields)")
+        else:
+            log(f"TOPUP: {attachable} attachable of {len(deduped)} returned; "
+                f"analysis text: {analyses}")
     return 0
 
 

@@ -199,15 +199,18 @@ const designResearchText = read("skills/lazyweb-design-research/SKILL.md");
 const designResearchTemplate = read("skills/lazyweb-design-research/report-template.html");
 const designResearchAll = designResearchText + "\n" + designResearchTemplate;
 assert.match(designResearchText, /report-template\.html/, "design-research skill must reference its report template");
-for (const scriptName of ["fetch-evidence.py", "generate-prototypes.py"]) {
+for (const scriptName of ["fetch-evidence.py", "generate-prototypes.py", "fill-report.py"]) {
   const sp = path.join(root, "skills/lazyweb-design-research", scriptName);
   assert.ok(existsSync(sp), `missing skills/lazyweb-design-research/${scriptName}`);
   assert.ok(statSync(sp).mode & 0o111, `${scriptName} must be executable`);
   assert.match(designResearchText, new RegExp(scriptName.replace(".", "\\.")), `design-research skill must reference ${scriptName}`);
 }
-for (const skeletonPattern of [/\.genbar/, /\.pending-ref/, /\.pending-strip/, /lazyweb-report-state/, /usually ready in 5-12 min/]) {
-  assert.match(designResearchAll, skeletonPattern, `skeleton-publish machinery missing: ${skeletonPattern}`);
+for (const removedSkeletonToken of [/genbar/, /pending-ref/, /pending-strip/, /lazyweb-report-state/]) {
+  assert.doesNotMatch(designResearchTemplate, removedSkeletonToken, `removed skeleton-publish markup must not reappear in the template: ${removedSkeletonToken}`);
 }
+assert.doesNotMatch(designResearchText, /Skeleton publish|publish a SKELETON/i, "skeleton-publish instructions must not reappear in the skill");
+assert.match(designResearchText, /in-progress leftovers/, "publish gate must reject in-progress markers in final reports");
+assert.match(designResearchText, /ONCE, when it is complete/, "publish section must state reports publish only when complete");
 assert.match(designResearchText, /unfilled template example content/, "publish gate must block unfilled template example content");
 assert.match(designResearchText, /picsum\\\.photos|picsum\.photos/, "publish gate must name picsum.photos as forbidden in final reports");
 for (const templatePattern of [

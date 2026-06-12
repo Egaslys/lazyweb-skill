@@ -67,44 +67,11 @@ when the user asks for implementation-ready code. Generate prototype images in
 parallel at medium effort by default, or low effort when the user asks for
 speed/exploration.
 
-## Skeleton publish (the churn hedge — publish EARLY, enrich in place)
-
-The publish ladder's `IDEMPOTENCY_KEY` means re-publishing updates the SAME
-URL. Use that to put a live link in the user's hands ~1 minute into the run:
-
-1. **Right after the control is captured and the goal is written** (~2 min
-   in; browse cold-start makes "1 minute" unrealistic), build the skeleton
-   report from the template's SKELETON block (see the template's comments).
-   Extract the template's `<head>`+`<style>` verbatim — e.g.
-   `python3 -c "t=open('{skill-base-dir}/report-template.html').read(); print(t[t.index('<style>'):t.index('</style>')+8])"` —
-   never retype the CSS. Structure: `<meta name="lazyweb-report-state" content="skeleton">` +
-   `<meta http-equiv="refresh" content="60">` in `<head>`; body = `<h1>` →
-   `.genbar` → Goal → the compare grid with the Control image on the left and
-   the `.pending-ref` tile in the right `.cmp-frame` → one `.pending-strip` →
-   footer. NO Agent Instructions block, NO option deck, NO Inspo in the
-   skeleton — it leads with the human moment, not empty plumbing.
-2. The `.genbar` copy is an honest promise: **"This report is generating.
-   Control captured · analyzing references · 3 redesign bets in progress.
-   Usually ready in 5-12 minutes · started {HH:MM} {TZ}."** Always a range
-   plus the start timestamp — never a precise ETA (a stale skeleton must
-   self-identify), and the page auto-refreshes via the meta tag (the enriched
-   publish simply lacks the tag, so reloading stops naturally).
-3. Run the contract gate (it detects skeleton mode from the state meta tag),
-   then publish with the SAME `$IDEMPOTENCY_KEY` the final publish will use.
-   **Tell the user the URL immediately** — "your report is generating at
-   {url}; it fills in as the run completes."
-4. The final enriched publish at the end of the run replaces the skeleton at
-   the same URL. The enriched report must contain NO `.genbar`, no
-   `.pending-*` elements, and no refresh/state meta tags — the gate enforces
-   this.
-
-Skeleton publish failures are non-blocking (same rules as the final publish):
-never let an early-publish error stop the run.
-
 ## Publish a Shareable Link (always, right after writing report.html)
 
 Every report is auto-published to lazyweb.com so the user can share it with
-teammates. Before publishing, run this contract gate with `$REPORT_DIR` set to
+teammates — ONCE, when it is complete. Never publish partial, skeleton, or
+in-progress states; the user sees a report only when it is done. Before publishing, run this contract gate with `$REPORT_DIR` set to
 `.lazyweb/design-research/{topic}-{date}`:
 
 ```bash
@@ -117,23 +84,7 @@ html = path.read_text(encoding="utf-8")
 # Forbidden-content checks run on RENDERED content only — HTML comments
 # (including the template's own instruction comments) don't render.
 rendered = re.sub(r"<!--[\s\S]*?-->", "", html)
-skeleton = bool(re.search(r'name=["\']lazyweb-report-state["\'] content=["\']skeleton["\']', html, re.I))
-
-if skeleton:
-    required_groups = {
-        "Generating banner": [
-            r'class=["\'][^"\']*\bgenbar\b',
-            r'report is generating',
-            r'started',
-        ],
-        "Control compare": [
-            r'class=["\'][^"\']*\bcmp\b[^"\']*\bcontrol\b|class=["\'][^"\']*\bcontrol\b',
-            r'class=["\'][^"\']*\bpending-ref\b',
-        ],
-        "Auto-refresh": [r'http-equiv=["\']refresh["\']'],
-    }
-else:
-    required_groups = {
+required_groups = {
     "Agent Instructions copy block": [
         r'class=["\'][^"\']*\bagent-instructions\b',
         r'FOR THE CODING AGENT',
@@ -143,7 +94,7 @@ else:
         r'class=["\'][^"\']*\bprototype-option\b',
         r'Recommended',
     ],
-    }
+}
 missing = []
 for label, patterns in required_groups.items():
     for pattern in patterns:
@@ -159,9 +110,7 @@ for label, pattern in {
     "old prototype wrapper": r'class=["\'][^"\']*\bprototype-image\b',
     "old evidence sections": r'Reference Evidence|Source Notes|Key Examples|<h2[^>]*>\s*Findings\s*</h2>|<h2[^>]*>\s*Sources\s*</h2>',
     "removed patterns section": r'class=["\'][^"\']*\bpattern-shot\b|class=["\'][^"\']*\bpatterns-grid\b|<h2[^>]*>\s*Interesting Patterns\s*</h2>',
-    **({} if skeleton else {
-        "skeleton leftovers in final report": r'class=["\'][^"\']*\bgenbar\b|class=["\'][^"\']*\bpending-ref\b|class=["\'][^"\']*\bpending-strip\b|http-equiv=["\']refresh["\']|lazyweb-report-state',
-    }),
+    "in-progress leftovers (reports publish only when complete)": r'class=["\'][^"\']*\b(?:genbar|pending-ref|pending-strip)\b|http-equiv=["\']refresh["\']|lazyweb-report-state',
     "unfilled template example content": r'EXAMPLE-|picsum\.photos|placehold\.co|\bdata-ex=|\{\{[A-Z0-9_]+\}\}',
 }.items():
     if re.search(pattern, rendered, re.I):
@@ -414,15 +363,17 @@ On success, `work/evidence.json` holds merged, same-company-deduped references
    `work/evidence-topup.json`:
    - `lazyweb_find_similar` on the 2-3 strongest results, passing each
      reference's `imageUrl` string as `image_url`, `"limit": 5`;
-   - `lazyweb_compare_image` on the control via `image_url` pointing at the
-     HOSTED control from the skeleton publish
-     (`{shareable_url}references/current-state.png`) — never inline base64
-     through chat; if the skeleton publish failed, SKIP compare_image
-     entirely rather than base64-ing.
-   Expect top-up results to be description-less near-dupes more often than
-   not: budget at most 2 vision-verifications from the round, and when it
-   yields nothing attachable, record it as saturation confirmation (your
-   corpus was already complete) rather than a failure.
+   - `lazyweb_compare_image` is OMITTED from the fast path (measured: low
+     yield and payload-hostile — inline base64 through chat costs more than
+     it returns). Only the agent-fallback path may use it, with the
+     downscaled ≤500px viewport-crop JPEG.
+   Read ONLY the script's stderr verdict line (`TOPUP_SATURATED:` /
+   `TOPUP: N attachable`) and `evidence-topup-summary.json` — never the raw
+   top-up file (its signed URLs are payload-hostile). Expect description-less
+   near-dupes more often than not: budget at most 2 vision-verifications,
+   and treat an empty yield as saturation confirmation (your corpus was
+   already complete), not failure. When ab_test_research returns 0
+   references, its prose learnings are in the queries' `analysis` fields.
 3. **Coverage honesty:** if `coverage_summary` shows failed or low_coverage
    queries — even when the script exits 0 — carry that into the report's
    `.corpus` banner when the selected corpus lands under 8 references or a
@@ -1195,45 +1146,36 @@ from scratch.**
 cp "{skill-base-dir}/report-template.html" "$REPORT_DIR/report.html"
 ```
 
-Rules for filling it:
+Fill it with `fill-report.py` — **never read the template and never write
+fill code.** Author `work/report-data.json` (content only: topic, goal,
+rec_intro {what, why}, control, optional corpus_banner, handoff block, 2-4
+bets with deck refs and build_prompts, inspo map or null — the full schema is
+in the script's docstring: `head -60 "{skill-base-dir}/fill-report.py"`),
+then:
 
-- Example content is marked with `data-ex` attributes and `picsum.photos`
-  image URLs. **Replace every example value and delete every `data-ex`
-  attribute as you go.** The publish contract gate BLOCKS any report still
-  containing `data-ex`, `picsum.photos`, `placehold.co`, `EXAMPLE-`, or a
-  leftover `{{PLACEHOLDER}}`.
-- Everything that is not example content stays byte-identical. The CSS and JS
-  are render-tested at 1500px/800px across S/M/L scales — do not restyle,
-  "improve", or trim them.
-- `<!--~ REPEAT ... ~-->` comments mark blocks to duplicate per bet /
-  reference / point; `<!--~ OPTIONAL ... ~-->` and `<!--~ VARIANT ... ~-->`
-  blocks are kept, swapped, or deleted as their comment says (corpus banner,
-  Inspo section, `tall`/`mobileset` compare variants, greenfield no-control
-  case). Remove the `~` comments themselves from the final report.
-- Update the `_vars` array to exactly the bets you shipped (one entry per bet,
-  recommended first) and **escape interpolated strings** as the template's
-  comments instruct — apostrophes/backslashes in JS literals; `"` `<` `>` as
-  entities in attributes and captions.
-- Lazyweb references use absolute `imageUrl`/`image_url` values; local assets
-  (control, prototypes, web captures) use relative `references/{filename}`
-  paths only.
-- Avoid horizontal page overflow at every scale setting and viewport width.
-- Fill with plain string replacement, not regex substitution — `re.sub`
-  raises `bad escape` when replacement text contains backslashes (the `_vars`
-  block will); use `str.replace` or a lambda replacement. Slice between the
-  template's STABLE landmarks when replacing whole sections — section
-  boundaries like `<div class="compare">`, `<h3 class="why-h">`,
-  `<section id="inspo"`, and `<footer class="lw-foot">` are guaranteed; do
-  not assume closing-tag positions.
+```bash
+python3 "{skill-base-dir}/fill-report.py"   --data "$REPORT_DIR/work/report-data.json"   --template "{skill-base-dir}/report-template.html"   --out "$REPORT_DIR/report.html"
+```
+
+Rules:
+
+- All strings in `report-data.json` are RAW — the script does every bit of
+  HTML-attribute and JS-string escaping. Never pre-escape.
+- The recommended bet is `bets[0]` with `"recommended": true`; prevalence or
+  whitespace counts go in the FIRST deck entry's `detail`.
+- `"inspo": null` omits the section (fewer than 8 comparable references).
+- On `FILL_FAILED: missing <field>`, fix the data file and re-run — never
+  hand-edit the generated HTML.
+- The demo example content in the template never enters your context and
+  cannot leak; the publish gate still verifies the output.
 - **Verification is the contract gate, nothing more.** Do not browse-load,
-  screenshot, or vision-inspect the finished report — the template is
-  render-tested and the publish gate catches contract violations. Run the
-  gate, fix what it names, publish.
+  screenshot, or vision-inspect the finished report. Run the gate, fix what
+  it names, publish.
 - Open the HTML file in the user's browser: `open "$REPORT_DIR/report.html"` —
   skip this in a headless/CI/no-GUI environment and just report the path.
-  Similarly, when you cannot ask the user (an unattended or non-interactive
-  run), make the closest reasonable assumption and state it in the handoff
-  block.
+  Similarly, when the run is unattended or the host cannot ask the user a
+  clarifying question, make the closest reasonable assumption and state it
+  in the handoff block.
 
 CSS gotcha (if you must add a style): never write `font:700 10px/1 inherit` —
 `inherit` is not a valid font-family inside the `font` shorthand and browsers
