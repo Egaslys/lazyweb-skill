@@ -30,8 +30,9 @@ component advice.
 not a plan and not a server-rendered page.** Regardless of whether you are in
 plan mode or not, ALWAYS:
 
-1. Do the evidence work (read the paywall, search Lazyweb, mine experiments,
-   form 2-4 hypotheses) per the workflow sections below.
+1. Do the evidence work (read the paywall, diagnose frictions, search Lazyweb,
+   mine experiments, then build a slot-diverse portfolio of hypotheses — aim for
+   4, drop to 2-3 only for a genuinely simple paywall) per the workflow sections.
 2. Generate one mockup per hypothesis (the "Generate the mockups" ladder below)
    and save the references the report will point at.
 3. Author the report by **writing the HTML file yourself** to
@@ -42,8 +43,8 @@ plan mode or not, ALWAYS:
    `report-data.json`. The deliverable is the `report.html` you author.
 5. Open the finished report: `open "$REPORT_DIR/report.html"` (skip `open` in a
    headless/CI/no-GUI environment and just print the absolute path).
-6. Summarize the 2-4 hypotheses, name the strongest one, and surface the path to
-   `report.html`.
+6. Summarize the portfolio (one line per slot), name the strongest one (the lead),
+   and surface the path to `report.html`.
 7. Ask the user if the paywall direction looks good.
 8. If in plan mode, exit plan mode after the user confirms.
 9. Suggest next steps: "You can now implement the strongest hypothesis, ask
@@ -108,7 +109,9 @@ drives them, so do not rename, restructure, or drop them):
 <!-- 2. EVIDENCE CARD: annotated before/after carousel -->
 <!-- 3. DIAGNOSIS CARD -->
 <!-- 4. PRIORITIZATION CARD -->
-<!-- 5. FOOTER -->
+<!-- 5. CONSENSUS-MOVEMENT CARDS: "Components" trend chart + "Strategies" trend chart -->
+<!-- 6. OTHER INSPIRATION CARD: divergent-grid of cross-category reference paywalls -->
+<!-- 7. FOOTER -->
 
 <!-- lightbox overlay + scripts -->
 <div id="lightbox" class="lightbox hidden" aria-hidden="true"><button class="lightbox-close">&times;</button><button class="lightbox-prev">&larr;</button><img class="lightbox-image" alt="" /><button class="lightbox-next">&rarr;</button></div>
@@ -118,7 +121,8 @@ drives them, so do not rename, restructure, or drop them):
 ```
 
 Section order is fixed: **title → top 3-column carousel → evidence → diagnosis →
-prioritization → footer → lightbox + scripts.**
+prioritization → consensus-movement (Components, then Strategies) → other
+inspiration → footer → lightbox + scripts.**
 
 ### 1. Top card — 3-column hypothesis carousel (required)
 
@@ -255,21 +259,91 @@ image. Omit the whole evidence card if no hypothesis has corpus evidence.
 ### 3. Diagnosis card
 
 A `.card` titled with a `.col-heading` and a `.diagnosis-list` of `.diag-row`s —
-your pre-hypothesis problem read of THIS paywall. Each row carries a severity
-class (`sev-high` / `sev-medium` / `sev-low` / `sev-none`), a `.diag-head`
-(badge + type + optional "→ Hypothesis #N"), a `.diag-summary`, and optional
-`.diag-meta` (location / evidence). Use `sev-none` (green) rows for genuine
-strengths — name what the paywall already does well; do not invent a problem to
-fill a row.
+the Pass-1 friction read of THIS paywall (one row per `F#`). Each row carries a
+severity class (`sev-high` / `sev-medium` / `sev-low` / `sev-none`), a `.diag-head`
+(severity badge + type + the `F#` id + a "→ Hypothesis #N" link when a hypothesis
+addresses it), a `.diag-summary`, and optional `.diag-meta` (location / evidence).
+Use `sev-none` (green) rows for the genuine strengths you named in Pass 1 — what
+the paywall already does well; do not invent a problem to fill a row.
 
 ### 4. Prioritization card
 
-A `.card` with a `.basic-table` (`is-selected` highlights the chosen
-hypotheses): rank, hypothesis title + text, and a one-line assessment of why it
-made (or didn't make) the cut. This is where the ordering decision is shown in
-the body, not just implied by carousel order.
+A `.card` with a `.basic-table` (`is-selected` highlights the lead) that shows the
+portfolio ranked by the Confidence × Upside × Boldness read. Columns: rank,
+hypothesis title + text, the **slot** (Safe bet / High-value bet / Bold swing /
+Contrarian), and a one-line assessment of why it ranks where it does (its
+confidence/upside/boldness balance) — and, for any hypothesis you considered but
+cut, why it didn't make the portfolio. Rank #1 is the `is-selected` lead and must
+match the first (`active`) slide of the top carousel. This is where the ordering
+decision is shown in the body, not just implied by carousel order.
 
-### 5. Footer
+### 5. Consensus-movement cards — "Components" then "Strategies" (required)
+
+Two `.card`s that show where the corpus you actually pulled is moving — a
+directional read across the Lazyweb references + winning experiments gathered for
+THIS report (not a global census; say so in the intro). The first card is
+**Components** (UI elements: single primary CTA, selectable plan cards, per-period
+price, free-vs-premium comparison, cancel-anytime line, social proof, trial
+toggle…); the second is **Strategies** (mechanisms: discount framing, trial
+emphasis, price anchoring, tier comparison, urgency, value stacking…). Each card
+is a `.trend-chart` of `.trend-row`s ordered by net movement, right/green
+(`.trend-bar.pos`) = rising, left/amber (`.trend-bar.neg`) = falling. On the
+Components card, give every row a `with-flag` and a `.bench-indicator` flag
+showing whether THIS paywall already has that component (`bench-flag on` = "has")
+or not (`bench-flag off` = "missing") — every rising component the screen lacks is
+a gap that should map to a friction/hypothesis. Use the `.priority-intro` to label
+the basis honestly ("directional net movement across N references + M experiments
+pulled for this report").
+
+```html
+<div class="card">
+<h3 class="col-heading">Where the consensus is moving &mdash; Components</h3>
+<p class="priority-intro">Directional net movement across the Lazyweb references + winning experiments pulled for this report (not a global census). Right/green = rising; left/amber = falling. The flag marks what’s already on THIS paywall vs missing.</p>
+<div class="trend-chart">
+  <div class="trend-row with-flag">
+    <div class="trend-label">Selectable plan cards (radio)</div>
+    <div class="trend-bar-axis"><div class="trend-bar pos" style="width:50.0%"></div></div>
+    <div class="trend-num pos">+6</div>
+    <div class="bench-indicator"><span class="bench-flag off">missing</span></div>
+  </div>
+  <!-- …more rows; use `bench-flag on`>has</span> for components the paywall already has,
+       and `.trend-bar.neg` + `.trend-num.neg` (negative) for falling components. -->
+</div>
+</div>
+```
+
+Emit the **Strategies** card the same way (its own `.card` + `.trend-chart`); its
+rows describe mechanisms rather than components and may omit the has/missing flag
+(plain `.trend-row`).
+
+### 6. Other inspiration card (required)
+
+A `.card` titled "Other inspiration" with a `.divergent-grid` of 4-8
+`.divergent-card`s — real paywalls (Lazyweb `lazyweb_search` results, including a
+couple of cross-category picks) that express the mechanisms behind the
+hypotheses. Each card embeds the inlined reference screenshot in a
+`.divergent-imgwrap`, a one-line `.pattern` naming the transferable move, and a
+`.companies` label. Spotlight the closest peers (e.g. other social/consumer
+apps) and note them in the `.priority-intro`.
+
+```html
+<div class="card">
+<h3 class="col-heading">Other inspiration</h3>
+<p class="priority-intro">Real paywalls expressing the mechanisms behind the hypotheses — the closest peers to THIS product are called out.</p>
+<div class="divergent-grid">
+  <div class="divergent-card">
+    <div class="divergent-imgwrap"><img class="lightbox-img" src="data:image/png;base64,…" alt="Telegram paywall" loading="lazy" /></div>
+    <div class="divergent-meta">
+      <div class="pattern">Premium-perks paywall in a social app: one plan selector + a single subscribe CTA, benefits below.</div>
+      <div class="companies">Telegram</div>
+    </div>
+  </div>
+  <!-- …more cards -->
+</div>
+</div>
+```
+
+### 7. Footer
 
 Append a small muted footer paragraph:
 `<p class="muted">Powered by Lazyweb — turn your agent into a design researcher… for free!</p>`
@@ -1249,7 +1323,7 @@ Required public tools:
 - `lazyweb_compare_image` - find visually similar screens when the target paywall image is available as `image_base64` + `mime_type` or `image_url`
 - `lazyweb_find_similar` - expand from a strong Lazyweb result by passing its returned `imageUrl`
 - `lazyweb_get_flows` - optional ordered paywall, checkout, upgrade, or onboarding journeys
-- `lazyweb_generate_mockup` - server-side paywall mockup generation (Lazyweb's image key) for non-Codex clients; see the image-gen ladder in "Generate the mockups" below
+- `lazyweb_start_mockup` + `lazyweb_get_mockup` - **async** server-side paywall mockup generation (Lazyweb's image key) for non-Codex clients. `lazyweb_start_mockup` returns a `job_id` immediately; poll `lazyweb_get_mockup` with it until the image is ready. Non-Codex clients MUST use this pair — the synchronous `lazyweb_generate_mockup` always times out through the hosted gateway (gpt-image-2 needs ~40-90s; the gateway aborts at ~15s), which is what forces reports onto CSS mock-frames. See the image-gen ladder in "Generate the mockups" below.
 
 **Pass `skill: "optimize-paywall"` on every call.** Include `"skill": "optimize-paywall"` in the arguments of each `lazyweb_*` tool call — for example `{"query": "pricing page", "limit": 30, "skill": "optimize-paywall"}`. This is optional analytics metadata Lazyweb uses to understand which skills are used; never drop or change a real argument for it.
 
@@ -1330,9 +1404,38 @@ incrementing `data-label` ("1", "2", …).
 
 Every hypothesis must be anchored to the TARGET paywall's own read — the specific conventions it is missing or mis-using, and a named friction on *this* screen — not to the experiment corpus. Experiment evidence may support a hypothesis, but the hypothesis originates from "what is wrong or under-leveraged on THIS paywall," established in "Read the paywall first" above.
 
-## Optimization Framework
+## Optimization Framework — diagnose, then build a slot-diverse portfolio
 
-The unit of analysis is a hypothesis, not a component list.
+The unit of analysis is a hypothesis, not a component list. Reason in two passes,
+the way the strongest paywall reviews do — diagnose the screen, then assemble a
+deliberately diverse PORTFOLIO of bets rather than a flat menu of similar ideas.
+
+### Pass 1 — Diagnose (frictions first)
+
+Before writing any hypothesis, read THIS paywall and list **4-6 conversion
+frictions**, each with: an id (`F1`, `F2`, …), a **severity** (high / medium /
+low), the component it lives on, and one line of evidence/why. Also name 1-2
+genuine **strengths** (severity `none`, the green rows) — do not invent a problem
+to fill a row. These frictions are what the hypotheses must attack, and they
+populate the Diagnosis card; each hypothesis links back to the friction id it
+addresses ("→ Hypothesis #N" on the friction row).
+
+### Pass 2 — Build a portfolio of slot-diverse hypotheses
+
+Build a **portfolio of 4 deliberately different bets** (drop to 2-3 only when the
+paywall is genuinely simple), one per **risk slot**. The slots are what force real
+diversity — four variations of the same move is a failure, even if each is
+individually fine:
+
+- **Safe bet** (`safe_bet`) — a near-table-stakes fix the corpus shows is
+  conventional and low-risk. Highest confidence, modest upside.
+- **High-value bet** (`high_value_bet`) — a higher-upside structural change (plan/
+  tier restructure, trial reframing, anchoring) with solid evidence behind it.
+- **Bold swing** (`bold_swing`) — a bigger redesign move that could move the metric
+  a lot if it lands. Higher risk, higher upside.
+- **Contrarian / reframe** (`contrarian`) — the "most reviewers wouldn't try this,
+  but consider it" pick that reframes the offer or challenges a convention this
+  paywall leans on. Highest boldness in the portfolio.
 
 A good hypothesis takes this form:
 
@@ -1347,48 +1450,98 @@ Bad:
 "Improve the pricing UX."
 "Add social proof to enhance conversion."
 
-Propose 2-4 hypotheses. Each one must:
+Each hypothesis must:
+- Sit in exactly ONE slot (no two hypotheses share a slot)
 - Name the specific conversion metric it should move
 - Describe the concrete screen change well enough to implement
-- Address a named conversion friction
+- Address a named friction (`F#`) from Pass 1
 - Cite experiment evidence or visual/convention evidence
-- Be meaningfully different from the other hypotheses
+- Be meaningfully different in **mechanism** from the others
 - Be falsifiable
+
+### Order them — Confidence × Upside × Boldness
+
+Rank the portfolio by an expected-payoff read across three axes — **Confidence**
+(how sure the move generalizes to THIS paywall), **Upside** (how much it moves the
+metric if it works), and **Boldness** (how far it departs from table stakes). The
+lead pick (rank #1, the `active` slide and `is-selected` row) is the best expected
+payoff for THIS paywall — often the high-value bet, not simply the safest. Show
+that ordering, and each hypothesis's slot, in the Prioritization card.
 
 Hard rules:
 - Do not recommend a convention the user's paywall already uses unless the recommendation changes how it is used.
 - Do not propose unmotivated visual polish.
-- Do not write two hypotheses with the same mechanism.
+- Do not write two hypotheses with the same mechanism, or two in the same slot.
 - Do not claim measured lift unless the Lazyweb evidence explicitly provides it.
 - Treat experiment learning text as directional unless the tool returns validated performance data.
 - **Anti-hybrid checksum.** Before writing each hypothesis, confirm it answers "what would you change about THIS paywall, and why" — not "what did experiment X test." If a hypothesis reads as a summary of an experiment rather than a change to the target screen, rewrite it. The report is a paywall redesign, not an experiment digest.
 
 ## Generate the mockups (one per hypothesis — ENFORCED LADDER)
 
-Generate exactly one mockup per hypothesis and place it in that hypothesis's
-`.mockup-col` slide. Follow this ladder in order; there are no other tiers:
+Generate exactly one mockup per hypothesis (4 when you have a full portfolio) and
+place it in that hypothesis's `.mockup-col` slide. A **real generated image is the
+goal** — a CSS frame is the last-resort fallback, never the default. Every
+generated mockup is an EDIT of the user's CURRENT paywall screenshot (so it keeps
+the real brand, layout, and dimensions), conditioned on the hypothesis's
+`mockup_prompt` **prefixed with the ENFORCED PREAMBLE below**. Follow this ladder:
 
-**(a) If you ARE Codex** → generate the mockup with your built-in `image_gen`
-tool (gpt-image-2, on the user's own auth). Attach the current paywall
-screenshot as the reference image so the mockup keeps the product's brand,
-layout, and dimensions, and apply the hypothesis's `mockup_prompt` build-spec.
-Save the result to `$REPORT_DIR/references/mock-<slug>.png`.
+**(a) If you ARE Codex** → generate with your built-in `image_gen` tool
+(gpt-image-2, on the user's own auth). Attach the current paywall screenshot as
+the reference image and apply `ENFORCED PREAMBLE + mockup_prompt`. Save to
+`$REPORT_DIR/references/mock-<slug>.png`.
 
-**(b) If you are NOT Codex** → call the Lazyweb MCP tool
-`lazyweb_generate_mockup` (server-side, on Lazyweb's image key). Pass `prompt`
-(the `mockup_prompt` build-spec) plus the CURRENT screen as `image_base64` (and
-its `mime_type`) as the reference image. Save the returned `image_base64` to
-`$REPORT_DIR/references/mock-<slug>.png`. Pass `skill` and `version` like every
-other Lazyweb call.
+**(b) If you are NOT Codex (Claude Code, etc.)** → use the **async** mockup pair.
+Do NOT call `lazyweb_generate_mockup` — it always times out through the hosted
+gateway (gpt-image-2 needs ~40-90s; the gateway aborts at ~15s). Instead:
 
-**(c) Only if `lazyweb_generate_mockup` returns `MOCKUP_IMAGE_KEY_MISSING` or
-`MOCKUP_DAILY_LIMIT`** → fall back to a CSS `.mock` mock-frame: a small
-hand-built HTML/CSS approximation of the change rendered inside the
-`.mockup-slide`, styled to read like THIS product (brand hexes, type, layout).
-Never fall back to ASCII art, and never skip the mockup entirely.
+  1. **Start all of them up front** so they generate in parallel: for EACH
+     hypothesis call `lazyweb_start_mockup` with `prompt` = `ENFORCED PREAMBLE +
+     mockup_prompt`, the CURRENT screen as `image_base64` (+ `mime_type`),
+     `size:"1024x1536"` (or whichever option matches the screenshot's aspect),
+     and `skill`/`version`. Leave `quality` at its default (`medium` — internal-
+     grade and reliable). It returns a `job_id` immediately. Collect the job_ids.
+  2. **Poll** `lazyweb_get_mockup` with each `job_id` every ~5s. When `status` is
+     `"done"`, save the returned `image_base64` to
+     `$REPORT_DIR/references/mock-<slug>.png`. Keep polling the still-`pending`
+     jobs (budget up to ~170s per job) until every job is `done` or `error`.
 
-Each rung's mockup goes into the matching `.mockup-slide` (rung a/b as an
-`<img>` with an inlined `data:` URI; rung c as the `.mock` frame markup).
+**(c) Fallback — only when a mockup genuinely can't be generated**: any of
+`lazyweb_start_mockup` returning `MOCKUP_IMAGE_KEY_MISSING` / `MOCKUP_DAILY_LIMIT`,
+`lazyweb_get_mockup` returning `status:"error"`, or a job still `pending` after
+~170s. For THAT hypothesis only, render a CSS `.mock` mock-frame: a small
+hand-built HTML/CSS approximation styled to read like THIS product (brand hexes,
+type, layout). Never fall back to ASCII art, never skip the mockup. A mix is fine
+(e.g. 3 real images + 1 frame) — degrade per-hypothesis, never the whole report.
+
+Each rung's mockup goes into the matching `.mockup-slide` (rung a/b as an `<img>`
+with an inlined `data:` URI; rung c as the `.mock` frame markup).
+
+### ENFORCED PREAMBLE — prepend to every `mockup_prompt` (required)
+
+The generated mockup must read as a real edit of THIS paywall, not a generic
+stock screen. Prepend these enforced constraints (verbatim, filling the
+`change_scope` choice) to each hypothesis's `mockup_prompt` before sending it to
+the image tool — they override any creative liberty and are what make the four
+mockups look like the same product at the same dimensions:
+
+> ENFORCED CONSTRAINTS — the output is a redesigned paywall mockup based on the
+> baseline image. (1) **EXACT VISUAL STYLE PRESERVATION**: match the baseline's
+> background color, brand palette, typography (family/weight/size hierarchy),
+> border-radius, icon/illustration style, and overall feel — it must look like the
+> same product. (2) **DIMENSION + ASPECT PRESERVATION**: keep the baseline's
+> aspect ratio and the status-bar / safe-area insets in the same proportions.
+> (3) **PRIMARY CTA PROMINENCE LOCK**: the dominant purchase/subscribe button stays
+> AT LEAST as large and as visually dominant as in the baseline — you may move it,
+> never shrink it, never reduce its contrast; if the change needs room, collapse
+> other content (hide a secondary plan, shorten the benefit list, drop decoration)
+> rather than miniaturizing the CTA. (4) **CHANGE SCOPE** — pick the tightest that
+> fits the hypothesis: `copy_tweak` (change only the named text; everything else
+> pixel-identical) · `component_swap` (restyle/replace ONE named component, keep
+> all others identical) · `section_restructure` (move/resize/regroup elements
+> WITHIN one named section, keep header/other cards/footer/system UI identical) ·
+> `full_redesign` (restructure the layout while preserving brand identity and
+> aspect ratio; clutter is not licensed). Apply the change below within that scope.
+> === CHANGE TO APPLY === {the hypothesis's mockup_prompt}
 
 ### `mockup_prompt` build-spec discipline (required)
 
