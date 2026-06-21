@@ -268,14 +268,37 @@ the paywall already does well; do not invent a problem to fill a row.
 
 ### 4. Prioritization card
 
-A `.card` with a `.basic-table` (`is-selected` highlights the lead) that shows the
-portfolio ranked by the Confidence × Upside × Boldness read. Columns: rank,
-hypothesis title + text, the **slot** (Safe bet / High-value bet / Bold swing /
-Contrarian), and a one-line assessment of why it ranks where it does (its
-confidence/upside/boldness balance) — and, for any hypothesis you considered but
-cut, why it didn't make the portfolio. Rank #1 is the `is-selected` lead and must
-match the first (`active`) slide of the top carousel. This is where the ordering
-decision is shown in the body, not just implied by carousel order.
+A `.card` with a numeric **stack-rank** `.basic-table.stack-rank-table` that shows
+the explicit Confidence × Upside × Boldness scoring behind the ordering — this is
+where the decision is shown in the body, not just implied by carousel order.
+Columns: `#` · `Hypothesis` (title + one-line text) · `Proposed` · `Category`
+(the slot) · `Confidence` · `Upside` · `Boldness` · `Total`. Score each axis
+`0.00`–`1.00` (Confidence = how sure it generalizes to THIS paywall; Upside = how
+much it moves the metric; Boldness = how far from table stakes); `Total` =
+Confidence × Upside × Boldness (or a clearly-stated weighting). Sort by `Total`
+descending — the top row is rank #1, gets `is-relevant`, and must match the first
+(`active`) slide of the top carousel. Mark each proposed row `✅ Yes` in the
+`Proposed` column (`.rel-yes`); include any hypotheses you considered but cut as
+`❌ No` (`.rel-no`) rows so the cut decision is shown too.
+
+```html
+<div class="card"><h3 class="col-heading">Prioritization</h3>
+<p class="priority-intro">Ranked by a <strong>Confidence × Upside × Boldness</strong> read for THIS paywall. The top row is the lead and the first carousel slide.</p>
+<table class="basic-table stack-rank-table"><thead><tr>
+  <th class="col-rank">#</th><th class="col-data">Hypothesis</th>
+  <th class="col-proposed">Proposed</th><th class="col-slot">Category</th>
+  <th class="col-score">Conf.</th><th class="col-score">Upside</th><th class="col-score">Boldness</th><th class="col-total col-score">Total</th>
+</tr></thead><tbody>
+  <tr class="is-relevant">
+    <td class="col-rank">1</td>
+    <td class="col-data"><span class="rank-title">Annual-dominant card</span><div class="rank-desc">Make the yearly plan the per-month-framed default.</div></td>
+    <td class="col-proposed"><span class="rel-yes">✅ Yes</span></td>
+    <td class="col-slot">High-value bet</td>
+    <td class="col-score">0.85</td><td class="col-score">0.80</td><td class="col-score">0.55</td><td class="col-total">0.37</td>
+  </tr>
+  <!-- …one row per hypothesis, sorted by Total desc; cut ideas get a `❌ No` <span class="rel-no"> row. -->
+</tbody></table></div>
+```
 
 ### 5. Consensus-movement cards — "Components" then "Strategies" (required)
 
