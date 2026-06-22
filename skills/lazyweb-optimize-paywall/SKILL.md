@@ -263,7 +263,14 @@ URL — the server inlines them):
     "R2": { … }
   },
   "experiment_verdicts": [ …optional… ],
-  "mockups": { "safe_bet":"<image_url from get_mockup>", "high_value_bet":"…", "bold_swing":"…", "contrarian":"…" }
+  "mockups": { "safe_bet":"<image_url from get_mockup>", "high_value_bet":"…", "bold_swing":"…", "contrarian":"…" },
+  "product": "<the product name, e.g. Reddit>",
+  "user_labels": {
+    "components": ["<taxonomy-ish component keys THIS paywall HAS, e.g. benefit_list, plan_selector, single_primary_cta>"],
+    "strategic_patterns": ["<e.g. discount_framing, plan_structure, premium_framing>"],
+    "not_applicable_strategies": [],
+    "layout": "<e.g. hero_then_features_then_pricing>"
+  }
 }
 ```
 
@@ -278,6 +285,12 @@ Notes:
   from `lazyweb_search_ab_tests` (the server fetches + inlines them). Include at
   least the experiments the 4 winners cite so the before/after Evidence card
   renders.
+- `user_labels` (from your "Ground the paywall" read — the components, strategic
+  patterns, and layout THIS paywall has) powers the "Where the consensus is moving
+  — Components / Strategies" trend charts: the server loads the corpus and flags
+  which rising components/strategies your screen already has vs is missing. Omit
+  it and those sections render without the has/missing flags; set
+  `"include_corpus_sections": false` to skip the corpus load entirely.
 - Pass a stable `idempotency_key` (e.g. `"optimize-paywall/{topic}-{date}"`) so a
   re-render dedupes to the same URL.
 - On a `400` with `code:"render_field_missing"`/`render_field_invalid`, the
