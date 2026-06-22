@@ -35,14 +35,14 @@ front-half:** read the paywall, gather evidence, diagnose frictions, draft a
 portfolio of candidate hypotheses, then orchestrate three MCP calls. Concretely:
 
 1. **Ground + read** the target paywall (capture/located screenshot).
-2. **Retrieve the evidence (structural twins) — call `lazyweb_paywall_retrieve`
-   FIRST** with the current paywall image. It labels the screen with the
-   controlled taxonomy and jaccard-retrieves the top ~40 experiment "twins" that
-   are STRUCTURALLY similar to this paywall (not a text match) — each with its
-   curated learning + before/after URLs + a resemblance score — plus the
-   `user_labels`. This is the internal pipeline's evidence selection; ground your
-   hypotheses in these twins. (`lazyweb_search` is an optional supplement for
-   reference imagery.)
+2. **Retrieve the evidence (structural twins) FIRST** — call
+   `lazyweb_start_paywall_retrieve` with the current paywall image, then poll
+   `lazyweb_get_paywall_retrieve` (it's async, ~15-20s). It labels the screen with
+   the controlled taxonomy and jaccard-retrieves the top ~40 experiment "twins"
+   STRUCTURALLY similar to this paywall (not a text match) — each with its curated
+   learning + before/after URLs + a resemblance score — plus the `user_labels`.
+   This is the internal pipeline's evidence selection; ground your hypotheses in
+   these twins. (`lazyweb_search` is an optional supplement for reference imagery.)
 3. **Diagnose** 4-6 conversion frictions on THIS paywall.
 4. **Draft a portfolio** of **12-16 candidate hypotheses (3-4 per slot)** across
    the four slots, each grounded in a friction + a cited twin (`evidence_ref` =
@@ -70,11 +70,12 @@ Use hosted Lazyweb MCP tools at `https://www.lazyweb.com/mcp`. First list the
 tools and run `lazyweb_health`. Required tools:
 
 - `lazyweb_health` — verify connectivity.
-- `lazyweb_paywall_retrieve` — **the primary evidence source.** Labels the target
-  paywall + jaccard-retrieves the top-N STRUCTURAL experiment twins (the internal
-  pipeline's selection): each carries the curated `design_delta_summary` (the
-  learning), `control_signed_url`/`experiment_signed_url`, and a `resemblance`
-  score; the call also returns `user_labels`. Call it FIRST.
+- `lazyweb_start_paywall_retrieve` + `lazyweb_get_paywall_retrieve` — **the primary
+  evidence source (async).** Start labels the target paywall + jaccard-retrieves
+  the top-N STRUCTURAL experiment twins (the internal pipeline's selection); poll
+  get until done. The result has `user_labels` + `experiments` (each with the
+  curated `design_delta_summary`, `control_signed_url`/`experiment_signed_url`, and
+  a `resemblance` score). Call it FIRST.
 - `lazyweb_search_ab_tests` — optional supplement: text/category A/B search. Use
   only if you need experiments beyond the structural twins; prefer `*_retrieve`.
 - `lazyweb_search` — optional reference imagery (use `visionDescription`).
@@ -107,11 +108,13 @@ If the MCP is missing/auth fails, tell the user to run
 
 ## Evidence workflow
 
-1. **Structural twins (primary)** — call **`lazyweb_paywall_retrieve`** with the
-   current paywall as `image_base64` (+ `mime_type`), `product` (your product, so
-   it's excluded), `conversion_goal`, and `top_n: 40`. It returns `user_labels`
-   (keep them — they feed `report_data.user_labels`) and ~40 `experiments` ranked
-   by structural resemblance, each with `company_name`, `design_delta_summary`
+1. **Structural twins (primary)** — call **`lazyweb_start_paywall_retrieve`** with
+   the current paywall as `image_base64` (+ `mime_type`), `product` (your product,
+   so it's excluded), `conversion_goal`, and `top_n: 40`; then poll
+   **`lazyweb_get_paywall_retrieve`** with the returned `job_id` every ~4s until
+   `status:"done"`. The `result` has `user_labels` (keep them — they feed
+   `report_data.user_labels`) and ~40 `experiments` ranked by structural
+   resemblance, each with `company_name`, `design_delta_summary`
    (the curated learning), `control_signed_url`/`experiment_signed_url`, and a
    `resemblance` score. **Label them `R1`, `R2`, … in the returned order** — these
    are your evidence pool: the candidates' `evidence_ref` + the `experiments` map +
@@ -279,7 +282,7 @@ URL — the server inlines them):
   "experiment_verdicts": [ …optional… ],
   "mockups": { "safe_bet":"<image_url from get_mockup>", "high_value_bet":"…", "bold_swing":"…", "contrarian":"…" },
   "product": "<the product name, e.g. Reddit>",
-  "user_labels": { …the `user_labels` object returned by lazyweb_paywall_retrieve… }
+  "user_labels": { …the `user_labels` object from the lazyweb_get_paywall_retrieve result… }
 }
 ```
 
@@ -298,7 +301,7 @@ Notes:
   — `apply` (with `applied_as` = the hypothesis title) for the ones you used,
   `skip` (with a one-line `skip_reason`) for the rest. The pool, not just the 4
   cited, is what fills the Referenced-data table.
-- `user_labels` is the object `lazyweb_paywall_retrieve` returned (the internal
+- `user_labels` is the object the retrieve returned (the internal
   taxonomy labeling). It powers the "Where the consensus is moving
   — Components / Strategies" trend charts: the server loads the corpus and flags
   which rising components/strategies your screen already has vs is missing. Omit
