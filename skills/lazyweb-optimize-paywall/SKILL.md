@@ -35,12 +35,18 @@ front-half:** read the paywall, gather evidence, diagnose frictions, draft a
 portfolio of candidate hypotheses, then orchestrate three MCP calls. Concretely:
 
 1. **Ground + read** the target paywall (capture/located screenshot).
-2. **Gather evidence** — `lazyweb_search` (references) + `lazyweb_search_ab_tests`
-   (real A/B experiments with control/variant screenshots + curated learnings).
+2. **Retrieve the evidence (structural twins) — call `lazyweb_paywall_retrieve`
+   FIRST** with the current paywall image. It labels the screen with the
+   controlled taxonomy and jaccard-retrieves the top ~40 experiment "twins" that
+   are STRUCTURALLY similar to this paywall (not a text match) — each with its
+   curated learning + before/after URLs + a resemblance score — plus the
+   `user_labels`. This is the internal pipeline's evidence selection; ground your
+   hypotheses in these twins. (`lazyweb_search` is an optional supplement for
+   reference imagery.)
 3. **Diagnose** 4-6 conversion frictions on THIS paywall.
 4. **Draft a portfolio** of **12-16 candidate hypotheses (3-4 per slot)** across
-   the four slots, each grounded in a friction + (where possible) a cited
-   experiment.
+   the four slots, each grounded in a friction + a cited twin (`evidence_ref` =
+   the twin's R# label, `winning_move_verbatim` quoted from its learning).
 5. **Score** them: call `lazyweb_paywall_score(recommendations, frictions)` →
    it returns the **top-1-per-slot WINNERS** (the 4 to mock up) + every scored
    candidate.
@@ -64,10 +70,14 @@ Use hosted Lazyweb MCP tools at `https://www.lazyweb.com/mcp`. First list the
 tools and run `lazyweb_health`. Required tools:
 
 - `lazyweb_health` — verify connectivity.
-- `lazyweb_search` — paywall references + convention examples (use `visionDescription`).
-- `lazyweb_search_ab_tests` — **mobile A/B experiment evidence**: control/variant
-  screenshots + the curated `learning`. This is the evidence that grounds the
-  before/after card and the candidates' `winning_move_verbatim`.
+- `lazyweb_paywall_retrieve` — **the primary evidence source.** Labels the target
+  paywall + jaccard-retrieves the top-N STRUCTURAL experiment twins (the internal
+  pipeline's selection): each carries the curated `design_delta_summary` (the
+  learning), `control_signed_url`/`experiment_signed_url`, and a `resemblance`
+  score; the call also returns `user_labels`. Call it FIRST.
+- `lazyweb_search_ab_tests` — optional supplement: text/category A/B search. Use
+  only if you need experiments beyond the structural twins; prefer `*_retrieve`.
+- `lazyweb_search` — optional reference imagery (use `visionDescription`).
 - `lazyweb_paywall_score` — server-side C/U/B stack-rank; returns the 4 winners + all scored candidates.
 - `lazyweb_start_mockup` + `lazyweb_get_mockup` — async paywall mockup generation
   (the sync `lazyweb_generate_mockup` times out through the gateway; use the pair).
@@ -97,15 +107,19 @@ If the MCP is missing/auth fails, tell the user to run
 
 ## Evidence workflow
 
-1. **References** — 3-5 `lazyweb_search` queries for paywalls matching the
-   category, user state, conversion goal, and layout. Read `visionDescription`.
-2. **Experiments** — `lazyweb_search_ab_tests` with the **category as the
-   industry filter** plus the conversion goal, constraints, and the target
-   description. Include the product name only as target context (NOT as an exact
-   `company`/`product` filter — that over-filters to zero). Each returned
-   experiment has a control screenshot, a variant screenshot, and a curated
-   `learning`. **Label the ones you'll use `R1`, `R2`, …** — these become the
-   `experiments` map + the candidates' `evidence_ref`. Treat learnings as
+1. **Structural twins (primary)** — call **`lazyweb_paywall_retrieve`** with the
+   current paywall as `image_base64` (+ `mime_type`), `product` (your product, so
+   it's excluded), `conversion_goal`, and `top_n: 40`. It returns `user_labels`
+   (keep them — they feed `report_data.user_labels`) and ~40 `experiments` ranked
+   by structural resemblance, each with `company_name`, `design_delta_summary`
+   (the curated learning), `control_signed_url`/`experiment_signed_url`, and a
+   `resemblance` score. **Label them `R1`, `R2`, … in the returned order** — these
+   are your evidence pool: the candidates' `evidence_ref` + the `experiments` map +
+   the `experiment_verdicts`. The high-resemblance twins are your best evidence.
+2. **Supplement (optional)** — only if the twins are thin, add
+   `lazyweb_search_ab_tests` (text/category) or `lazyweb_search` (reference
+   imagery). With `lazyweb_search_ab_tests`, pass the category as the industry
+   filter, NOT the product as a company filter (that over-filters to zero). Treat learnings as
    directional (screenshot-diff, not measured lift). If the corpus returns no
    on-context experiment, say so and proceed on reference grounding.
 3. Optional: `lazyweb_compare_image` (structural twins), `lazyweb_get_flows`
@@ -265,12 +279,7 @@ URL — the server inlines them):
   "experiment_verdicts": [ …optional… ],
   "mockups": { "safe_bet":"<image_url from get_mockup>", "high_value_bet":"…", "bold_swing":"…", "contrarian":"…" },
   "product": "<the product name, e.g. Reddit>",
-  "user_labels": {
-    "components": ["<taxonomy-ish component keys THIS paywall HAS, e.g. benefit_list, plan_selector, single_primary_cta>"],
-    "strategic_patterns": ["<e.g. discount_framing, plan_structure, premium_framing>"],
-    "not_applicable_strategies": [],
-    "layout": "<e.g. hero_then_features_then_pricing>"
-  }
+  "user_labels": { …the `user_labels` object returned by lazyweb_paywall_retrieve… }
 }
 ```
 
@@ -280,13 +289,17 @@ Notes:
   renderer fetches it). Do NOT inline mockup base64 here; four base64 mockups
   overflow the gateway request-size limit. `target_image` stays a base64 `data:`
   URI (one image is fine). Omit a slot only if its mockup couldn't be generated.
-- `experiments` is keyed by the `evidence_ref` (`R#`) your winning candidates
-  cite; `control_signed_url`/`experiment_signed_url` are the before/after images
-  from `lazyweb_search_ab_tests` (the server fetches + inlines them). Include at
-  least the experiments the 4 winners cite so the before/after Evidence card
-  renders.
-- `user_labels` (from your "Ground the paywall" read — the components, strategic
-  patterns, and layout THIS paywall has) powers the "Where the consensus is moving
+- `experiments` is keyed by the `evidence_ref` (`R#`) your candidates cite;
+  `control_signed_url`/`experiment_signed_url` are the before/after images from
+  `lazyweb_paywall_retrieve` (the server fetches + inlines them). Include every
+  experiment your 4 winners cite so the before/after Evidence card renders.
+- **Forward the FULL twin pool** so Referenced-data matches the internal: pass an
+  `experiment_verdicts` row for EVERY twin you reviewed (≈ all ~40 from retrieve)
+  — `apply` (with `applied_as` = the hypothesis title) for the ones you used,
+  `skip` (with a one-line `skip_reason`) for the rest. The pool, not just the 4
+  cited, is what fills the Referenced-data table.
+- `user_labels` is the object `lazyweb_paywall_retrieve` returned (the internal
+  taxonomy labeling). It powers the "Where the consensus is moving
   — Components / Strategies" trend charts: the server loads the corpus and flags
   which rising components/strategies your screen already has vs is missing. Omit
   it and those sections render without the has/missing flags; set
