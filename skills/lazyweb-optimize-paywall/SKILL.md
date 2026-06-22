@@ -218,8 +218,11 @@ the winner's `mockup_prompt` prefixed with the **ENFORCED PREAMBLE** below.
   (+ `mime_type`), and **omit `size`** (EDIT mode defaults to `auto`, which
   matches the input's aspect ratio so the mockup is the same shape/size as the
   current screen). Then poll `lazyweb_get_mockup` for each `job_id` every ~5s
-  (budget ~170s) until `done`; save each result to
-  `$WORK/references/mock-<slot>.png` and keep the base64 as a `data:` URI.
+  (budget ~170s) until `done`. Use the returned **`image_url`** (a signed URL) as
+  this winner's mockup in `report_data.mockups` — NOT the base64 (four base64
+  mockups overflow the gateway request-size limit; the renderer fetches the URL
+  server-side). You may also save `image_base64` to
+  `$WORK/references/mock-<slot>.png` for the user's local copy.
 - **Fallback** — only if a mockup truly can't be generated
   (`MOCKUP_IMAGE_KEY_MISSING` / `MOCKUP_DAILY_LIMIT`, an `error` status, or still
   `pending` after ~170s): omit that one slot's key from the `mockups` map. The
@@ -260,13 +263,16 @@ URL — the server inlines them):
     "R2": { … }
   },
   "experiment_verdicts": [ …optional… ],
-  "mockups": { "safe_bet":"data:image/png;base64,…", "high_value_bet":"…", "bold_swing":"…", "contrarian":"…" }
+  "mockups": { "safe_bet":"<image_url from get_mockup>", "high_value_bet":"…", "bold_swing":"…", "contrarian":"…" }
 }
 ```
 
 Notes:
-- `mockups` is keyed by the WINNER's `slot` (one per selected winner). Omit a slot
-  only if its mockup couldn't be generated.
+- `mockups` is keyed by the WINNER's `slot` (one per selected winner), and each
+  value is the **`image_url`** from `lazyweb_get_mockup` (a signed URL — the
+  renderer fetches it). Do NOT inline mockup base64 here; four base64 mockups
+  overflow the gateway request-size limit. `target_image` stays a base64 `data:`
+  URI (one image is fine). Omit a slot only if its mockup couldn't be generated.
 - `experiments` is keyed by the `evidence_ref` (`R#`) your winning candidates
   cite; `control_signed_url`/`experiment_signed_url` are the before/after images
   from `lazyweb_search_ab_tests` (the server fetches + inlines them). Include at
