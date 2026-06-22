@@ -4,10 +4,11 @@ route: "Optimize paywall conversion"
 router-terms: paywall, paywall design, paywall redesign, optimize paywall, improve paywall, critique paywall, conversion rate, paid conversion, trial start, annual plan, upgrade screen
 description: |
   Optimize a mobile or web paywall by reading the target screen, diagnosing
-  conversion friction, and producing 2-4 falsifiable redesign hypotheses backed
-  by Lazyweb paywall references, experiment evidence, conventions, and divergent
-  design moves. Use when the user wants to redesign, improve, critique, or
-  optimize a paywall screen for paid conversion.
+  conversion friction, and producing a slot-diverse portfolio of falsifiable
+  redesign hypotheses backed by Lazyweb paywall references, experiment evidence,
+  conventions, and divergent design moves — rendered into the same dark report
+  the internal pipeline produces. Use when the user wants to redesign, improve,
+  critique, or optimize a paywall screen for paid conversion.
 allowed-tools:
   - Bash
   - Read
@@ -21,1596 +22,284 @@ allowed-tools:
 
 # Optimize Paywall
 
-Optimize a paywall with evidence-backed conversion hypotheses, not generic
-component advice.
-
-## CRITICAL: Output Behavior
-
-**This skill produces a self-contained dark "Hallow" report you write yourself,
-not a plan and not a server-rendered page.** Regardless of whether you are in
-plan mode or not, ALWAYS:
-
-1. Do the evidence work (read the paywall, diagnose frictions, search Lazyweb,
-   mine experiments, then build a slot-diverse portfolio of hypotheses — aim for
-   4, drop to 2-3 only for a genuinely simple paywall) per the workflow sections.
-2. Generate one mockup per hypothesis (the "Generate the mockups" ladder below)
-   and save the references the report will point at.
-3. Author the report by **writing the HTML file yourself** to
-   `$REPORT_DIR/report.html` — a dark-theme Hallow page with the verbatim CSS in
-   a `<style>` block and the verbatim carousel + lightbox JS before `</body>`
-   (see "Write the Hallow report" below). There is no server render step.
-4. Do NOT write optimization content into a plan file, a `report.md`, or a
-   `report-data.json`. The deliverable is the `report.html` you author.
-5. Open the finished report: `open "$REPORT_DIR/report.html"` (skip `open` in a
-   headless/CI/no-GUI environment and just print the absolute path).
-6. Summarize the portfolio (one line per slot), name the strongest one (the lead),
-   and surface the path to `report.html`.
-7. Ask the user if the paywall direction looks good.
-8. If in plan mode, exit plan mode after the user confirms.
-9. Suggest next steps: "You can now implement the strongest hypothesis, ask
-   `/lazyweb-ab-test-research` for deeper experiment mining, or ask `/lazyweb`
-   for adjacent design references."
-
-The report dir convention is `$REPORT_DIR = .lazyweb/optimize-paywall/{topic-slug}-{YYYY-MM-DD}`.
-Create `$REPORT_DIR/references/` for the screenshots and generated mockups the
-report embeds. There is no `work/` dir and no `report-data.json`.
-
-## Write the Hallow report (the single deliverable)
-
-You author `$REPORT_DIR/report.html` directly — a single dark-theme HTML
-document with every image inlined (so the file is genuinely self-contained) and
-the carousel + lightbox scripts embedded. You own the template now; there is no
-`lazyweb_render_report` call, no server-side template, and no hosted URL. The
-finished `report.html` IS the report.
-
-**Inline every image as a `data:` URI.** Fetch each Lazyweb `imageUrl`/`image_url`
-and each locally-saved screenshot/mockup, base64-encode the bytes, and embed it
-as `src="data:image/png;base64,…"`. Never point an `<img>` at a `file://` URL, an
-absolute local path, an `http(s)` URL, or a bare `references/…` relative path —
-those break the moment the file is moved or the signed URL expires. A tiny
-helper makes this one line per image:
-
-```bash
-b64_data_uri() {  # usage: b64_data_uri <path-or-url>  → prints a data: URI
-  local src="$1" mime="image/png" tmp
-  case "$src" in
-    data:*) printf '%s' "$src"; return 0;;
-    http://*|https://*)
-      tmp="$(mktemp)"; curl -fsSL "$src" -o "$tmp" || { rm -f "$tmp"; return 1; }
-      src="$tmp";;
-  esac
-  case "$src" in *.jpg|*.jpeg) mime="image/jpeg";; *.webp) mime="image/webp";; esac
-  printf 'data:%s;base64,%s' "$mime" "$(base64 -w0 "$src" 2>/dev/null || base64 "$src" | tr -d '\n')"
-  [ -n "$tmp" ] && rm -f "$tmp"
-}
-```
-
-**Escape every dynamic string you drop into HTML.** Hypothesis titles, claims,
-company names, and `alt` text can contain `&`, `<`, `>`, `"`, or apostrophes —
-escape them (`&` → `&amp;`, `<` → `&lt;`, `>` → `&gt;`, `"` → `&quot;`) before
-interpolating into a tag or attribute. The embedded JS expects valid HTML; an
-unescaped quote in an `alt` breaks the slide.
-
-### Document skeleton
-
-Emit exactly this shape (the DOM class names are load-bearing — the embedded JS
-drives them, so do not rename, restructure, or drop them):
-
-```html
-<!doctype html>
-<html lang="en"><head><meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Paywall Design Recommendation</title>
-<style>/* paste the verbatim _HTML_CSS block + the verbatim .bbox CSS block from "Embedded CSS" below */</style>
-</head><body>
-<h1>Paywall Design Recommendation</h1>
-
-<!-- 1. TOP CARD: 3-column carousel (current | mockup | hypothesis) -->
-<!-- 2. EVIDENCE CARD: annotated before/after carousel -->
-<!-- 3. DIAGNOSIS CARD -->
-<!-- 4. PRIORITIZATION CARD -->
-<!-- 5. CONSENSUS-MOVEMENT CARDS: "Components" trend chart + "Strategies" trend chart -->
-<!-- 6. OTHER INSPIRATION CARD: divergent-grid of cross-category reference paywalls -->
-<!-- 7. FOOTER -->
-
-<!-- lightbox overlay + scripts -->
-<div id="lightbox" class="lightbox hidden" aria-hidden="true"><button class="lightbox-close">&times;</button><button class="lightbox-prev">&larr;</button><img class="lightbox-image" alt="" /><button class="lightbox-next">&rarr;</button></div>
-<script>/* paste the verbatim _CAROUSEL_JS block from "Embedded JS" below */</script>
-<script>/* paste the verbatim _LIGHTBOX_JS block from "Embedded JS" below */</script>
-</body></html>
-```
-
-Section order is fixed: **title → top 3-column carousel → evidence → diagnosis →
-prioritization → consensus-movement (Components, then Strategies) → other
-inspiration → footer → lightbox + scripts.**
-
-### 1. Top card — 3-column hypothesis carousel (required)
-
-One `data-carousel-group="top"` card holding a `top-row` with three columns. The
-three columns share ONE set of controls; the carousel JS advances all three
-`.design-carousel`s in the group in lockstep, so the current-state image stays
-put while the mockup and hypothesis text swap per slide.
-
-- **Column 1 — `.paywall-col`** (static): the current paywall screenshot.
-- **Column 2 — `.mockup-col`**: a `.design-carousel` with one
-  `.design-slide.mockup-slide` per hypothesis; slide `i==0` also gets `active`.
-  Each slide holds its per-hypothesis heading and the generated mockup image.
-- **Column 3 — `.hypothesis-col`**: a `.design-carousel` with one
-  `.design-slide.hypothesis-slide` per hypothesis (slide 0 `active`), each with a
-  `.hypothesis-title` (≤3-word title) and a `.hypothesis-subheader` (the full
-  "Making X should Y because Z" sentence). Order the slides strongest-first — the
-  carousel order carries the prioritization.
-
-Then ONE shared `.design-controls` block (only when there is more than one
-hypothesis) with a `.design-prev` button, a `.design-dots` strip of
-`.design-dot` spans (each `data-idx="N"`, slide 0 `active`), and a `.design-next`
-button.
-
-```html
-<div class="card" data-carousel-group="top">
-<div class="top-row">
-  <div class="paywall-col">
-    <h3 class="col-heading">Current</h3>
-    <img class="lightbox-img" src="data:image/png;base64,…" alt="Current paywall" />
-  </div>
-  <div class="mockup-col">
-    <div class="design-carousel">
-      <div class="design-slide mockup-slide active">
-        <h3 class="col-heading mockup-heading">Hypothesis #1</h3>
-        <img class="lightbox-img" src="data:image/png;base64,…" alt="Mockup 1" />
-      </div>
-      <div class="design-slide mockup-slide">
-        <h3 class="col-heading mockup-heading">Hypothesis #2</h3>
-        <img class="lightbox-img" src="data:image/png;base64,…" alt="Mockup 2" />
-      </div>
-    </div>
-  </div>
-  <div class="hypothesis-col">
-    <div class="design-carousel">
-      <div class="design-slide hypothesis-slide active">
-        <div class="hypothesis-title">Locked-tier grid</div>
-        <div class="hypothesis-subheader">Making … should … because ….</div>
-      </div>
-      <div class="design-slide hypothesis-slide">
-        <div class="hypothesis-title">Trial reminder</div>
-        <div class="hypothesis-subheader">Making … should … because ….</div>
-      </div>
-    </div>
-  </div>
-</div>
-<div class="design-controls">
-  <button class="design-btn design-prev">← Previous</button>
-  <div class="design-dots">
-    <span class="design-dot active" data-idx="0"></span>
-    <span class="design-dot" data-idx="1"></span>
-  </div>
-  <button class="design-btn design-next">Next →</button>
-</div>
-</div>
-```
-
-When a mockup falls back to a CSS mock-frame (ladder rung c), put the `.mock`
-frame inside the `.mockup-slide` in place of the `<img>`. Never leave a slide
-empty and never emit ASCII art.
-
-### 2. Evidence card — annotated before/after carousel with bbox overlays (required)
-
-A second independent `data-carousel-group="evidence"` card. One
-`.design-slide.evidence-slide` per hypothesis that has corpus evidence (slide 0
-`active`). Each slide has a `.col-heading.slide-heading` ("Evidence for
-Hypothesis N"), then an `.evidence-body` split into the `.evidence-imgpair`
-(before/after columns) and the `.evidence-text`.
-
-Each before/after image lives in a `.ba-col` and is wrapped in a `.ba-imgwrap`
-so a `.bbox` overlay can be absolutely positioned over it (see "Annotated
-learnings + bbox overlays" below for how to compute the rect). The
-`.evidence-text` carries the annotated learning, NOT a raw changelog:
-
-- `.recommendation-title` — "[hypothesis title] in [Company] app".
-- `.delta` — the curated `learning` (from `lazyweb_search_ab_tests`) or
-  `visionDescription` (from `lazyweb_search`). Never paste a raw `what_changed`.
-- optional `.lift-cause-label` + `.lift-cause` — "How we apply it" on this paywall.
-
-```html
-<div class="card" data-carousel-group="evidence">
-<div class="design-carousel">
-  <div class="design-slide evidence-slide active">
-    <h3 class="col-heading slide-heading">Evidence for Hypothesis 1</h3>
-    <div class="evidence-body">
-      <div class="evidence-imgpair">
-        <div class="ba-col">
-          <div class="ba-imgwrap">
-            <img class="lightbox-img" src="data:image/png;base64,…" alt="control" loading="lazy" />
-            <div class="bbox ann-active" data-ann="0" data-label="1" style="left:8.00%;top:54.00%;width:84.00%;height:12.00%;"></div>
-          </div>
-          <div class="ba-label-below">Before</div>
-        </div>
-        <div class="ba-col">
-          <div class="ba-imgwrap">
-            <img class="lightbox-img" src="data:image/png;base64,…" alt="experiment" loading="lazy" />
-            <div class="bbox ann-active" data-ann="0" data-label="1" style="left:8.00%;top:50.00%;width:84.00%;height:18.00%;"></div>
-          </div>
-          <div class="ba-label-below">After</div>
-        </div>
-      </div>
-      <div class="evidence-text">
-        <div class="recommendation-title">Locked-tier grid in Acme app</div>
-        <div class="delta">The curated annotated learning sentence…</div>
-        <div class="lift-cause-label">How we apply it</div>
-        <div class="lift-cause">On this paywall we …</div>
-      </div>
-    </div>
-  </div>
-</div>
-<div class="design-controls">
-  <button class="design-btn design-prev">← Previous</button>
-  <div class="design-dots"><span class="design-dot active" data-idx="0"></span></div>
-  <button class="design-btn design-next">Next →</button>
-</div>
-</div>
-```
-
-The `.bbox` overlay is given the `ann-active` class statically so the highlight
-is visible on load (the experiment-report bbox JS that toggles it per-row is not
-embedded here; the box should simply show). `style` positions it as a percentage
-of the wrapping image — `left`/`top`/`width`/`height` — so it scales with the
-image. Omit the whole evidence card if no hypothesis has corpus evidence.
-
-### 3. Diagnosis card
-
-A `.card` titled with a `.col-heading` and a `.diagnosis-list` of `.diag-row`s —
-the Pass-1 friction read of THIS paywall (one row per `F#`). Each row carries a
-severity class (`sev-high` / `sev-medium` / `sev-low` / `sev-none`), a `.diag-head`
-(severity badge + type + the `F#` id + a "→ Hypothesis #N" link when a hypothesis
-addresses it), a `.diag-summary`, and optional `.diag-meta` (location / evidence).
-Use `sev-none` (green) rows for the genuine strengths you named in Pass 1 — what
-the paywall already does well; do not invent a problem to fill a row.
-
-### 4. Prioritization card
-
-A `.card` with a numeric **stack-rank** `.basic-table.stack-rank-table` that shows
-the explicit Confidence × Upside × Boldness scoring behind the ordering — this is
-where the decision is shown in the body, not just implied by carousel order.
-Columns: `#` · `Hypothesis` (title + one-line text) · `Proposed` · `Category`
-(the slot) · `Confidence` · `Upside` · `Boldness` · `Total`. Score each axis
-`0.00`–`1.00` (Confidence = how sure it generalizes to THIS paywall; Upside = how
-much it moves the metric; Boldness = how far from table stakes); `Total` =
-Confidence × Upside × Boldness (or a clearly-stated weighting). Sort by `Total`
-descending — the top row is rank #1, gets `is-relevant`, and must match the first
-(`active`) slide of the top carousel. Mark each proposed row `✅ Yes` in the
-`Proposed` column (`.rel-yes`); include any hypotheses you considered but cut as
-`❌ No` (`.rel-no`) rows so the cut decision is shown too.
-
-```html
-<div class="card"><h3 class="col-heading">Prioritization</h3>
-<p class="priority-intro">Ranked by a <strong>Confidence × Upside × Boldness</strong> read for THIS paywall. The top row is the lead and the first carousel slide.</p>
-<table class="basic-table stack-rank-table"><thead><tr>
-  <th class="col-rank">#</th><th class="col-data">Hypothesis</th>
-  <th class="col-proposed">Proposed</th><th class="col-slot">Category</th>
-  <th class="col-score">Conf.</th><th class="col-score">Upside</th><th class="col-score">Boldness</th><th class="col-total col-score">Total</th>
-</tr></thead><tbody>
-  <tr class="is-relevant">
-    <td class="col-rank">1</td>
-    <td class="col-data"><span class="rank-title">Annual-dominant card</span><div class="rank-desc">Make the yearly plan the per-month-framed default.</div></td>
-    <td class="col-proposed"><span class="rel-yes">✅ Yes</span></td>
-    <td class="col-slot">High-value bet</td>
-    <td class="col-score">0.85</td><td class="col-score">0.80</td><td class="col-score">0.55</td><td class="col-total">0.37</td>
-  </tr>
-  <!-- …one row per hypothesis, sorted by Total desc; cut ideas get a `❌ No` <span class="rel-no"> row. -->
-</tbody></table></div>
-```
-
-### 5. Consensus-movement cards — "Components" then "Strategies" (required)
-
-Two `.card`s that show where the corpus you actually pulled is moving — a
-directional read across the Lazyweb references + winning experiments gathered for
-THIS report (not a global census; say so in the intro). The first card is
-**Components** (UI elements: single primary CTA, selectable plan cards, per-period
-price, free-vs-premium comparison, cancel-anytime line, social proof, trial
-toggle…); the second is **Strategies** (mechanisms: discount framing, trial
-emphasis, price anchoring, tier comparison, urgency, value stacking…). Each card
-is a `.trend-chart` of `.trend-row`s ordered by net movement, right/green
-(`.trend-bar.pos`) = rising, left/amber (`.trend-bar.neg`) = falling. On the
-Components card, give every row a `with-flag` and a `.bench-indicator` flag
-showing whether THIS paywall already has that component (`bench-flag on` = "has")
-or not (`bench-flag off` = "missing") — every rising component the screen lacks is
-a gap that should map to a friction/hypothesis. Use the `.priority-intro` to label
-the basis honestly ("directional net movement across N references + M experiments
-pulled for this report").
-
-```html
-<div class="card">
-<h3 class="col-heading">Where the consensus is moving &mdash; Components</h3>
-<p class="priority-intro">Directional net movement across the Lazyweb references + winning experiments pulled for this report (not a global census). Right/green = rising; left/amber = falling. The flag marks what’s already on THIS paywall vs missing.</p>
-<div class="trend-chart">
-  <div class="trend-row with-flag">
-    <div class="trend-label">Selectable plan cards (radio)</div>
-    <div class="trend-bar-axis"><div class="trend-bar pos" style="width:50.0%"></div></div>
-    <div class="trend-num pos">+6</div>
-    <div class="bench-indicator"><span class="bench-flag off">missing</span></div>
-  </div>
-  <!-- …more rows; use `bench-flag on`>has</span> for components the paywall already has,
-       and `.trend-bar.neg` + `.trend-num.neg` (negative) for falling components. -->
-</div>
-</div>
-```
-
-Emit the **Strategies** card the same way (its own `.card` + `.trend-chart`); its
-rows describe mechanisms rather than components and may omit the has/missing flag
-(plain `.trend-row`).
-
-### 6. Other inspiration card (required)
-
-A `.card` titled "Other inspiration" with a `.divergent-grid` of 4-8
-`.divergent-card`s — real paywalls (Lazyweb `lazyweb_search` results, including a
-couple of cross-category picks) that express the mechanisms behind the
-hypotheses. Each card embeds the inlined reference screenshot in a
-`.divergent-imgwrap`, a one-line `.pattern` naming the transferable move, and a
-`.companies` label. Spotlight the closest peers (e.g. other social/consumer
-apps) and note them in the `.priority-intro`.
-
-```html
-<div class="card">
-<h3 class="col-heading">Other inspiration</h3>
-<p class="priority-intro">Real paywalls expressing the mechanisms behind the hypotheses — the closest peers to THIS product are called out.</p>
-<div class="divergent-grid">
-  <div class="divergent-card">
-    <div class="divergent-imgwrap"><img class="lightbox-img" src="data:image/png;base64,…" alt="Telegram paywall" loading="lazy" /></div>
-    <div class="divergent-meta">
-      <div class="pattern">Premium-perks paywall in a social app: one plan selector + a single subscribe CTA, benefits below.</div>
-      <div class="companies">Telegram</div>
-    </div>
-  </div>
-  <!-- …more cards -->
-</div>
-</div>
-```
-
-### 7. Footer
-
-Append a small muted footer paragraph:
-`<p class="muted">Powered by Lazyweb — turn your agent into a design researcher… for free!</p>`
-
-### Embedded CSS — paste VERBATIM into the `<style>` block
-
-Copy this whole block character-for-character. It is the dark Hallow theme that
-the DOM above and the JS below depend on.
-
-```css
-:root { color-scheme: dark; }
-body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-  max-width: 1320px; margin: 2em auto; padding: 0 1.5em;
-  line-height: 1.6; background: #161616; color: #e6e6e6;
-}
-a { color: #8ab4f8; }
-h1 { margin-top: 0; }
-h2, h3, h4 { color: #fafafa; }
-.muted { color: #9a9a9a; }
-code { background: #2a2a2a; padding: 1px 6px; border-radius: 3px; color: #f0e0c0; font-size: .92em; }
-.card {
-  border: 1px solid #303030; border-radius: 10px;
-  padding: 1.25em 1.5em; margin: 1.25em 0; background: #1f1f1f;
-}
-.col-heading {
-  margin: 0 0 .75em; color: #fafafa; font-size: 1.25em; font-weight: 600;
-}
-.slide-heading {
-  margin: 0 0 1em;
-}
-
-/* Top row — 3 columns: current paywall | mockup carousel | hypothesis text */
-.top-row { display: flex; gap: 2em; align-items: flex-start; margin: 1em 0; }
-.top-row .paywall-col { flex: 0 0 300px; }
-.top-row .paywall-col img {
-  width: 100%; height: auto; border: 1px solid #303030; border-radius: 8px;
-  cursor: zoom-in;
-}
-.top-row .mockup-col { flex: 0 0 300px; }
-.top-row .mockup-col .mockup-slide img {
-  width: 100%; height: auto; border: 1px solid #303030; border-radius: 8px;
-  cursor: zoom-in;
-}
-/* Iteration: New / Prior toggle inside a single slide. Image stays full size;
-   user flips between versions via the tab strip above. Only renders when this
-   hypothesis has a prior version to compare against. */
-.mockup-toggle {
-  display: inline-flex; gap: 0; margin: .65em 0 0; padding: 2px;
-  background: #1a1a1a; border: 1px solid #303030; border-radius: 6px;
-}
-.mockup-toggle-btn {
-  background: transparent; color: #999; border: 0; padding: 4px 10px;
-  font: inherit; font-size: .78em; font-weight: 600; letter-spacing: .03em;
-  text-transform: uppercase; border-radius: 4px; cursor: pointer;
-  transition: background .12s, color .12s;
-}
-.mockup-toggle-btn:hover { color: #fafafa; }
-.mockup-toggle-btn.active {
-  background: #2a3a55; color: #cfdeff; cursor: default;
-}
-.mockup-toggle-btn.active[data-target="prior"] {
-  background: #3a3025; color: #f0d9b0;
-}
-.mockup-view-wrapper { position: relative; }
-.mockup-view.hidden { display: none; }
-/* Per-version feedback caption shown below the toggle. Small, muted, swaps
-   on tab click. Reserves no height when empty so the layout doesn't jump. */
-.mockup-feedback-caption {
-  margin: .55em 0 0; font-size: .82em; color: #aaa; line-height: 1.45;
-  font-style: italic; max-width: 100%; word-wrap: break-word;
-}
-.mockup-feedback-caption.hidden { display: none; }
-.top-row .hypothesis-col { flex: 1; min-width: 0; padding-top: .5em; }
-.top-row .hypothesis-slide .hypothesis-title {
-  font-size: 1.55em; font-weight: 700; color: #fafafa; margin-bottom: .65em;
-  line-height: 1.2; letter-spacing: -.01em;
-  /* Allow wrapping; never clip with ellipsis. */
-  word-break: break-word; overflow-wrap: anywhere;
-}
-.top-row .hypothesis-slide .hypothesis-subheader {
-  font-size: 1em; color: #cccccc; line-height: 1.55;
-}
-.top-row .hypothesis-slide .hypothesis-subheader code {
-  font-size: .9em; background: #232323; color: #f0e0c0;
-  padding: 2px 6px; border-radius: 3px;
-}
-
-/* Per-hypothesis "carried from prior" tag, shown above the title on a card
-   whose hypothesis traces back to a prior run's hypothesis. */
-.prior-tag {
-  display: inline-block; font-size: .72em; font-weight: 600; letter-spacing: .03em;
-  text-transform: uppercase; color: #f0e0c0; background: #2a2410;
-  border: 1px solid #5a4a20; border-radius: 3px;
-  padding: 2px 6px; margin-bottom: .55em;
-}
-.prior-tag.unchanged { color: #b8e0b8; background: #102a10; border-color: #2a5a2a; }
-
-/* Peer-cohort benchmark — ranked component prevalence with has/missing flag */
-.bench-chart { margin-top: .5em; }
-.bench-row {
-  display: grid;
-  grid-template-columns: 220px 1fr 52px 130px;
-  gap: 1em; align-items: center; margin: .35em 0; font-size: .92em;
-}
-.bench-row.off .bench-label { color: #c9c9c9; }
-.bench-row.on .bench-label { color: #e6e6e6; }
-.bench-track {
-  height: 9px; background: #232323; border-radius: 4px; overflow: hidden;
-}
-.bench-fill { height: 100%; border-radius: 3px; }
-.bench-fill.on { background: #7a9cf0; }
-.bench-fill.off { background: #6a6a6a; }
-.bench-pct {
-  color: #fafafa; text-align: right; font-variant-numeric: tabular-nums;
-  font-size: .9em;
-}
-.bench-indicator { text-align: right; }
-.bench-flag {
-  display: inline-block; padding: .15em .65em; border-radius: 999px;
-  font-size: .75em; font-weight: 600; text-transform: uppercase;
-  letter-spacing: .04em; white-space: nowrap;
-}
-.bench-flag.on  { background: #1f2e1f; color: #7fc77f; border: 1px solid #2c4a2c; }
-.bench-flag.off { background: #2a2218; color: #d8a85f; border: 1px solid #3e2f1c; }
-.bench-missing-inline {
-  color: #d8a85f; font-weight: 600;
-}
-
-/* Winning-strategies chart — count-first layout with trigger keywords */
-.strat-chart { margin-top: .5em; }
-.strat-row {
-  display: grid;
-  grid-template-columns: 1fr 80px 140px;
-  gap: 1em; align-items: center;
-  margin: .55em 0; padding: .35em 0;
-  border-top: 1px solid #232323;
-}
-.strat-row:first-child { border-top: none; }
-.strat-row.muted { opacity: .42; }
-.strat-label { color: #fafafa; font-weight: 600; font-size: .98em; }
-.strat-triggers {
-  color: #9a9a9a; font-size: .82em; font-style: italic;
-  margin-top: .15em;
-}
-.strat-count {
-  font-variant-numeric: tabular-nums; text-align: right;
-}
-.strat-count .strat-count-big {
-  color: #fafafa; font-size: 1.05em; font-weight: 600;
-}
-.strat-count .strat-count-of {
-  color: #8a8a8a; font-size: .82em;
-}
-.strat-count .strat-pct {
-  display: block; color: #8a8a8a; font-size: .78em; margin-top: .1em;
-}
-.strat-row .bench-indicator { text-align: right; }
-
-/* Trends chart — diverging bar around a center axis. Stripped of pills,
- * descriptions, and unit jargon: just label / bar / number. Compact rows
- * so the whole pattern reads at a glance. */
-.trend-chart { margin-top: .75em; }
-/* 4-column grid: label, bar axis, number, optional flag. The 4th column is
- * reserved in EVERY row so the components chart's "on your paywall" pill and
- * the strategies chart's flagless rows share an identical column layout —
- * keeping the center axes and number columns aligned ACROSS the two charts.
- * Strategy rows simply leave the 4th cell empty. */
-.trend-row {
-  display: grid;
-  grid-template-columns: 200px 1fr 60px 145px;
-  gap: 1.2em; align-items: center;
-  margin: .25em 0; padding: .2em 0;
-}
-.trend-label { color: #e6e6e6; font-size: .92em; font-weight: 500; }
-/* The bar track: a wide rectangle with a crisp center axis line. */
-.trend-bar-axis {
-  position: relative; height: 14px;
-  background-image: linear-gradient(
-    to right,
-    transparent calc(50% - 1px),
-    #6a6a6a calc(50% - 1px),
-    #6a6a6a calc(50% + 1px),
-    transparent calc(50% + 1px)
-  );
-}
-.trend-bar {
-  position: absolute; top: 2px; height: 10px; border-radius: 2px;
-}
-.trend-bar.pos { left: 50%; background: #5d9c5d; }
-.trend-bar.neg { right: 50%; background: #b87a3d; }
-.trend-num {
-  font-variant-numeric: tabular-nums; text-align: right;
-  font-size: .85em; font-weight: 600; color: #aaaaaa;
-}
-.trend-num.pos { color: #7fc77f; }
-.trend-num.neg { color: #d8a85f; }
-
-/* Mockup column heading is per-slide ("Hypothesis #X") — no purple accent */
-.top-row .mockup-col .mockup-heading {
-  margin: 0 0 .75em;
-  color: #fafafa;
-}
-
-/* Carousel — slides hidden by default, only active shown */
-.design-carousel .design-slide { display: none; }
-.design-carousel .design-slide.active { display: block; }
-.design-controls {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 1em; margin-top: 1.5em; padding-top: 1em;
-  border-top: 1px solid #2a2a2a;
-}
-.design-btn {
-  background: #2a2a2a; color: #fafafa; border: 1px solid #404040;
-  border-radius: 6px; padding: .45em 1em; cursor: pointer; font-size: .92em;
-  font-family: inherit;
-}
-.design-btn:hover { background: #3a3a3a; }
-.design-btn:disabled { opacity: .35; cursor: default; }
-.design-dots { display: flex; gap: .45em; align-items: center; }
-.design-dot {
-  width: 9px; height: 9px; border-radius: 50%;
-  background: #404040; cursor: pointer; transition: background 0.15s;
-}
-.design-dot:hover { background: #555; }
-.design-dot.active { background: #7a9cf0; }
-
-/* Evidence card — corpus before/after carousel */
-.evidence-slide .evidence-body { display: flex; gap: 2em; align-items: flex-start; }
-.evidence-slide .evidence-imgpair { flex: 0 0 auto; display: flex; gap: 1em; }
-.evidence-slide .evidence-imgpair .ba-col {
-  display: flex; flex-direction: column; align-items: center; width: 220px;
-}
-.evidence-slide .evidence-imgpair .ba-col img {
-  width: 220px; max-width: 220px; height: auto; border: 1px solid #303030;
-  border-radius: 8px; background: #0a0a0a; margin: 0; cursor: zoom-in;
-}
-.evidence-slide .evidence-imgpair .ba-label-below {
-  margin-top: .6em; font-size: .75em; color: #9a9a9a;
-  text-transform: uppercase; letter-spacing: .08em; font-weight: 600; text-align: center;
-}
-.evidence-slide .evidence-text { flex: 1; min-width: 0; padding-top: .5em; }
-.evidence-slide .evidence-text .recommendation-title {
-  font-size: 1.15em; font-weight: 600; color: #fafafa;
-  margin: 0 0 .85em; line-height: 1.3;
-}
-.evidence-slide .evidence-text .delta {
-  font-size: 1em; color: #e6e6e6; line-height: 1.55; margin-bottom: .85em;
-}
-.evidence-slide .evidence-text .lift-cause {
-  font-size: .92em; color: #cccccc; line-height: 1.5;
-}
-.evidence-slide .evidence-text .lift-cause-label {
-  font-size: .72em; color: #9a9a9a; text-transform: uppercase; letter-spacing: .08em;
-  margin-bottom: .25em; font-weight: 600;
-}
-
-/* ========== Prioritization logic — plain tables, info-dense ==========
-   Top: a single table of the final selected hypotheses. Below: tabs per
-   source showing ALL hypotheses that source proposed, with selected rows
-   highlighted. Stripped of ornament — readable density, not visual flair. */
-.priority-intro {
-  font-size: .9em; color: #9c9c9c; margin: 0 0 1.4em; line-height: 1.55;
-}
-.priority-intro strong { color: #fafafa; font-weight: 600; }
-
-.priority-section-label {
-  font-size: .78em; font-weight: 700; letter-spacing: .12em;
-  text-transform: uppercase; color: #d8b66f;
-  margin: 1.6em 0 .65em;
-}
-
-.basic-table {
-  width: 100%; border-collapse: collapse; font-size: .9em;
-  margin-bottom: 1em;
-}
-.basic-table th {
-  text-align: left; font-weight: 600; font-size: .78em;
-  text-transform: uppercase; letter-spacing: .07em; color: #888;
-  border-bottom: 1px solid #333; padding: .6em .9em;
-}
-.basic-table td {
-  padding: .85em .9em; border-bottom: 1px solid #1f1f1f;
-  vertical-align: top; color: #c8c8c8; line-height: 1.55;
-}
-.basic-table tr:last-child td { border-bottom: none; }
-.basic-table tr.is-selected td { background: rgba(216, 182, 111, .05); }
-.basic-table tr.is-selected td:first-child {
-  border-left: 3px solid #d8b66f;
-  padding-left: calc(.9em - 3px);
-}
-.basic-table tr.is-rejected td { color: #7a7a7a; }
-
-.basic-table .col-rank {
-  width: 3em; font-variant-numeric: tabular-nums; font-weight: 600;
-  color: #d8b66f; white-space: nowrap;
-}
-.basic-table tr.is-rejected .col-rank { color: #555; font-weight: 400; }
-.basic-table .col-hyp { width: 42%; }
-.basic-table .col-assess { width: 50%; }
-.basic-table .hyp-title {
-  font-weight: 600; color: #fafafa; font-size: 1em; margin-bottom: .3em;
-}
-.basic-table tr.is-rejected .hyp-title { color: #b0b0b0; font-weight: 500; }
-.basic-table .hyp-text { color: #b8b8b8; font-size: .92em; }
-.basic-table tr.is-rejected .hyp-text { color: #777; }
-.basic-table .assess-reject {
-  font-style: italic; color: #888; font-size: .9em;
-}
-/* Evidence-tab row anatomy: company [R#] header, winning-move atom, and
-   (for applied rows) an "Applied as:" callout that surfaces the
-   hypothesis that was derived from this experiment. */
-.basic-table .ev-ref {
-  color: #888; font-weight: 400; font-size: .9em; margin-left: .35em;
-}
-.basic-table .ev-move {
-  color: #b8b8b8; font-size: .9em; margin-top: .2em; line-height: 1.45;
-}
-.basic-table tr.is-rejected .ev-move { color: #777; }
-.basic-table .ev-applied-hyp {
-  margin-top: .55em; padding-top: .55em;
-  border-top: 1px dashed #2a2a2a; font-size: .9em;
-}
-.basic-table .ev-applied-label {
-  color: #d8b66f; font-weight: 600; font-size: .78em;
-  text-transform: uppercase; letter-spacing: .06em;
-}
-.basic-table .ev-applied-title {
-  color: #fafafa; font-weight: 600; margin-left: .35em;
-}
-
-/* Tabs for the per-source view (legacy; kept for any audit/rerender
-   that still emits tabs) */
-.priority-tabs .tab-bar {
-  display: flex; gap: 0; border-bottom: 1px solid #333;
-  margin-bottom: .8em;
-}
-.priority-tabs .tab-btn {
-  background: transparent; border: 0; color: #888; cursor: pointer;
-  padding: .7em 1.2em; font-size: .9em; font-weight: 500;
-  border-bottom: 2px solid transparent;
-  font-family: inherit;
-  transition: color .15s, border-color .15s;
-}
-.priority-tabs .tab-btn:hover { color: #d8d8d8; }
-.priority-tabs .tab-btn.active {
-  color: #fafafa; border-bottom-color: #d8b66f;
-}
-.priority-tabs .tab-btn .tab-n {
-  margin-left: .4em; color: #666; font-size: .85em;
-  font-variant-numeric: tabular-nums;
-}
-.priority-tabs .tab-panel { display: none; }
-.priority-tabs .tab-panel.active { display: block; }
-
-/* Unified input-data table — collapsible <details>, only relevant rows
-   rendered (the LLM already graded out the rest). Columns:
-   # | Datapoint | Category | Assessment. */
-.unified-details {
-  margin: .2em 0;
-}
-.unified-summary {
-  cursor: pointer; padding: .55em .2em; font-size: .92em;
-  color: #d8d8d8; user-select: none; list-style: none;
-}
-.unified-summary::before {
-  content: '▸';
-  display: inline-block; margin-right: .55em;
-  color: #888; transition: transform .15s;
-}
-.unified-details[open] > .unified-summary::before {
-  transform: rotate(90deg);
-}
-.unified-summary:hover { color: #fafafa; }
-.unified-summary .muted { margin-left: .3em; font-size: .9em; }
-.unified-table { margin-top: .6em; }
-.unified-table .col-data { width: 38%; }
-.unified-table .col-cat {
-  width: 11em; color: #b8b8b8; font-size: .9em; white-space: nowrap;
-}
-.unified-table .col-assess { width: auto; }
-.unified-table tr.is-relevant td:first-child {
-  border-left: 3px solid #6ec07a;
-  padding-left: calc(.9em - 3px);
-}
-
-/* Relevant / All toggle above the Referenced-data table. Mirrors the
-   stack-rank category-filter pill look so the two filter affordances read
-   as the same language. Default-active = Relevant (the datapoints the LLM
-   actually used); "All" reveals the rows it graded out so the full
-   evaluated set can be audited. */
-.unified-toggle {
-  display: flex; gap: .4em; flex-wrap: wrap; margin: .7em 0 .2em;
-}
-.unified-toggle-btn {
-  background: transparent; border: 1px solid #444; color: #b8b8b8;
-  cursor: pointer; padding: .35em .9em; font-size: .82em;
-  font-family: inherit; border-radius: 4px; font-weight: 500;
-  transition: border-color .15s, color .15s, background .15s;
-}
-.unified-toggle-btn:hover { color: #fafafa; border-color: #666; }
-.unified-toggle-btn.active {
-  color: #1a1a1a; background: #d8b66f; border-color: #d8b66f;
-}
-.unified-toggle-btn .toggle-n {
-  font-variant-numeric: tabular-nums; opacity: .7; margin-left: .15em;
-}
-.unified-toggle-btn.active .toggle-n { opacity: .85; }
-
-/* Stack-rank table — # | Hypothesis | per-axis scores… | Total | Proposed?
-   Compact numeric columns, monospace digits, no collapsibility. */
-.stack-rank-table .col-data { width: auto; }
-.stack-rank-table .col-score {
-  width: 5em; text-align: right; white-space: nowrap;
-  font-variant-numeric: tabular-nums; color: #b8b8b8; font-size: .9em;
-}
-.stack-rank-table .col-total {
-  color: #fafafa; font-weight: 600;
-  border-left: 1px solid #2a2a2a;
-}
-.stack-rank-table .col-proposed {
-  width: 6em; text-align: center; white-space: nowrap;
-  font-size: .92em;
-}
-.stack-rank-table .col-proposed .rel-yes { color: #6ec07a; }
-.stack-rank-table .col-proposed .rel-no { color: #888; }
-/* Proposed rows get a subtle row tint instead of a stark left border —
-   the ✅ Yes in the Proposed column already says "this made the cut";
-   doubling it with a hard green stripe adds noise without info. */
-.stack-rank-table tr.is-relevant td { background: rgba(255, 255, 255, .025); }
-/* Hypothesis cell: neutral title, slightly-muted description */
-.stack-rank-table .rank-title { color: #fafafa; }
-.stack-rank-table .rank-desc { color: #b8b8b8; }
-/* Category column — small uppercase tag in muted gray. The Category
-   *text* names the slot; no need to also color-code it (the user can
-   read it). Filter buttons are where category lives visually. */
-.stack-rank-table .col-slot {
-  width: 9em; white-space: nowrap; font-size: .78em;
-  color: #888; text-transform: uppercase; letter-spacing: .06em;
-  font-weight: 600;
-}
-/* Proposed column — make ❌ visually quieter than ✅ so the eye lands
-   on the four picks without a wall of red competing for attention. */
-.stack-rank-table .col-proposed .rel-yes { color: #c8c8c8; }
-.stack-rank-table .col-proposed .rel-no  { color: #555; }
-/* Category filter buttons above the stack-rank table — left-aligned,
-   single gold active state. "All" reset sits at the right end so the
-   category options appear first in scan order. */
-.stack-rank-filters {
-  display: flex; gap: .4em; flex-wrap: wrap; margin: .4em 0 .8em;
-}
-.cat-filter-btn {
-  background: transparent; border: 1px solid #444; color: #b8b8b8;
-  cursor: pointer; padding: .35em .9em; font-size: .82em;
-  font-family: inherit; border-radius: 4px; font-weight: 500;
-  transition: border-color .15s, color .15s, background .15s;
-}
-.cat-filter-btn:hover { color: #fafafa; border-color: #666; }
-.cat-filter-btn.active {
-  color: #1a1a1a; background: #d8b66f; border-color: #d8b66f;
-}
-/* "Show all" reset — peer button sitting tight with the category
-   pills (no auto-margin orphaning it). Quieter treatment than the 4
-   categories: dashed border instead of solid, muted text. A small left
-   margin gives breathing room from the category cluster so it reads as
-   "related but distinct" without floating away into white space. */
-.cat-all-link {
-  background: transparent; border: 1px dashed #444; color: #888;
-  cursor: pointer; padding: .35em .9em; font-size: .82em;
-  font-family: inherit; font-weight: 500; border-radius: 4px;
-  margin-left: .6em;
-  transition: border-color .15s, color .15s, background .15s;
-}
-.cat-all-link:hover {
-  color: #fafafa; border-color: #666;
-}
-.cat-all-link.active {
-  color: #1a1a1a; background: #d8b66f; border-color: #d8b66f;
-  border-style: solid;
-}
-
-/* ========== Diagnosis card — the model's pre-hypothesis problem read ==========
-   One row per diagnosed problem: a head line (severity badge · type tag · id ·
-   optional "→ Hypothesis #N" link), the problem summary, then muted
-   location / evidence meta. The left border is tinted by severity so the
-   high-severity problems are findable at a glance; `none` rows are strengths
-   and render green. */
-.diagnosis-list { margin-top: .5em; }
-.diag-row {
-  border-left: 3px solid #6a6a6a;
-  border-top: 1px solid #232323;
-  padding: .75em 0 .75em 1em; margin: 0;
-}
-.diag-row:first-child { border-top: none; }
-.diag-row.sev-high   { border-left-color: #d06a6a; }
-.diag-row.sev-medium { border-left-color: #d8a85f; }
-.diag-row.sev-low    { border-left-color: #7a9cf0; }
-.diag-row.sev-none   { border-left-color: #5d9c5d; }
-.diag-head {
-  display: flex; flex-wrap: wrap; align-items: center; gap: .55em;
-  margin-bottom: .4em;
-}
-.diag-sev {
-  display: inline-block; padding: .12em .65em; border-radius: 999px;
-  font-size: .72em; font-weight: 700; text-transform: uppercase;
-  letter-spacing: .05em; white-space: nowrap;
-  border: 1px solid #444; color: #c9c9c9; background: #232323;
-}
-.diag-sev.sev-high   { background: #2e1d1d; color: #e08585; border-color: #4a2c2c; }
-.diag-sev.sev-medium { background: #2a2218; color: #d8a85f; border-color: #3e2f1c; }
-.diag-sev.sev-low    { background: #1d2330; color: #8ab0f0; border-color: #2c3650; }
-.diag-sev.sev-none   { background: #1f2e1f; color: #7fc77f; border-color: #2c4a2c; }
-.diag-type {
-  font-size: .78em; color: #9a9a9a; text-transform: uppercase;
-  letter-spacing: .05em; font-weight: 600;
-}
-.diag-id {
-  font-size: .78em; color: #777; font-variant-numeric: tabular-nums;
-}
-.diag-applied {
-  font-size: .8em; color: #d8b66f; font-weight: 600; margin-left: auto;
-}
-.diag-summary {
-  color: #fafafa; font-size: .98em; line-height: 1.5; margin-bottom: .4em;
-}
-.diag-meta {
-  display: flex; flex-direction: column; gap: .3em;
-  font-size: .86em; color: #aaaaaa; line-height: 1.5;
-}
-.diag-meta-label {
-  text-transform: uppercase; letter-spacing: .06em; font-size: .82em;
-  color: #777; font-weight: 600; margin-right: .35em;
-}
-
-/* Other inspiration grid — cards with screenshots, click to lightbox */
-.divergent-grid {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 1em; margin-top: .75em;
-}
-.divergent-card {
-  background: #181818; border: 1px solid #303030; border-radius: 8px;
-  overflow: hidden; display: flex; flex-direction: column;
-}
-.divergent-imgwrap {
-  background: #0a0a0a;
-  display: flex; align-items: center; justify-content: center;
-  height: 280px; overflow: hidden;
-}
-.divergent-imgwrap img {
-  max-width: 100%; max-height: 280px; width: auto; height: auto;
-  object-fit: contain; border-radius: 0; border: 0; margin: 0;
-}
-.divergent-meta { padding: .85em 1em; }
-.divergent-card .pattern { font-size: .92em; color: #fafafa; margin-bottom: .4em; line-height: 1.4; }
-.divergent-card .pattern-list {
-  margin: 0 0 .4em; padding-left: 1.1em;
-  font-size: .9em; color: #fafafa; line-height: 1.4;
-}
-.divergent-card .pattern-list li { margin-bottom: .25em; }
-.divergent-card .companies { font-size: .75em; color: #9a9a9a; text-transform: uppercase; letter-spacing: .04em; }
-
-.data-subsection { margin: 1.5em 0 1em; }
-.data-subsection h4 {
-  margin: 0 0 .35em; font-size: 1.05em; font-weight: 600; color: #fafafa;
-}
-.data-subsection .data-sub { color: #9a9a9a; font-size: .88em; margin-bottom: .85em; }
-
-/* Lightbox (reused) */
-.lightbox-img { cursor: zoom-in; transition: filter 0.15s; }
-.lightbox-img:hover { filter: brightness(1.08); }
-.lightbox {
-  position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.92);
-  display: flex; align-items: center; justify-content: center; padding: 2.5em 4em; cursor: zoom-out;
-}
-.lightbox.hidden { display: none; }
-.lightbox-image {
-  max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain;
-  border-radius: 6px; background: #0a0a0a; cursor: default;
-}
-.lightbox-close, .lightbox-prev, .lightbox-next {
-  position: absolute; background: rgba(40,40,40,0.9); color: #fafafa;
-  border: 1px solid #555; border-radius: 50%; width: 44px; height: 44px;
-  font-size: 1.5em; line-height: 0; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-}
-.lightbox-close { top: 1.25em; right: 1.25em; }
-.lightbox-prev { left: 1em; top: 50%; transform: translateY(-50%); }
-.lightbox-next { right: 1em; top: 50%; transform: translateY(-50%); }
-
-/* ===========================================================================
-   MOBILE / RESPONSIVE  —  additive only. Everything below is gated on a
-   max-width media query (or has no effect on mouse input), so the desktop
-   layout at >= 761px renders identically to before. Goals:
-     1. reflow every multi-column block into one tap-friendly column
-     2. enlarge touch targets to ~44px so taps actually register
-     3. keep all UI visible — no horizontal scroll, no pinch-zoom needed
-   =========================================================================== */
-
-/* Remove the 300ms tap delay + double-tap-zoom on interactive elements.
-   touch-action only affects touch input, so mouse/desktop is unchanged. */
-.design-btn, .design-dot,
-.lightbox-img, .lightbox-close, .lightbox-prev, .lightbox-next,
-.top-row .paywall-col img, .top-row .mockup-col .mockup-slide img,
-.evidence-slide .evidence-imgpair .ba-col img, .divergent-imgwrap img {
-  touch-action: manipulation;
-}
-
-@media (max-width: 760px) {
-  body {
-    margin: 1em auto; padding: 0 1em; line-height: 1.55;
-    overflow-x: hidden;          /* clip any stray sub-pixel overflow */
-    overflow-wrap: break-word;   /* long tokens/URLs wrap instead of widening */
-  }
-  h1 { font-size: 1.5em; }
-  .card { padding: 1.05em 1em; margin: 1em 0; }
-  .col-heading { font-size: 1.15em; }
-
-  /* Top row: stack current / mockup / hypothesis into one column. The first
-     two are portrait phone screenshots — show them full width, centered, and
-     capped so they don't tower past the first screen. */
-  .top-row { flex-direction: column; gap: 1.35em; }
-  .top-row .paywall-col,
-  .top-row .mockup-col { flex: none; width: 100%; }
-  .top-row .paywall-col img,
-  .top-row .mockup-col .mockup-slide img {
-    width: auto; max-width: 100%; max-height: 72vh;
-    display: block; margin: 0 auto;
-  }
-  .top-row .hypothesis-col { padding-top: .25em; }
-  .top-row .hypothesis-slide .hypothesis-title { font-size: 1.3em; }
-
-  /* Peer benchmark: label on its own line, then bar | pct | flag below.
-     Row children are: label, track, pct, indicator. */
-  .bench-row {
-    grid-template-columns: 1fr auto auto;
-    gap: .45em .7em; margin: .6em 0;
-  }
-  .bench-label { grid-column: 1 / -1; }
-  .bench-track { align-self: center; }
-
-  /* Strategy rows (unused in this report, kept for parity). */
-  .strat-row { grid-template-columns: 1fr auto; gap: .4em .7em; }
-
-  /* Consensus-movement: keep the diverging bar inline — it IS the chart —
-     just tighten the label gutter so it fits a phone. */
-  .trend-row { grid-template-columns: 92px 1fr 38px; gap: .65em; }
-  .trend-row.with-flag {
-    grid-template-columns: 92px 1fr 38px;
-    gap: .45em .65em;
-  }
-  /* Mobile: flag drops below the bar row so it doesn't squeeze the chart. */
-  .trend-row.with-flag .bench-indicator {
-    grid-column: 1 / -1; justify-self: start; padding-left: 92px;
-  }
-  .trend-label { font-size: .84em; }
-
-  /* Evidence before/after: stack image pair above the text, but keep the two
-     shots side-by-side so the before->after comparison stays readable. */
-  .evidence-slide .evidence-body { flex-direction: column; gap: 1.15em; }
-  .evidence-slide .evidence-imgpair { flex: 1 1 auto; gap: .6em; }
-  .evidence-slide .evidence-imgpair .ba-col { width: auto; flex: 1 1 0; min-width: 0; }
-  .evidence-slide .evidence-imgpair .ba-col img { width: 100%; max-width: 100%; }
-
-  /* Inspiration grid: single column, shorter image wells. */
-  .divergent-grid { grid-template-columns: 1fr; gap: .85em; }
-  .divergent-imgwrap { height: 230px; }
-  .divergent-imgwrap img { max-height: 230px; }
-
-  /* Diagnosis: when the head line wraps, let the hypothesis link sit inline
-     with the badges instead of being shoved to the far right. */
-  .diag-applied { margin-left: 0; }
-
-  /* Tables don't shrink gracefully — the Prioritization table has 8
-     columns and the Referenced Data table 4 wide ones. On mobile they
-     blow past viewport width. Wrap each in a horizontal scroller and
-     tighten cell padding so more fits before scroll kicks in. */
-  .stack-rank-wrap, .unified-table-wrap {
-    overflow-x: auto; -webkit-overflow-scrolling: touch;
-    margin: 0 -1em; padding: 0 1em;  /* edge-to-edge scroll on phone */
-  }
-  /* When the unified table sits inside <details>, the wrap might not
-     exist — apply the scroll to the <details> too as a fallback. */
-  .unified-details {
-    overflow-x: auto; -webkit-overflow-scrolling: touch;
-  }
-  .basic-table { font-size: .82em; }
-  .basic-table th, .basic-table td { padding: .55em .55em; }
-  .stack-rank-table { min-width: 640px; }   /* preserve column legibility */
-  .unified-table    { min-width: 540px; }
-  /* Filter buttons can crowd on phones — let them wrap freely. */
-  .stack-rank-filters, .unified-toggle { gap: .35em; }
-  .cat-filter-btn, .cat-all-link, .unified-toggle-btn {
-    padding: .4em .75em; font-size: .8em; min-height: 36px;
-  }
-
-  /* ---- Tap targets ---- */
-  .design-controls { gap: .5em; margin-top: 1.1em; }
-  .design-btn {
-    padding: .65em 1.1em; font-size: 1em;
-    min-height: 44px; min-width: 64px;
-  }
-  /* The 9px dots are far too small to tap. Keep the visible dot small/round
-     but overlay a 44px transparent hit area (a pseudo-element forwards taps
-     to its host, so the dot's existing click handler fires). */
-  .design-dots { gap: .5em; }
-  .design-dot { position: relative; width: 11px; height: 11px; }
-  .design-dot::after {
-    content: ""; position: absolute; top: 50%; left: 50%;
-    width: 44px; height: 44px; transform: translate(-50%, -50%);
-  }
-
-  /* Lightbox: shrink the chrome so the zoomed image is actually big on a
-     phone; keep the 44px round controls reachable. */
-  .lightbox { padding: 3.25em .55em; }
-  .lightbox-close { top: .55em; right: .55em; }
-  .lightbox-prev { left: .35em; }
-  .lightbox-next { right: .35em; }
-}
-```
-
-Plus this `.bbox` overlay treatment (the "bounding box around the reference
-image, dim outside it" effect) — append it inside the SAME `<style>` block:
-
-```css
-.ba-imgwrap { position: relative; display: block; line-height: 0; }
-.ba-imgwrap img { display: block; }
-.bbox {
-  position: absolute; box-sizing: border-box;
-  border: 2px solid #ff8c2a;
-  background: rgba(255, 140, 42, 0.10);
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.55);
-  border-radius: 3px;
-  pointer-events: none;
-  opacity: 0; transition: opacity .15s ease;
-}
-.bbox.ann-active { opacity: 1; }
-.bbox::after {
-  content: attr(data-label);
-  position: absolute; top: -1px; left: -1px;
-  background: #ff8c2a; color: #1a1a1a;
-  font: 600 10px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  padding: 2px 5px; border-radius: 2px 0 3px 0;
-  letter-spacing: .04em;
-}
-```
-
-### Embedded JS — paste VERBATIM before `</body>`
-
-First the carousel driver (drives every `[data-carousel-group]`, its
-`.design-slide.active`, `.design-dot`, and prev/next):
-
-```js
-
-(function(){
-  // INDEPENDENT carousel groups. Each [data-carousel-group] container holds:
-  //   - one or more .design-carousel content areas (synced WITHIN the group)
-  //   - one .carousel-controls with its own prev/next/dots
-  // Different groups advance independently of each other.
-  document.querySelectorAll('[data-carousel-group]').forEach(function(group){
-    var carousels = group.querySelectorAll('.design-carousel');
-    var dots = group.querySelectorAll('.design-dot');
-    var prevBtn = group.querySelector('.design-prev');
-    var nextBtn = group.querySelector('.design-next');
-    if (carousels.length === 0) return;
-    // Slide count = max slides across carousels in the group (they should all
-    // have the same length; if not, we treat the max as canonical).
-    var total = 0;
-    carousels.forEach(function(c){
-      var n = c.querySelectorAll('.design-slide').length;
-      if (n > total) total = n;
-    });
-    if (total === 0) return;
-    var current = 0;
-
-    function show(idx, scrollIntoView){
-      if (idx < 0) idx = 0;
-      if (idx >= total) idx = total - 1;
-      var prevIdx = current;
-      current = idx;
-      carousels.forEach(function(c){
-        var slides = c.querySelectorAll('.design-slide');
-        slides.forEach(function(s, i){ s.classList.toggle('active', i === idx); });
-      });
-      dots.forEach(function(d, i){ d.classList.toggle('active', i === idx); });
-      if (prevBtn) prevBtn.disabled = (idx === 0);
-      if (nextBtn) nextBtn.disabled = (idx === total - 1);
-      group.dataset.current = String(idx);
-      // On mobile the top-row stacks vertically, so the swapped slide
-      // content lives well ABOVE the controls. Without auto-scroll the
-      // user taps Next at the bottom of a tall card and sees nothing
-      // change. Scroll the group's top into view so the new slide is
-      // visible. Only triggered by explicit user actions (click/swipe/
-      // keyboard), not the initial show(0).
-      if (scrollIntoView && prevIdx !== idx && window.matchMedia('(max-width: 760px)').matches) {
-        var rect = group.getBoundingClientRect();
-        // Only scroll if the group's top is above the viewport.
-        if (rect.top < 0) {
-          group.scrollIntoView({behavior: 'smooth', block: 'start'});
-        }
-      }
-    }
-
-    if (prevBtn) prevBtn.addEventListener('click', function(e){ e.stopPropagation(); show(current - 1, true); });
-    if (nextBtn) nextBtn.addEventListener('click', function(e){ e.stopPropagation(); show(current + 1, true); });
-    dots.forEach(function(d){
-      d.addEventListener('click', function(e){
-        e.stopPropagation();
-        var idx = parseInt(d.dataset.idx || '0', 10);
-        show(idx, true);
-      });
-    });
-    show(0, false);
-  });
-
-  // Keyboard arrows control the carousel group focused most recently. We track
-  // focus by remembering the last-clicked group; default to the FIRST group.
-  var lastFocusedGroup = document.querySelector('[data-carousel-group]');
-  document.querySelectorAll('[data-carousel-group]').forEach(function(group){
-    group.addEventListener('click', function(){ lastFocusedGroup = group; });
-  });
-  document.addEventListener('keydown', function(e){
-    if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
-    var lb = document.getElementById('lightbox');
-    if (lb && !lb.classList.contains('hidden')) return;
-    if (!lastFocusedGroup) return;
-    if (e.key === 'ArrowLeft') {
-      e.preventDefault();
-      var prev = lastFocusedGroup.querySelector('.design-prev');
-      if (prev && !prev.disabled) prev.click();
-    } else if (e.key === 'ArrowRight') {
-      e.preventDefault();
-      var next = lastFocusedGroup.querySelector('.design-next');
-      if (next && !next.disabled) next.click();
-    }
-  });
-
-  // Touch swipe — advance the carousel group under the finger. Reuses the
-  // existing prev/next buttons. Passive + never preventDefault, so vertical
-  // scrolling is untouched; a horizontal-intent threshold keeps plain taps
-  // from registering as swipes.
-  document.querySelectorAll('[data-carousel-group]').forEach(function(group){
-    var x0 = 0, y0 = 0, tracking = false;
-    group.addEventListener('touchstart', function(e){
-      if (e.touches.length !== 1) { tracking = false; return; }
-      x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; tracking = true;
-    }, {passive: true});
-    group.addEventListener('touchend', function(e){
-      if (!tracking) return;
-      tracking = false;
-      var t = e.changedTouches[0];
-      var dx = t.clientX - x0, dy = t.clientY - y0;
-      if (Math.abs(dx) < 45 || Math.abs(dx) < Math.abs(dy) * 1.8) return;
-      var btn = group.querySelector(dx < 0 ? '.design-next' : '.design-prev');
-      if (btn && !btn.disabled) btn.click();
-    }, {passive: true});
-  });
-
-  // Iteration toggle — version-chain switch (v1 / v2 / … / v(current)),
-  // scoped per slide. Each [data-toggle="version-chain"] strip has N
-  // buttons; clicking one shows the matching .mockup-view AND
-  // .mockup-feedback-caption siblings and hides the others. The same
-  // selector also matches the legacy [data-toggle="prior-vs-new"] from
-  // pre-multi-version reports for backward compat.
-  document.querySelectorAll(
-    '[data-toggle="version-chain"], [data-toggle="prior-vs-new"]'
-  ).forEach(function(strip){
-    var slide = strip.closest('.mockup-slide');
-    if (!slide) return;
-    strip.querySelectorAll('.mockup-toggle-btn').forEach(function(btn){
-      btn.addEventListener('click', function(e){
-        e.stopPropagation();
-        var target = btn.dataset.target;
-        strip.querySelectorAll('.mockup-toggle-btn').forEach(function(b){
-          b.classList.toggle('active', b.dataset.target === target);
-        });
-        slide.querySelectorAll('.mockup-view').forEach(function(v){
-          v.classList.toggle('hidden', v.dataset.view !== target);
-        });
-        slide.querySelectorAll('.mockup-feedback-caption').forEach(function(c){
-          c.classList.toggle('hidden', c.dataset.caption !== target);
-        });
-      });
-    });
-  });
-})();
-
-```
-
-Then the lightbox driver (zooms any `.lightbox-img` in the active slide):
-
-```js
-
-(function(){
-  var lb = document.getElementById('lightbox');
-  if (!lb) return;
-  var lbImg = lb.querySelector('.lightbox-image');
-  var lbClose = lb.querySelector('.lightbox-close');
-  var lbPrev = lb.querySelector('.lightbox-prev');
-  var lbNext = lb.querySelector('.lightbox-next');
-  // Only collect lightbox-eligible images that are currently visible.
-  function collectVisible() {
-    var imgs = Array.prototype.slice.call(document.querySelectorAll('.lightbox-img'));
-    return imgs.filter(function(img){
-      // Skip if inside a hidden carousel slide
-      var slide = img.closest('.design-slide');
-      if (slide && !slide.classList.contains('active')) return false;
-      return img.offsetParent !== null;
-    });
-  }
-  var images = []; var current = -1;
-  function show(idx){
-    if (images.length === 0) return;
-    if (idx < 0) idx = images.length - 1;
-    if (idx >= images.length) idx = 0;
-    current = idx;
-    lbImg.setAttribute('src', images[idx].getAttribute('src'));
-    lbImg.setAttribute('alt', images[idx].getAttribute('alt') || '');
-    var multi = images.length > 1;
-    lbPrev.style.display = multi ? '' : 'none';
-    lbNext.style.display = multi ? '' : 'none';
-  }
-  function open(img){
-    images = collectVisible();
-    var idx = images.indexOf(img);
-    if (idx < 0) idx = 0;
-    show(idx);
-    lb.classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-  }
-  function close(){
-    lb.classList.add('hidden');
-    document.body.style.overflow = '';
-    current = -1;
-  }
-  document.querySelectorAll('.lightbox-img').forEach(function(img){
-    img.addEventListener('click', function(e){ e.stopPropagation(); open(img); });
-  });
-  lbPrev.addEventListener('click', function(e){ e.stopPropagation(); show(current - 1); });
-  lbNext.addEventListener('click', function(e){ e.stopPropagation(); show(current + 1); });
-  lbClose.addEventListener('click', function(e){ e.stopPropagation(); close(); });
-  lb.addEventListener('click', function(e){ if (e.target === lb) close(); });
-  lbImg.addEventListener('click', function(e){ e.stopPropagation(); });
-  document.addEventListener('keydown', function(e){
-    if (lb.classList.contains('hidden')) return;
-    if (e.key === 'ArrowLeft') { e.preventDefault(); show(current - 1); }
-    else if (e.key === 'ArrowRight') { e.preventDefault(); show(current + 1); }
-    else if (e.key === 'Escape') { e.preventDefault(); close(); }
-  });
-})();
-
-```
-
-Both go in their own `<script>` tags, carousel first, after the
-`<div id="lightbox" …>` overlay markup and before `</body>`.
-
-## When to Use This
-
-- User wants to improve, redesign, optimize, critique, or evaluate a paywall
-- User has a paywall screenshot, URL, product brief, or current paywall copy
-- User asks how to increase paid conversion, trial starts, annual-plan share, or checkout continuation from a paywall
-- User asks for concrete paywall redesign hypotheses, not just a broad A/B test corpus search
-
-## When NOT to Use This
-
-- User asks only for A/B test examples, experiment IDs, or monetization research -> route to `lazyweb-ab-test-research`
-- User wants generic pricing-page references outside an app paywall -> route to `lazyweb-deep-design-research` or `lazyweb-lite-design-research`
-- User wants creative UI ideas unrelated to conversion -> route to `lazyweb-design-brainstorm`
+Optimize a paywall with an evidence-backed, slot-diverse portfolio of conversion
+hypotheses — not generic component advice.
+
+## CRITICAL: how this skill works (read first)
+
+**You do NOT hand-write the report HTML.** The deterministic parts — the
+Confidence × Upside × Boldness scoring, the top-1-per-slot selection, and the
+dark "Hallow" report rendering — run **server-side**, reusing the internal
+paywall pipeline so the output is identical to it. **Your job is the creative
+front-half:** read the paywall, gather evidence, diagnose frictions, draft a
+portfolio of candidate hypotheses, then orchestrate three MCP calls. Concretely:
+
+1. **Ground + read** the target paywall (capture/located screenshot).
+2. **Gather evidence** — `lazyweb_search` (references) + `lazyweb_search_ab_tests`
+   (real A/B experiments with control/variant screenshots + curated learnings).
+3. **Diagnose** 4-6 conversion frictions on THIS paywall.
+4. **Draft a portfolio** of **12-16 candidate hypotheses (3-4 per slot)** across
+   the four slots, each grounded in a friction + (where possible) a cited
+   experiment.
+5. **Score** them: call `lazyweb_paywall_score(recommendations, frictions)` →
+   it returns the **top-1-per-slot WINNERS** (the 4 to mock up) + every scored
+   candidate.
+6. **Generate one mockup per winner** via the async mockup pair
+   (`lazyweb_start_mockup` → `lazyweb_get_mockup`), EDIT mode off the current
+   screenshot.
+7. **Render + host**: call `lazyweb_render_report(report_skill="optimize-paywall",
+   report_data=…)` with the structured `report_data` below → it returns the
+   hosted report URL. **That URL is the deliverable.**
+
+Do NOT author `report.html`, a `report.md`, embedded CSS/JS, or a build script —
+the server renderer owns all of that now. After you get the URL, summarize the
+portfolio (one line per slot, naming the lead) and give the user the URL.
+
+The work dir convention is `$WORK = .lazyweb/optimize-paywall/{topic-slug}-{YYYY-MM-DD}`;
+save the current screenshot + the generated mockups under `$WORK/references/`.
 
 ## Lazyweb MCP Setup
 
-Use hosted Lazyweb MCP tools at `https://www.lazyweb.com/mcp` for database-backed evidence. First list the available tools and run `lazyweb_health`.
+Use hosted Lazyweb MCP tools at `https://www.lazyweb.com/mcp`. First list the
+tools and run `lazyweb_health`. Required tools:
 
-Required public tools:
-- `lazyweb_health` - verify Lazyweb MCP connectivity
-- `lazyweb_search_ab_tests` - retrieve and synthesize mobile-only paywall/conversion experiment evidence (use its curated `learning` field as the annotated evidence)
-- `lazyweb_search` - find paywall references and convention examples (use its `visionDescription` as the annotated evidence)
-- `lazyweb_compare_image` - find visually similar screens when the target paywall image is available as `image_base64` + `mime_type` or `image_url`
-- `lazyweb_find_similar` - expand from a strong Lazyweb result by passing its returned `imageUrl`
-- `lazyweb_get_flows` - optional ordered paywall, checkout, upgrade, or onboarding journeys
-- `lazyweb_start_mockup` + `lazyweb_get_mockup` - **async** server-side paywall mockup generation (Lazyweb's image key) for non-Codex clients. `lazyweb_start_mockup` returns a `job_id` immediately; poll `lazyweb_get_mockup` with it until the image is ready. Non-Codex clients MUST use this pair — the synchronous `lazyweb_generate_mockup` always times out through the hosted gateway (gpt-image-2 needs ~40-90s; the gateway aborts at ~15s), which is what forces reports onto CSS mock-frames. See the image-gen ladder in "Generate the mockups" below.
+- `lazyweb_health` — verify connectivity.
+- `lazyweb_search` — paywall references + convention examples (use `visionDescription`).
+- `lazyweb_search_ab_tests` — **mobile A/B experiment evidence**: control/variant
+  screenshots + the curated `learning`. This is the evidence that grounds the
+  before/after card and the candidates' `winning_move_verbatim`.
+- `lazyweb_paywall_score` — server-side C/U/B stack-rank; returns the 4 winners + all scored candidates.
+- `lazyweb_start_mockup` + `lazyweb_get_mockup` — async paywall mockup generation
+  (the sync `lazyweb_generate_mockup` times out through the gateway; use the pair).
+- `lazyweb_render_report` — server-renders + hosts the report from `report_data`
+  (pass `report_skill="optimize-paywall"`).
+- `lazyweb_compare_image` / `lazyweb_find_similar` / `lazyweb_get_flows` — optional.
 
-**Pass `skill: "optimize-paywall"` on every call.** Include `"skill": "optimize-paywall"` in the arguments of each `lazyweb_*` tool call — for example `{"query": "pricing page", "limit": 30, "skill": "optimize-paywall"}`. This is optional analytics metadata Lazyweb uses to understand which skills are used; never drop or change a real argument for it.
+**Pass `skill: "optimize-paywall"` and `version: "<x.y.z>"` on every call** (read
+`~/.lazyweb/VERSION`, fall back `"0.0.0"`). Optional analytics; never drop a real arg.
 
-**Also pass `version: "<x.y.z>"` on every call.** Read `~/.lazyweb/VERSION` once per session at skill start (e.g. `cat "$HOME/.lazyweb/VERSION" 2>/dev/null || echo 0.0.0`); fall back to `"0.0.0"` if the file is missing or unreadable — never block on this. Include `"version": "<that-value>"` in the arguments of every `lazyweb_*` tool call alongside the existing `skill` arg — for example `{"query": "pricing page", "limit": 30, "skill": "optimize-paywall", "version": "0.4.5"}`. Optional analytics metadata Lazyweb uses to track which skill-pack versions are running; never drop or change a real argument for it.
+If the MCP is missing/auth fails, tell the user to run
+`curl -fsSL https://www.lazyweb.com/install.sh | bash`, reload, and rerun.
 
-If Lazyweb MCP is not installed or auth fails, tell the user: "Lazyweb MCP is
-not installed. Run `curl -fsSL https://www.lazyweb.com/install.sh | bash`,
-reload this client, then rerun this skill." Continue with web research only if
-the user wants a degraded fallback.
+## Ground the paywall
 
-The public A/B wrapper is included free. If `lazyweb_search_ab_tests` is
-available, call it directly and use the returned experiment evidence. If the
-tool is unavailable or returns no matching experiments, clearly label the report
-as reference-grounded but not experiment-backed, then continue with Lazyweb
-visual references.
+1. Capture or read the target paywall. Prefer a real screenshot or URL over
+   prose. Save it to `$WORK/references/current-state.png` — it becomes the
+   "Current" column.
+2. Ask one concise question only if the product, platform, conversion goal, or
+   target screen is missing and cannot be inferred.
+3. Read the paywall and note: components (header, hero, benefits, pricing, CTAs,
+   trust signals, FAQ, close/skip); layout pattern; strategic moves (anchoring,
+   trial framing, urgency, social proof, risk reversal, tier framing); offer
+   (trial vs none, single vs multi-tier, intro vs flat, annual vs monthly
+   emphasis); user state (cold first session, warm feature wall, post-onboarding,
+   checkout, cancellation save, upgrade moment).
 
-## Ground the Paywall
+## Evidence workflow
 
-Before searching, establish the target:
+1. **References** — 3-5 `lazyweb_search` queries for paywalls matching the
+   category, user state, conversion goal, and layout. Read `visionDescription`.
+2. **Experiments** — `lazyweb_search_ab_tests` with the **category as the
+   industry filter** plus the conversion goal, constraints, and the target
+   description. Include the product name only as target context (NOT as an exact
+   `company`/`product` filter — that over-filters to zero). Each returned
+   experiment has a control screenshot, a variant screenshot, and a curated
+   `learning`. **Label the ones you'll use `R1`, `R2`, …** — these become the
+   `experiments` map + the candidates' `evidence_ref`. Treat learnings as
+   directional (screenshot-diff, not measured lift). If the corpus returns no
+   on-context experiment, say so and proceed on reference grounding.
+3. Optional: `lazyweb_compare_image` (structural twins), `lazyweb_get_flows`
+   (sequencing), divergent `lazyweb_search` outside the category for the bold/
+   contrarian slots.
 
-1. Run `lazyweb-context-detect` when available to infer project, platform, and stack.
-2. Capture or read the target paywall. Prefer an actual screenshot or URL over prose. If the target is a local app, capture the current screen. If the target is remote, use the provided image or URL. Save it to `$REPORT_DIR/references/current-state.png` — it becomes the Current column in the top card.
-3. Ask one concise question only when the product, platform, conversion goal, or target screen is missing and cannot be inferred.
+**Search discipline:** never repeat an identical query (results are
+deterministic — page with `offset`). On `no_matches`/`low_coverage`, take the
+closest result or note the gap; don't loop.
 
-Read the paywall first. Identify:
-- Components present: header, hero, benefits, pricing, CTAs, trust signals, FAQ, footer, close/skip affordance
-- Layout pattern: full-screen, bottom sheet, single-column stack, comparison grid, plan cards, checkout step, interstitial
-- Strategic moves: anchoring, trial framing, urgency, social proof, risk reversal, tier framing, locked-feature framing
-- Offer: trial vs no trial, single vs multi-tier, intro price vs flat price, annual vs monthly emphasis
-- User state: cold first session, warm feature wall, post-onboarding, checkout continuation, cancellation save, or upgrade moment
+## Diagnose the frictions (Pass 1 — required, before any hypothesis)
 
-## Evidence Workflow
+List **4-6 conversion frictions** on THIS paywall. Each is an object:
 
-Use multiple evidence angles:
+```json
+{"id":"F1","summary":"<the problem, one sentence>","type":"friction|anti_pull|misframing","severity":"high|medium|low","location":"<component>","visible_evidence":"<what on the screen shows it>"}
+```
 
-1. **Visual references (grounding).** Run 3-5 `lazyweb_search` queries for paywalls matching the product category, user state, conversion goal, and layout. Read `visionDescription` before using a result. These references ground the redesign — they show the conventions THIS paywall should or should not adopt.
-2. **Experiment evidence (validation).** Call `lazyweb_search_ab_tests` for mobile-only A/B evidence with the category as the industry filter, plus conversion goal, constraints, and target paywall description or image URL. Include the product name only as target context, not as an exact company filter. Use the tool to **validate or challenge** a hypothesis you already formed from reading THIS paywall — not as the starting point. Treat learnings as directional (screenshot-diff, not measured lift). If the corpus has no on-context experiment, say so and proceed on reference + convention grounding.
-3. **Visual similarity.** If the target image is available and `lazyweb_compare_image` is exposed, retrieve structurally similar paywalls.
-4. **Flows.** If the question depends on sequencing, call `lazyweb_get_flows` for paywall, checkout, onboarding, upgrade, or cancellation journeys.
-5. **Divergent moves.** Search outside the obvious category when the user asks for bolder options. Extract the mechanism, not the literal design.
+Also name 1-2 genuine **strengths** as `severity:"none"` rows. Do not invent a
+problem to fill a row. These frictions are what every hypothesis must attack
+(via `addresses_friction`), and severity feeds the server's scoring.
 
-Use `high_design_bar: true` only when the live schema exposes it and the user asks for premium, stronger, high-design-bar, best-designed, or visually stronger examples.
+## Draft the portfolio (Pass 2 — 12-16 candidates, 3-4 per slot)
 
-**Search discipline:** never repeat an identical `lazyweb_search` query — results are deterministic; page deeper with `offset` and follow `pagination.next_offset`. On `no_matches`/`low_coverage` warnings, use the closest result or note the coverage gap — don't rephrase the same concept in a loop. On `company_not_in_library`, use a suggested company or drop the filter.
+Emit **12-16 candidate hypotheses total, 3-4 per slot**, across FOUR slots. The
+server's stack-rank picks the **top-1 per slot** for the final 4; the rest show
+up in the prioritization table as alternates you considered. Within a slot, each
+pick must test a **fundamentally different** change from its slot siblings; across
+slots, the four slot characters must stay distinct.
 
-## Annotated learnings + bbox overlays (required)
+- **SLOT 1 — `safe_bet`**: High confidence, modest UI change (`copy_tweak` or a
+  small `component_swap`), modest expected upside. Evidence-backed (cite an `R#`).
+  The optimization a PM ships Monday morning. Low boldness by design.
+- **SLOT 2 — `high_value_bet`**: High confidence + larger structural change + big
+  upside potential. Evidence backs the mechanism (cite an `R#`). The thing you'd
+  run with 2 weeks of dev instead of 1 day. Mid-to-high boldness.
+- **SLOT 3 — `bold_swing`**: Lower confidence base, structural change, VERY high
+  upside ceiling. The 2× play — could win big or fail loudly. NOT what a generic
+  best-practices summary would propose; may lean on a divergent/trending move
+  rather than direct A/B evidence. Justify in `boldness_rationale`.
+- **SLOT 4 — `contrarian`**: Either (a) a move <20% of peer paywalls ship —
+  explain why convention is wrong for THIS paywall — OR (b) attack a problem the
+  friction list didn't name (you think it's the real issue). Counter-convention
+  is the point. Highest boldness.
 
-The evidence in each hypothesis is the CURATED ANNOTATED LEARNING, never a raw
-changelog. Use the `learning` field returned by `lazyweb_search_ab_tests` and the
-`visionDescription` returned by `lazyweb_search` as the evidence text in the
-`.delta`. Do NOT paste raw `what_changed` strings, raw experiment diffs, or
-unfiltered changelog prose — those are the inputs the curated learning was
-distilled from, not the evidence to show.
+Each candidate is an object with EXACTLY these fields:
 
-For EACH reference / evidence image you put in the report (the before/after
-shots in the evidence card, and any reference you want to spotlight), draw a
-`.bbox` overlay highlighting the region the learning is about — a bounding box
-around the relevant part of the screen, with everything outside it visually
-dimmed (the `.bbox` CSS produces the highlighted rect; the dark page does the
-"dim outside" read). The Lazyweb MCP does NOT return bbox coordinates, so YOU,
-the vision-capable agent, must estimate them by looking at the image:
+```json
+{
+  "slot": "safe_bet | high_value_bet | bold_swing | contrarian",
+  "hypothesis_title": "<=3 words, <=22 chars, Title Case",
+  "addresses_friction": "F#",
+  "evidence_ref": "<R# you cited, or empty for a slot-4 pick with no A/B winner>",
+  "evidence_company": "<company verbatim from that R#, or empty>",
+  "winning_move_verbatim": "<direct quote (<=200 chars) from that experiment's learning, or empty>",
+  "data_lenses": ["missing_pattern" | "consensus_movement" | "trending" | "divergent"],
+  "how_we_apply_it": "<ONE sentence (<=140 chars): the concrete visual move on THIS paywall>",
+  "hypothesis": "Making [change] should [conversion outcome] because [mechanism]. (<=180 chars)",
+  "boldness_rationale": "<one sentence; REQUIRED for bold_swing + contrarian: why it departs from convention/current UI>",
+  "change_scope": "copy_tweak | component_swap | section_restructure | full_redesign",
+  "mockup_prompt": "A redesigned paywall mockup for [PRODUCT]: <build-spec: composition, EXACT quoted copy, measured brand hexes/type, what moves to make room, 1-2 Do-not lines. 4-8 sentences.>"
+}
+```
 
-1. Open/inspect the image and find the UI region the curated learning describes
-   (e.g. the CTA button, the plan grid, the trial toggle).
-2. Express the box as percentages of the image's own width and height:
-   `left%`, `top%` for the top-left corner, then `width%`, `height%`.
-3. Emit it as `style="left:L%;top:T%;width:W%;height:H%;"` on a
-   `<div class="bbox ann-active" data-ann="0" data-label="1" style="…"></div>`
-   inside that image's `.ba-imgwrap`.
+Hard rules — drop any pick that fails:
+- 3-4 picks per slot; 12-16 total. Each carries its `slot`.
+- Each pick targets a friction with severity > `none`.
+- If `evidence_ref` is set, `winning_move_verbatim` is a direct quote from that
+  `R#`'s learning. Each cited `R#` is used by a DIFFERENT pick where possible.
+- `data_lenses` lists only the lenses that genuinely apply (empty is fine).
+- Describe the actual visual move in plain language — no taxonomy keys, no
+  platitudes ("two side-by-side plan cards", not "comparison_tiers_grid").
+- Distinct slot characters: a second `safe_bet` is invalid; a `contrarian` that
+  isn't actually counter-convention is invalid. Better 3 strong picks in a slot
+  than 4 with a forced weak one.
+- **Anti-hybrid checksum:** each hypothesis answers "what would you change about
+  THIS paywall, and why" — not "what did experiment X test." The report is a
+  paywall redesign, not an experiment digest.
 
-Keep the box snug around the region of interest, not the whole screen. If a
-learning genuinely spans the full screen, a near-full-frame box is fine, but
-prefer the tightest box that contains the change. One box per image is the
-default; if a learning touches two regions, emit two `.bbox` divs with
-incrementing `data-label` ("1", "2", …).
+You may also draft `experiment_verdicts` — one row per experiment you pulled,
+`apply` (it shaped a hypothesis) or `skip` (why not) — for the Referenced-data
+table. Optional but recommended:
 
-## Hypothesis grounding (required)
+```json
+{"ref":"R1","verdict":"apply|skip","evidence_company":"<company>","winning_move":"<short>","applied_as":"<hypothesis_title if applied>","how_we_apply_it":"<one line if applied>","skip_reason":"<one line if skipped>"}
+```
 
-Every hypothesis must be anchored to the TARGET paywall's own read — the specific conventions it is missing or mis-using, and a named friction on *this* screen — not to the experiment corpus. Experiment evidence may support a hypothesis, but the hypothesis originates from "what is wrong or under-leveraged on THIS paywall," established in "Read the paywall first" above.
+## Score the portfolio (which 4 to mock up)
 
-## Optimization Framework — diagnose, then build a slot-diverse portfolio
+Call **`lazyweb_paywall_score`** with `{recommendations: [your 12-16 candidates], frictions: [your frictions], report_skill: "optimize-paywall"}`.
+It returns:
+- `selected`: the **4 winners** (top-1 per slot), each with `slot`, `hypothesis_title`,
+  `mockup_prompt`, `change_scope`, `rank`, `score`. **These are the only 4 you mock up.**
+- `candidates`: every candidate scored on Confidence/Upside/Boldness/Total (the
+  server renders these into the prioritization table — you don't need to re-send
+  them, but keep your `recommendations` for the render call).
 
-The unit of analysis is a hypothesis, not a component list. Reason in two passes,
-the way the strongest paywall reviews do — diagnose the screen, then assemble a
-deliberately diverse PORTFOLIO of bets rather than a flat menu of similar ideas.
+## Generate one mockup per winner (async — ENFORCED LADDER)
 
-### Pass 1 — Diagnose (frictions first)
+For EACH of the 4 `selected` winners, generate a mockup that is an EDIT of the
+CURRENT screenshot (so it keeps the real brand/layout/dimensions), conditioned on
+the winner's `mockup_prompt` prefixed with the **ENFORCED PREAMBLE** below.
 
-Before writing any hypothesis, read THIS paywall and list **4-6 conversion
-frictions**, each with: an id (`F1`, `F2`, …), a **severity** (high / medium /
-low), the component it lives on, and one line of evidence/why. Also name 1-2
-genuine **strengths** (severity `none`, the green rows) — do not invent a problem
-to fill a row. These frictions are what the hypotheses must attack, and they
-populate the Diagnosis card; each hypothesis links back to the friction id it
-addresses ("→ Hypothesis #N" on the friction row).
+- **If you ARE Codex** → use built-in `image_gen` (gpt-image-2) with the current
+  screenshot as the reference image.
+- **Otherwise (Claude Code, etc.)** → use the async pair. Do NOT call
+  `lazyweb_generate_mockup` (it times out through the gateway). Start all 4 up
+  front so they run in parallel: `lazyweb_start_mockup` with `prompt` =
+  `ENFORCED PREAMBLE + winner.mockup_prompt`, the current screen as `image_base64`
+  (+ `mime_type`), and **omit `size`** (EDIT mode defaults to `auto`, which
+  matches the input's aspect ratio so the mockup is the same shape/size as the
+  current screen). Then poll `lazyweb_get_mockup` for each `job_id` every ~5s
+  (budget ~170s) until `done`; save each result to
+  `$WORK/references/mock-<slot>.png` and keep the base64 as a `data:` URI.
+- **Fallback** — only if a mockup truly can't be generated
+  (`MOCKUP_IMAGE_KEY_MISSING` / `MOCKUP_DAILY_LIMIT`, an `error` status, or still
+  `pending` after ~170s): omit that one slot's key from the `mockups` map. The
+  server renders a "(no mockup)" placeholder for it and the rest of the report is
+  unaffected. Never block the whole report on one missing mockup; never use ASCII
+  art. A mix (3 real + 1 placeholder) is fine.
 
-### Pass 2 — Build a portfolio of slot-diverse hypotheses
-
-Build a **portfolio of 4 deliberately different bets** (drop to 2-3 only when the
-paywall is genuinely simple), one per **risk slot**. The slots are what force real
-diversity — four variations of the same move is a failure, even if each is
-individually fine:
-
-- **Safe bet** (`safe_bet`) — a near-table-stakes fix the corpus shows is
-  conventional and low-risk. Highest confidence, modest upside.
-- **High-value bet** (`high_value_bet`) — a higher-upside structural change (plan/
-  tier restructure, trial reframing, anchoring) with solid evidence behind it.
-- **Bold swing** (`bold_swing`) — a bigger redesign move that could move the metric
-  a lot if it lands. Higher risk, higher upside.
-- **Contrarian / reframe** (`contrarian`) — the "most reviewers wouldn't try this,
-  but consider it" pick that reframes the offer or challenges a convention this
-  paywall leans on. Highest boldness in the portfolio.
-
-A good hypothesis takes this form:
-
-> Making [specific change] should [specific conversion outcome] because [specific mechanism].
-
-Good:
-"Replacing the flat plan list with a comparison grid that highlights what is
-locked at the monthly tier should lift annual-plan share because users see what
-they lose by choosing monthly."
-
-Bad:
-"Improve the pricing UX."
-"Add social proof to enhance conversion."
-
-Each hypothesis must:
-- Sit in exactly ONE slot (no two hypotheses share a slot)
-- Name the specific conversion metric it should move
-- Describe the concrete screen change well enough to implement
-- Address a named friction (`F#`) from Pass 1
-- Cite experiment evidence or visual/convention evidence
-- Be meaningfully different in **mechanism** from the others
-- Be falsifiable
-
-### Order them — Confidence × Upside × Boldness
-
-Rank the portfolio by an expected-payoff read across three axes — **Confidence**
-(how sure the move generalizes to THIS paywall), **Upside** (how much it moves the
-metric if it works), and **Boldness** (how far it departs from table stakes). The
-lead pick (rank #1, the `active` slide and `is-selected` row) is the best expected
-payoff for THIS paywall — often the high-value bet, not simply the safest. Show
-that ordering, and each hypothesis's slot, in the Prioritization card.
-
-Hard rules:
-- Do not recommend a convention the user's paywall already uses unless the recommendation changes how it is used.
-- Do not propose unmotivated visual polish.
-- Do not write two hypotheses with the same mechanism, or two in the same slot.
-- Do not claim measured lift unless the Lazyweb evidence explicitly provides it.
-- Treat experiment learning text as directional unless the tool returns validated performance data.
-- **Anti-hybrid checksum.** Before writing each hypothesis, confirm it answers "what would you change about THIS paywall, and why" — not "what did experiment X test." If a hypothesis reads as a summary of an experiment rather than a change to the target screen, rewrite it. The report is a paywall redesign, not an experiment digest.
-
-## Generate the mockups (one per hypothesis — ENFORCED LADDER)
-
-Generate exactly one mockup per hypothesis (4 when you have a full portfolio) and
-place it in that hypothesis's `.mockup-col` slide. A **real generated image is the
-goal** — a CSS frame is the last-resort fallback, never the default. Every
-generated mockup is an EDIT of the user's CURRENT paywall screenshot (so it keeps
-the real brand, layout, and dimensions), conditioned on the hypothesis's
-`mockup_prompt` **prefixed with the ENFORCED PREAMBLE below**. Follow this ladder:
-
-**(a) If you ARE Codex** → generate with your built-in `image_gen` tool
-(gpt-image-2, on the user's own auth). Attach the current paywall screenshot as
-the reference image and apply `ENFORCED PREAMBLE + mockup_prompt`. Save to
-`$REPORT_DIR/references/mock-<slug>.png`.
-
-**(b) If you are NOT Codex (Claude Code, etc.)** → use the **async** mockup pair.
-Do NOT call `lazyweb_generate_mockup` — it always times out through the hosted
-gateway (gpt-image-2 needs ~40-90s; the gateway aborts at ~15s). Instead:
-
-  1. **Start all of them up front** so they generate in parallel: for EACH
-     hypothesis call `lazyweb_start_mockup` with `prompt` = `ENFORCED PREAMBLE +
-     mockup_prompt`, the CURRENT screen as `image_base64` (+ `mime_type`),
-     `size:"1024x1536"` (or whichever option matches the screenshot's aspect),
-     and `skill`/`version`. Leave `quality` at its default (`medium` — internal-
-     grade and reliable). It returns a `job_id` immediately. Collect the job_ids.
-  2. **Poll** `lazyweb_get_mockup` with each `job_id` every ~5s. When `status` is
-     `"done"`, save the returned `image_base64` to
-     `$REPORT_DIR/references/mock-<slug>.png`. Keep polling the still-`pending`
-     jobs (budget up to ~170s per job) until every job is `done` or `error`.
-
-**(c) Fallback — only when a mockup genuinely can't be generated**: any of
-`lazyweb_start_mockup` returning `MOCKUP_IMAGE_KEY_MISSING` / `MOCKUP_DAILY_LIMIT`,
-`lazyweb_get_mockup` returning `status:"error"`, or a job still `pending` after
-~170s. For THAT hypothesis only, render a CSS `.mock` mock-frame: a small
-hand-built HTML/CSS approximation styled to read like THIS product (brand hexes,
-type, layout). Never fall back to ASCII art, never skip the mockup. A mix is fine
-(e.g. 3 real images + 1 frame) — degrade per-hypothesis, never the whole report.
-
-Each rung's mockup goes into the matching `.mockup-slide` (rung a/b as an `<img>`
-with an inlined `data:` URI; rung c as the `.mock` frame markup).
-
-### ENFORCED PREAMBLE — prepend to every `mockup_prompt` (required)
-
-The generated mockup must read as a real edit of THIS paywall, not a generic
-stock screen. Prepend these enforced constraints (verbatim, filling the
-`change_scope` choice) to each hypothesis's `mockup_prompt` before sending it to
-the image tool — they override any creative liberty and are what make the four
-mockups look like the same product at the same dimensions:
+### ENFORCED PREAMBLE — prepend to every winner's `mockup_prompt`
 
 > ENFORCED CONSTRAINTS — the output is a redesigned paywall mockup based on the
-> baseline image. (1) **EXACT VISUAL STYLE PRESERVATION**: match the baseline's
+> baseline image. (1) EXACT VISUAL STYLE PRESERVATION: match the baseline's
 > background color, brand palette, typography (family/weight/size hierarchy),
-> border-radius, icon/illustration style, and overall feel — it must look like the
-> same product. (2) **DIMENSION + ASPECT PRESERVATION**: keep the baseline's
-> aspect ratio and the status-bar / safe-area insets in the same proportions.
-> (3) **PRIMARY CTA PROMINENCE LOCK**: the dominant purchase/subscribe button stays
-> AT LEAST as large and as visually dominant as in the baseline — you may move it,
-> never shrink it, never reduce its contrast; if the change needs room, collapse
-> other content (hide a secondary plan, shorten the benefit list, drop decoration)
-> rather than miniaturizing the CTA. (4) **CHANGE SCOPE** — pick the tightest that
-> fits the hypothesis: `copy_tweak` (change only the named text; everything else
-> pixel-identical) · `component_swap` (restyle/replace ONE named component, keep
-> all others identical) · `section_restructure` (move/resize/regroup elements
-> WITHIN one named section, keep header/other cards/footer/system UI identical) ·
-> `full_redesign` (restructure the layout while preserving brand identity and
-> aspect ratio; clutter is not licensed). Apply the change below within that scope.
-> === CHANGE TO APPLY === {the hypothesis's mockup_prompt}
+> border-radius, icon/illustration style, and overall feel — it must look like
+> the same product. (2) DIMENSION + ASPECT PRESERVATION: keep the baseline's
+> aspect ratio and status-bar / safe-area insets in the same proportions.
+> (3) PRIMARY CTA PROMINENCE LOCK: the dominant purchase/subscribe button stays
+> AT LEAST as large and as visually dominant as in the baseline — you may move
+> it, never shrink it; if the change needs room, collapse other content rather
+> than miniaturizing the CTA. (4) CHANGE SCOPE — apply the change at the
+> `change_scope` named for this winner (copy_tweak = change only the named text;
+> component_swap = restyle/replace one component; section_restructure = reflow one
+> section; full_redesign = restructure the layout while preserving brand identity
+> + aspect ratio). === CHANGE TO APPLY === {the winner's mockup_prompt}
 
-### `mockup_prompt` build-spec discipline (required)
+## Render + host the report
 
-Write a disciplined `mockup_prompt` for each hypothesis — the build-spec is what
-makes the generated mockup look like a real edit of THIS paywall rather than a
-generic stock screen. Each `mockup_prompt` is 4-8 sentences and MUST cover:
+Call **`lazyweb_render_report`** with `report_skill="optimize-paywall"` and a
+`report_data` object built as follows (every image is a `data:` URI or an https
+URL — the server inlines them):
 
-- **Composition** — what the screen looks like after the change, top to bottom,
-  and what stays put.
-- **EXACT quoted copy** — the literal headline/benefit/CTA strings, in quotes,
-  so the model renders the real words, not lorem.
-- **Measured brand hexes and type** — the actual background/brand/CTA hex codes
-  and the font family/weight/size hierarchy read off the current paywall.
-- **What moves to make room** — name the element(s) that shrink, collapse, or
-  relocate so the new content fits without crowding and WITHOUT shrinking the
-  primary CTA below its current size/prominence.
-- **1-2 "Do not" lines** — e.g. "Do not change the brand colors", "Do not shrink
-  the subscribe button", "Do not add elements not described here."
+```json
+{
+  "target_image": "data:image/png;base64,…   (the current paywall screenshot)",
+  "frictions": [ …your Pass-1 frictions… ],
+  "recommendations": [ …ALL 12-16 candidates you drafted… ],
+  "experiments": {
+    "R1": {"company_name":"…","design_delta_summary":"<the curated learning>","control_signed_url":"<control image URL>","experiment_signed_url":"<variant image URL>"},
+    "R2": { … }
+  },
+  "experiment_verdicts": [ …optional… ],
+  "mockups": { "safe_bet":"data:image/png;base64,…", "high_value_bet":"…", "bold_swing":"…", "contrarian":"…" }
+}
+```
 
-Keep the change locality-scoped to what the hypothesis actually touches: a copy
-tweak edits only the named text; a single-component swap restyles one component;
-a section restructure may reflow one section; a full redesign may restructure the
-layout while preserving brand identity and aspect ratio. In every case the
-primary CTA must stay at least as large and as visually dominant as on the
-baseline — make room by collapsing other content, never by miniaturizing the CTA.
+Notes:
+- `mockups` is keyed by the WINNER's `slot` (one per selected winner). Omit a slot
+  only if its mockup couldn't be generated.
+- `experiments` is keyed by the `evidence_ref` (`R#`) your winning candidates
+  cite; `control_signed_url`/`experiment_signed_url` are the before/after images
+  from `lazyweb_search_ab_tests` (the server fetches + inlines them). Include at
+  least the experiments the 4 winners cite so the before/after Evidence card
+  renders.
+- Pass a stable `idempotency_key` (e.g. `"optimize-paywall/{topic}-{date}"`) so a
+  re-render dedupes to the same URL.
+- On a `400` with `code:"render_field_missing"`/`render_field_invalid`, the
+  `detail` names the bad field — fix it in `report_data` and retry ONCE.
 
-## Operating principles (REQUIRED — overrides convenience)
+The response `{ ok, id, url }` carries the hosted report URL. **Open/print it for
+the user** — that URL is the deliverable.
 
-These four rules apply to every report you write and override convenience. A report that breaks them is non-conforming, even if every section is present.
+## After rendering
 
-**1. Show, don't tell — every claim carries its proof.**
-Any assertion — a pattern, anti-pattern, idea, hypothesis, "what's working" item, convention check, recommendation, or A/B learning — must carry the real screenshot(s) or experiment that demonstrate it, embedded in a deck the reader can step through. Put the supporting references in that hypothesis's evidence `.design-slide` so the embedded carousel walks the reader through the proof; never reduce the proof to a bare prose list. Prevalence words ("most", "near-universal", "dominant") must be backed by a shown count ("5 of 9 references"), never an adjective alone.
+1. Give the user the report URL.
+2. Summarize the portfolio: one line per slot (Safe bet / High-value bet / Bold
+   swing / Contrarian), naming the **lead** (the highest-Total winner).
+3. Suggest next steps: implement the lead hypothesis, or ask
+   `/lazyweb-ab-test-research` to mine the experiment corpus deeper.
 
-**2. Be opinionated; carry the decision.**
-Lead with ONE strongest hypothesis — make it the FIRST (`active`) slide in the top carousel and `is-selected` rank #1 in the prioritization table — so the decision shows in the human-visible body, not only in the handoff. Give every other hypothesis an explicit assessment in the prioritization table (build / optional / skip); a skipped idea still carries the reference that justifies skipping it. No ties among top picks; no flat undifferentiated menu.
+## Operating principles
 
-**3. Maximize confidence with evidence + data.**
-Back each hypothesis with what worked for OTHER apps (real screenshots in its evidence slide, with the curated annotated learning and a bbox overlay) PLUS supporting data: a prevalence count across the corpus ("seen in N of M examples") and, where the screen is growth/monetization, A/B experiment evidence via `lazyweb_search_ab_tests`. If no experiment data exists, say so in the hypothesis subheader ("no experiment data found — design-prevalence-based") and lean on the prevalence count as the directional signal. Never let a hypothesis render with neither a visual nor a number behind it.
-
-**4. Be truth-seeking — never overclaim.**
-Label evidence strength honestly: **Strong** (real lift number) vs **Moderate** (screenshot-diff / visual prevalence, no lift) vs **Thin** (single-source / off-category). Forbid comparative-performance verbs ("outperforms", "underperforms") unless a measurement backs them. Tag any reference whose brand was inferred from a URL/vision-description ("brand inferred — verify"). State absence claims with evidence-of-search (queries run × screens reviewed + the closest near-miss). Never invent a reference, a metric, a company name, or a bbox region you did not actually see in the image.
-
-Every embedded screenshot must be a real screenshot the report genuinely points at — a Lazyweb image you inlined or a locally-saved `references/{file}` you inlined. Never invent an image, and never assert a claim with neither a visual nor a number behind it. You own legibility, cropping cues (the bbox overlay), the carousels, and the lightbox — pick honest references and write accurate `delta`/`alt` text from each reference's curated `learning` / `visionDescription`.
-
-## Report footer
-
-End `report.html` with the Lazyweb footer paragraph
-(`<p class="muted">Powered by Lazyweb — turn your agent into a design researcher… for free!</p>`)
-just before the lightbox markup, so every report carries it.
+- **Evidence-grounded, not generic.** Every candidate ties to a named friction
+  and, where possible, a cited experiment with a real `winning_move_verbatim`.
+  Never invent a company, a metric, or an experiment.
+- **Truth-seeking.** Treat experiment learnings as directional (screenshot-diff),
+  never as measured lift, unless the tool returns a measured number. If no
+  on-context experiment exists, say so and lean on reference + convention
+  grounding.
+- **Slot diversity is the point.** Four variations of the same move is a failure
+  even if each is individually fine. Make the four slots genuinely different in
+  mechanism and boldness.
+- **The server owns scoring + look.** Don't second-guess or re-implement the
+  ranking; send honest candidates + frictions and let `lazyweb_paywall_score`
+  rank them.
