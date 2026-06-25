@@ -62,12 +62,12 @@ test("setup installs visible skills and direct MCP config into detected local cl
     for (const skillsRoot of expectedSkillRoots) {
       for (const skillName of [
         "lazyweb",
-        "lazyweb-deep-design-research",
+        "lazyweb-design",
+        "lazyweb-design-create",
         "lazyweb-lite-design-research",
         "lazyweb-quick-search",
         "lazyweb-design-improve",
         "lazyweb-design-brainstorm",
-        "lazyweb-optimize-paywall",
         "lazyweb-ab-test-research",
         "lazyweb-optimize-sign-up",
         "lazyweb-update"
@@ -85,7 +85,9 @@ test("setup installs visible skills and direct MCP config into detected local cl
         "lazyweb-design-research",
         "lazyweb-quick-references",
         "lazyweb-paywall-optimization",
-        "lazyweb-signup-optimization"
+        "lazyweb-signup-optimization",
+        "lazyweb-optimize-paywall",
+        "lazyweb-deep-design-research"
       ]) {
         const staleDir = path.join(skillsRoot, oldSkillName);
         mkdirSync(staleDir, { recursive: true });
@@ -100,7 +102,9 @@ test("setup installs visible skills and direct MCP config into detected local cl
         "lazyweb-design-research",
         "lazyweb-quick-references",
         "lazyweb-paywall-optimization",
-        "lazyweb-signup-optimization"
+        "lazyweb-signup-optimization",
+        "lazyweb-optimize-paywall",
+        "lazyweb-deep-design-research"
       ]) {
         assert.equal(existsSync(path.join(skillsRoot, oldSkillName)), false, `${oldSkillName} should be cleaned up from ${skillsRoot}`);
       }

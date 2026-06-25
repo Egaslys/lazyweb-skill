@@ -9,12 +9,12 @@ const root = path.resolve(new URL("..", import.meta.url).pathname);
 
 // Extract the REPORT_CONTRACT python gate from the skill so the fixture tests
 // exercise the exact code agents run before publishing.
-const skill = readFileSync(path.join(root, "skills/lazyweb-deep-design-research/SKILL.md"), "utf8");
+const skill = readFileSync(path.join(root, "skills/lazyweb-design-create/SKILL.md"), "utf8");
 const gateMatch = skill.match(/<<'REPORT_CONTRACT_EOF'\n([\s\S]*?)\nREPORT_CONTRACT_EOF/);
 assert.ok(gateMatch, "REPORT_CONTRACT gate not found in SKILL.md");
 const gatePy = gateMatch[1];
 
-const template = readFileSync(path.join(root, "skills/lazyweb-deep-design-research/report-template.html"), "utf8");
+const template = readFileSync(path.join(root, "skills/lazyweb-design-create/report-template.html"), "utf8");
 
 function runGate(html) {
   const dir = mkdtempSync(path.join(tmpdir(), "lw-gate-"));

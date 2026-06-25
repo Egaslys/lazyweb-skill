@@ -7,8 +7,8 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 
 const root = path.resolve(new URL("..", import.meta.url).pathname);
-const FETCH = path.join(root, "skills/lazyweb-deep-design-research/fetch-evidence.py");
-const GEN = path.join(root, "skills/lazyweb-deep-design-research/generate-prototypes.py");
+const FETCH = path.join(root, "skills/lazyweb-design-create/fetch-evidence.py");
+const GEN = path.join(root, "skills/lazyweb-design-create/generate-prototypes.py");
 
 // 1x1 transparent PNG
 const PNG_B64 =
@@ -249,8 +249,8 @@ test("generate: missing key exits 2 (route-level fallback)", async () => {
   assert.match(res.out, /GEN_FALLBACK: no OpenAI key/);
 });
 
-const FILL = path.join(root, "skills/lazyweb-deep-design-research/fill-report.py");
-const TEMPLATE = path.join(root, "skills/lazyweb-deep-design-research/report-template.html");
+const FILL = path.join(root, "skills/lazyweb-design-create/fill-report.py");
+const TEMPLATE = path.join(root, "skills/lazyweb-design-create/report-template.html");
 
 const FILL_DATA = {
   topic: "Acme's \"Pricing\" <Test>",
@@ -290,7 +290,7 @@ test("fill-report: produces a gate-passing report with correct escaping", async 
   assert.ok(!html.slice(html.indexOf("var _vars="), html.indexOf("</script>")).includes("</script>"),
     "raw data must not be able to close the generated script");
   // run the real publish gate from SKILL.md against the output
-  const skill = readFileSync(path.join(root, "skills/lazyweb-deep-design-research/SKILL.md"), "utf8");
+  const skill = readFileSync(path.join(root, "skills/lazyweb-design-create/SKILL.md"), "utf8");
   const gatePy = skill.match(/<<'REPORT_CONTRACT_EOF'\n([\s\S]*?)\nREPORT_CONTRACT_EOF/)[1];
   writeFileSync(path.join(dir, "gate.py"), gatePy);
   const gate = await runPy(path.join(dir, "gate.py"), [out], {});
