@@ -78,7 +78,7 @@ fill/render code, and never open a local report file — the deliverable is the
 hosted URL.
 
 Map this skill's report sections onto the schema:
-- The **"Agent Instructions"** handoff (the copy-pastable downstream-agent block) → `agent_instructions` (`human`, `task`, `recs[]`, optional `index_on`/`dont_index`/`dive`/`evidence_basis`). For THIS skill, `task` = "exploring a differentiated {screen} direction using the cross-category patterns below", and `dive` → "`/lazyweb-deep-design-research` to validate the chosen direction against in-category norms before building".
+- The **"Agent Instructions"** handoff (the copy-pastable downstream-agent block) → `agent_instructions` (`human`, `task`, `recs[]`, optional `index_on`/`dont_index`/`dive`/`evidence_basis`). For THIS skill, `task` = "exploring a differentiated {screen} direction using the cross-category patterns below", and `dive` → "`/lazyweb-design` to validate the chosen direction against in-category norms before building".
 - The **"Current State"** screenshot (step 2, if captured) → `current_state` (`src` = `references/current-state.png`, `alt`, `desc`); set `null` when no current state exists.
 - Each **brainstormed direction / cross-pollination idea** (the "Which Ideas to Prototype" ranking, "The Obvious Approach", "Cross-Pollination Ideas", and "Wild Cards") → a `patterns[]` card: `verdict` ("Build this" | "Optional" | "Skip" — map Prototype→Build this, Explore→Optional, Skip→Skip; Wild Cards are usually "Optional"), optional `strength`/`prevalence`, the one-line `claim` (the applied-here pattern), and a `deck[]` of the real cross-category references that prove it (each `src` + `alt` + `source` "Lazyweb"|"Web" + `company` + `detail` from `visionDescription`). This skill has no experiments — leave `experiments` absent and keep `patterns` non-empty.
 - Any extra references that do not anchor a specific idea → optional `more_refs[]` (or `null`).
@@ -150,7 +150,7 @@ Before searching, ground the work in what the user is building, and avoid guessi
 
 ## When NOT to Use This
 
-- User wants to understand standard patterns -> route to `lazyweb-deep-design-research`
+- User wants to understand standard patterns -> route to `lazyweb-design`
 - User wants quick visual references -> route to `lazyweb-lite-design-research`
 - User has an existing design and wants improvements -> route to `lazyweb-design-improve`
 
@@ -397,7 +397,7 @@ Map the brainstorm onto the schema's fields:
   cross-category patterns below"), `recs[]` (the ideas to prototype first, ranked
   by feasibility × novelty), `index_on` (the well-evidenced cross-category
   patterns), `dont_index` (weak-evidence / single-source / aesthetic-only /
-  non-transferable items), `dive` ("`/lazyweb-deep-design-research` to validate
+  non-transferable items), `dive` ("`/lazyweb-design` to validate
   the chosen direction against in-category norms before building"),
   `evidence_basis`.
 - `current_state` — the step-2 screenshot if captured, else `null`.

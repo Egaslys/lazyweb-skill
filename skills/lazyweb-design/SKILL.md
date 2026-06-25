@@ -1,15 +1,16 @@
 ---
-name: lazyweb-optimize-paywall
-route: "Optimize, improve, or design a product screen"
+name: lazyweb-design
+route: "Optimize, improve, or design any product screen — routes on objective"
 router-terms: paywall, pricing page, landing page, signup screen, onboarding, dashboard, optimize paywall, improve design, critique screen, redesign screen, conversion rate, paid conversion, trial start, annual plan, upgrade screen, design a new screen, new paywall from scratch, design from scratch, create a screen, no design yet
 description: |
-  Optimize, improve, or design any product screen — mobile or web (paywall,
-  pricing, landing, signup, onboarding, dashboard, settings, …; "paywall" in the
-  name is legacy). Pick the `objective` INTENT-FIRST, not by whether an image
-  exists: `optimize` (move a conversion metric on an EXISTING screen) and
-  `improve` (raise design quality of an EXISTING screen) both require a
-  screenshot — captured on the user's behalf; `create` (a NEW screen from
-  scratch) routes to deep-design-research. For optimize, the server runs the
+  Optimize, improve, or design any product screen — routes on objective. The
+  user-facing umbrella for product-screen work, mobile or web (paywall, pricing,
+  landing, signup, onboarding, dashboard, settings, …). Pick the `objective`
+  INTENT-FIRST, not by whether an image exists: `optimize` (move a conversion
+  metric on an EXISTING screen) and `improve` (raise design quality of an
+  EXISTING screen) both require a screenshot — captured on the user's behalf;
+  `create` (a NEW screen from scratch) routes to the internal
+  lazyweb-design-create backend. For optimize, the server runs the
   internal pipeline — labels the screen, retrieves structural experiment twins,
   diagnoses frictions, synthesizes a slot-diverse portfolio of falsifiable
   hypotheses bound to real A/B experiments — then renders the dark report; the
@@ -40,7 +41,7 @@ whether an image happens to be available:
 |---|---|---|
 | **optimize** (default) | Move a **metric** (conversion) on an **existing** screen | Run the pipeline below (Steps 1–4). **Screenshot required.** |
 | **improve** | Make an **existing** screen better per a **stated intent** (not a metric) | Same pipeline, intent-driven framing. **Screenshot + `--intent "<what to improve>"` required.** |
-| **create** | Design a **new** screen **from scratch** (none exists) | **Redirect to `lazyweb-deep-design-research`** (greenfield). No screenshot. |
+| **create** | Design a **new** screen **from scratch** (none exists) | **Redirect to `lazyweb-design-create`** (the internal greenfield backend). No screenshot. |
 
 **Grounding is enforced by the intent; it does not select it.** For `optimize`/
 `improve` you MUST have a screenshot of the current screen — get it in this order:
@@ -54,9 +55,9 @@ whether an image happens to be available:
    `create` just because no image was supplied.
 
 **For `objective=create`:** do NOT run Steps 1–4. Hand off to
-`lazyweb-deep-design-research` (its greenfield branch needs no current screen) —
-fetch it via `lazyweb_get_workflows { operation:"fetch", workflow:"lazyweb-deep-design-research" }`
-or invoke the `/lazyweb-deep-design-research` skill — passing the screen_type, the
+`lazyweb-design-create` (the internal greenfield backend; needs no current
+screen) — fetch it via `lazyweb_get_workflows { operation:"fetch", workflow:"lazyweb-design-create" }`
+or invoke the `lazyweb-design-create` skill — passing the screen_type, the
 conversion goal, and any brand/design-system context you have. The helper
 (`--objective create`) and the MCP (`objective:"create"`) also return this
 redirect as a backstop. `create` is the value name on the wire.
@@ -332,7 +333,10 @@ wording). Everything else is identical for both platforms.
 
 ## Step 4 — Render + host the report
 
-Call **`lazyweb_render_report`** with `report_skill="optimize-paywall"` and:
+Call **`lazyweb_render_report`** with `report_skill="optimize-paywall"`, the same
+`objective`/`platform`/`screen_type` you used in Step 2 (logging-only — they keep
+the cutover dashboard's render rows aligned with synthesize; pass them even though
+the server reloads everything from `synthesis_id`), and `report_data`:
 
 ```json
 {
@@ -342,6 +346,11 @@ Call **`lazyweb_render_report`** with `report_skill="optimize-paywall"` and:
   "product": "<the product name, e.g. Reddit>"
 }
 ```
+
+So the call is `lazyweb_render_report(report_skill="optimize-paywall",
+objective="<optimize|improve>", platform="<mobile|web>",
+screen_type="<paywall|pricing|landing|signup>", skill="optimize-paywall",
+version="<x.y.z>", report_data={…})`.
 
 Notes:
 - `synthesis_id` is the ONLY source of the frictions, hypotheses, evidence,

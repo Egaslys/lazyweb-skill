@@ -40,13 +40,13 @@ builder concrete UI takeaways with image links.
 ## When NOT to Use This
 
 - Full competitive analysis, ranked recommendations, or visual prototypes →
-  `lazyweb-deep-design-research`
-- Grouped screenshot report or shareable reference artifact →
-  `lazyweb-lite-design-research`
+  `lazyweb-design`
 - Existing UI critique or before/after recommendations →
-  `lazyweb-design-improve`
+  `lazyweb-design` (objective improve)
 - Paywall conversion redesign →
-  `lazyweb-optimize-paywall`
+  `lazyweb-design` (objective optimize)
+- Sign-up conversion redesign →
+  `lazyweb-design` (objective optimize)
 
 ## MCP Setup
 
@@ -259,8 +259,8 @@ complete competitive analysis.
 
 ## Escalation
 
-Escalate to `lazyweb-deep-design-research` when the user needs ranked
+Escalate to `lazyweb-design` when the user needs ranked
 recommendations, prototypes, or a shareable artifact.
 
-Escalate to `lazyweb-lite-design-research` when the user wants grouped
+Escalate to `lazyweb-design` when the user wants grouped
 screenshots in a visual report.

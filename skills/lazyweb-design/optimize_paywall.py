@@ -22,7 +22,7 @@ version.
 LEGACY fallback (`--image <file>`): reads the screenshot from a file, base64-encodes
 it **in code**, and (for large images) POSTs it to lazybackend with a static bearer
 token for a signed URL. Use only when presign is unavailable. It mirrors the
-deep-design-research `fetch-evidence.py` MCP-client pattern.
+lazyweb-design-create `fetch-evidence.py` MCP-client pattern.
 
 USAGE
 -----
@@ -293,14 +293,14 @@ def cmd_synthesize(client: McpClient, a: argparse.Namespace) -> dict:
         # create = design a NEW screen from scratch. The synthesize pipeline is
         # screenshot-keyed (label -> twins -> frictions -> EDIT mockup) and can't
         # run greenfield, so we DON'T call it — we return a redirect to the
-        # deep-design-research greenfield flow. The skill intercepts create-intent
+        # lazyweb-design-create greenfield flow. The skill intercepts create-intent
         # before invoking this helper; this is the backstop.
         return {
             "status": "redirect",
             "objective": "create",
-            "route_to": "lazyweb-deep-design-research",
+            "route_to": "lazyweb-design-create",
             "reason": "create designs a new screen from scratch; the paywall synthesize pipeline needs a current screenshot to label, retrieve twins, diagnose frictions, and EDIT a mockup.",
-            "next": "Run the lazyweb-deep-design-research greenfield flow (pass screen_type, the conversion goal, and any brand/design-system context). If a screen already exists, this is the wrong objective — use --objective optimize|improve with --image.",
+            "next": "Run the lazyweb-design-create greenfield flow (pass screen_type, the conversion goal, and any brand/design-system context). If a screen already exists, this is the wrong objective — use --objective optimize|improve with --image.",
         }
     image_url = (getattr(a, "image_url", "") or "").strip()
     if not image_url and not (a.image or "").strip():
@@ -399,7 +399,7 @@ def main() -> None:
                         "no token. See specs/image-upload-architecture.md.")
     s.add_argument("--objective", default="optimize", choices=["optimize", "improve", "create"],
                    help="Intent-first: optimize|improve operate on an EXISTING screen (need --image); "
-                        "create = a NEW screen from scratch (redirects to deep-design-research, no image).")
+                        "create = a NEW screen from scratch (redirects to lazyweb-design-create, no image).")
     s.add_argument("--intent", default="",
                    help="Freeform plain-text intent for --objective improve: what the user wants "
                         "better about this design (e.g. 'make it feel more premium'). REQUIRED for "

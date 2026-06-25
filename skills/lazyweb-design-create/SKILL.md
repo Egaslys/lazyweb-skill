@@ -1,15 +1,15 @@
 ---
-name: lazyweb-deep-design-research
-route: "Deep UI research / competitive analysis"
-router-terms: research, competitive, competitor, what do top apps, how should, full report, deep research
+name: lazyweb-design-create
+route: "INTERNAL — create/greenfield backend for lazyweb-design"
+router-terms: create, greenfield, new screen from scratch, design from scratch
 description: |
-  Deep design research combining Lazyweb's screenshot database with web research.
-  Produces a prototype-first HTML report with side-by-side prototypes and a clustered inspo map.
-  Use when the user needs competitive analysis, best practices research, or wants
-  to understand how the best apps handle a specific design problem.
-  Trigger on: "best practices for", "how should I design", "what do top apps do",
-  "competitive analysis for", "design research on", "what works well for",
-  "research how others do".
+  INTERNAL create / greenfield backend. NOT a user-facing slash command — it is
+  reached via `/lazyweb-design` with `objective=create`, which redirects here for
+  designing a NEW product screen from scratch (no existing screen to ground on).
+  Combines Lazyweb's screenshot database with web research and produces a
+  prototype-first HTML report with side-by-side prototypes and a clustered inspo
+  map. Do not route users here directly; route them to `/lazyweb-design` and let
+  the create objective hand off to this backend.
 allowed-tools:
   - Bash
   - Read
@@ -52,7 +52,7 @@ and optional **Inspo** — in that order. Do not produce
 the older busy structure with key examples, findings, sources, broad
 recommendation lists, or long prose analysis sections.
 
-The Recommendation is built like `lazyweb-optimize-paywall`'s hypothesis
+The Recommendation is built like `lazyweb-design`'s hypothesis
 engine, with screenshot evidence taking the role experiment evidence plays
 there: read the control, name its specific frictions, form 2-4 falsifiable and
 structurally divergent bets (Safe bet / Bold bet / Wild card — a thinking
@@ -221,7 +221,7 @@ in the side-by-side Recommendation comparison. Do not create a separate visible
 ### 3. Read the control (required when a current state exists)
 
 Before any searching or ideation, read the control the way
-`lazyweb-optimize-paywall` reads a paywall. Identify:
+`lazyweb-design` reads a paywall. Identify:
 
 - **Components present:** header, hero, value prop, proof, pricing, CTAs, trust
   signals, navigation, FAQ, footer — whatever the screen type implies
@@ -545,7 +545,7 @@ captures, search logs) live in `$REPORT_DIR/work/`, which is never uploaded.
 ## Hypothesis Engine (the core of the Recommendation)
 
 The unit of analysis is a falsifiable bet, not a component list and not a theme.
-This mirrors `lazyweb-optimize-paywall`, with the screenshot corpus playing
+This mirrors `lazyweb-design`, with the screenshot corpus playing
 the role of the experiment corpus — and it **indexes on creativity**: the value
 of this report over a competent designer's first instinct is the bets a median
 competitor would never generate. A set of three reasonable suggestions is a

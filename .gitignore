@@ -9,7 +9,5 @@ browse/node_modules/
 bun.lock
 .gstack/
 .lazyweb/
-
-
 __pycache__/
 *.pyc
