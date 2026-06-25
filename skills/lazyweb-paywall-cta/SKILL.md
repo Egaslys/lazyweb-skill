@@ -39,7 +39,7 @@ are in plan mode or not, ALWAYS:
 7. Ask the user which direction looks right
 8. If in plan mode, exit plan mode after the user confirms
 9. Suggest next steps: "Ship the strongest candidate as an A/B test against the
-   current CTA, or ask `/lazyweb-optimize-paywall` for a full paywall
+   current CTA, or ask `/lazyweb-design` for a full paywall
    redesign, or `/lazyweb-ab-test-research` for deeper experiment mining."
 
 ## When to Use This
@@ -52,8 +52,8 @@ are in plan mode or not, ALWAYS:
 
 ## When NOT to Use This
 
-- Full paywall redesign / layout / pricing rework → route to `lazyweb-optimize-paywall`
-- Onboarding / signup / non-paywall CTAs → route to `lazyweb-deep-design-research` or `lazyweb-lite-design-research`
+- Full paywall redesign / layout / pricing rework → route to `lazyweb-design`
+- Onboarding / signup / non-paywall CTAs → route to `lazyweb-design` or `lazyweb-quick-search`
 - "Find me A/B experiments about pricing copy" → route to `lazyweb-ab-test-research`
 
 ## Lazyweb MCP Setup
@@ -254,7 +254,7 @@ This skill uses `patterns[]` (not `experiments[]` — that shape is for
   the offer the current CTA hides`). `index_on` = the well-evidenced signals
   (the specific current-CTA weakness the top candidate attacks). `dont_index` =
   median corpus phrases, brand-name CTAs when the brand is already free, generic
-  verbs without an offer/benefit referent. `dive` = "`/lazyweb-optimize-paywall`
+  verbs without an offer/benefit referent. `dive` = "`/lazyweb-design`
   for a full paywall redesign; `/lazyweb-ab-test-research` for deeper experiment
   mining". `evidence_basis` = "Lazyweb paywall CTA corpus + curated A/B
   observations · {DATE}".

@@ -16,7 +16,7 @@ HTTP. The image bytes never pass through an LLM's output. The downstream server
 pipeline (`_agent_synthesize`) is unchanged, so labeling / evidence / hypotheses
 are identical to the internal version.
 
-It mirrors the deep-design-research `fetch-evidence.py` MCP-client pattern.
+It mirrors the lazyweb-design-create `fetch-evidence.py` MCP-client pattern.
 
 USAGE
 -----
@@ -274,17 +274,21 @@ def cmd_synthesize(client: McpClient, a: argparse.Namespace) -> dict:
         # create = design a NEW screen from scratch. The synthesize pipeline is
         # screenshot-keyed (label -> twins -> frictions -> EDIT mockup) and can't
         # run greenfield, so we DON'T call it — we return a redirect to the
-        # deep-design-research greenfield flow. The skill intercepts create-intent
+        # lazyweb-design-create greenfield flow. The skill intercepts create-intent
         # before invoking this helper; this is the backstop.
         return {
             "status": "redirect",
             "objective": "create",
-            "route_to": "lazyweb-deep-design-research",
+            "route_to": "lazyweb-design-create",
             "reason": "create designs a new screen from scratch; the paywall synthesize pipeline needs a current screenshot to label, retrieve twins, diagnose frictions, and EDIT a mockup.",
-            "next": "Run the lazyweb-deep-design-research greenfield flow (pass screen_type, the conversion goal, and any brand/design-system context). If a screen already exists, this is the wrong objective — use --objective optimize|improve with --image.",
+            "next": "Run the lazyweb-design-create greenfield flow (pass screen_type, the conversion goal, and any brand/design-system context). If a screen already exists, this is the wrong objective — use --objective optimize|improve with --image.",
         }
     if not (a.image or "").strip():
         fatal("synthesize with --objective optimize|improve requires --image (a screenshot of the current screen). For a new screen from scratch, use --objective create.")
+    intent = (getattr(a, "intent", "") or "").strip()
+    if objective == "improve" and not intent:
+        fatal("synthesize with --objective improve requires --intent \"<what to improve>\" "
+              "(e.g. 'make it feel more premium'). For metric-driven conversion work use --objective optimize.")
     # Operator product brief — the highest-signal context. Inline text or @file.
     # Forwarded as `product_brief`; the server treats it as AUTHORITATIVE and
     # grounds the diagnosis in it (who the user is, the free/paid value exchange,
@@ -312,6 +316,11 @@ def cmd_synthesize(client: McpClient, a: argparse.Namespace) -> dict:
         "skill": "lazyweb-optimize-paywall",
         "version": skill_version(),
     }
+    # `objective` already carries the run mode (optimize|improve). Forward the
+    # freeform intent for improve, where it also drives the task.
+    args["intent"] = intent
+    if objective == "improve" and not (a.task or "").strip():
+        args["task"] = intent
     started = payload_of(client.tools_call(1, "lazyweb_start_paywall_synthesize", args))
     job_id = started.get("job_id")
     if not job_id:
@@ -355,7 +364,11 @@ def main() -> None:
     s.add_argument("--image", default="")
     s.add_argument("--objective", default="optimize", choices=["optimize", "improve", "create"],
                    help="Intent-first: optimize|improve operate on an EXISTING screen (need --image); "
-                        "create = a NEW screen from scratch (redirects to deep-design-research, no image).")
+                        "create = a NEW screen from scratch (redirects to lazyweb-design-create, no image).")
+    s.add_argument("--intent", default="",
+                   help="Freeform plain-text intent for --objective improve: what the user wants "
+                        "better about this design (e.g. 'make it feel more premium'). REQUIRED for "
+                        "improve; ignored for optimize.")
     s.add_argument("--product", default="")
     s.add_argument("--conversion-goal", dest="conversion_goal", default="")
     s.add_argument("--plan-structure", dest="plan_structure", default="")
