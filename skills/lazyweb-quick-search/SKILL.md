@@ -262,5 +262,5 @@ complete competitive analysis.
 Escalate to `lazyweb-design` when the user needs ranked
 recommendations, prototypes, or a shareable artifact.
 
-Escalate to `lazyweb-lite-design-research` when the user wants grouped
+Escalate to `lazyweb-design` when the user wants grouped
 screenshots in a visual report.
