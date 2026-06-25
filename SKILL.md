@@ -70,7 +70,8 @@ Choose exactly one mode:
 | Quick direct `lazyweb_search` preflight before designing, no report | `skills/lazyweb-quick-search/SKILL.md` |
 | Improve, critique, or compare an existing design | `skills/lazyweb-design-improve/SKILL.md` |
 | Creative cross-category ideas or unconventional directions | `skills/lazyweb-design-brainstorm/SKILL.md` |
-| Optimize a paywall screen for paid conversion | `skills/lazyweb-optimize-paywall/SKILL.md` |
+| Optimize (conversion) or improve (design quality) an EXISTING product screen — paywall, pricing, landing, signup, etc. | `skills/lazyweb-optimize-paywall/SKILL.md` |
+| Design a NEW product screen from scratch (no existing design to ground on) | `skills/lazyweb-deep-design-research/SKILL.md` |
 | Rewrite, evaluate, or stress-test ONE paywall CTA (button copy, not layout) | `skills/lazyweb-paywall-cta/SKILL.md` |
 | Optimize a sign-up / registration screen for completion rate | `skills/lazyweb-optimize-sign-up/SKILL.md` |
 | A/B tests, experiment examples, pricing, trials, lifecycle, or monetization strategy | `skills/lazyweb-ab-test-research/SKILL.md` |
@@ -85,7 +86,13 @@ Use `lazyweb-quick-search` when they need direct MCP search context before
 designing and do not want a report.
 Route CTA copy questions to `lazyweb-paywall-cta` only when the ask is about
 the button text itself; a broader paywall redesign goes to
-`lazyweb-optimize-paywall` even if the CTA is part of it. Route explicit
+`lazyweb-optimize-paywall` even if the CTA is part of it. `lazyweb-optimize-paywall`
+covers ANY existing product screen (the "paywall" name is legacy) under its
+`optimize` and `improve` objectives. Pick by the user's INTENT, not by whether
+they have a screenshot: route an EXISTING screen they want to optimize/improve to
+`lazyweb-optimize-paywall`; route designing a NEW screen FROM SCRATCH straight to
+`lazyweb-deep-design-research` (that is the `create` objective, and
+`lazyweb-optimize-paywall` would only redirect there anyway). Route explicit
 install, update, refresh, or stale slash-command requests to `lazyweb-update`.
 Route "design best practices for X" / "what's the best skill for animation,
 landing pages, typography…" asks to `lazyweb-design-best-practices`, which

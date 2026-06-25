@@ -1,15 +1,21 @@
 ---
 name: lazyweb-optimize-paywall
-route: "Optimize paywall conversion"
-router-terms: paywall, paywall design, paywall redesign, optimize paywall, improve paywall, critique paywall, conversion rate, paid conversion, trial start, annual plan, upgrade screen
+route: "Optimize, improve, or design a product screen"
+router-terms: paywall, pricing page, landing page, signup screen, onboarding, dashboard, optimize paywall, improve design, critique screen, redesign screen, conversion rate, paid conversion, trial start, annual plan, upgrade screen, design a new screen, new paywall from scratch, design from scratch, create a screen, no design yet
 description: |
-  Optimize a mobile or web paywall. From just the current screenshot, the server
-  runs the internal generation pipeline — labels the screen, retrieves structural
-  experiment twins, diagnoses conversion frictions, and synthesizes a slot-diverse
-  portfolio of falsifiable hypotheses each bound to a real A/B experiment — then
-  renders the same dark report the internal pipeline produces. The skill captures
-  the screen, generates one mockup per winner, and hosts the report. Use when the
-  user wants to redesign, improve, critique, or optimize a paywall for conversion.
+  Optimize, improve, or design any product screen — mobile or web (paywall,
+  pricing, landing, signup, onboarding, dashboard, settings, …; "paywall" in the
+  name is legacy). Pick the `objective` INTENT-FIRST, not by whether an image
+  exists: `optimize` (move a conversion metric on an EXISTING screen) and
+  `improve` (raise design quality of an EXISTING screen) both require a
+  screenshot — captured on the user's behalf; `create` (a NEW screen from
+  scratch) routes to deep-design-research. For optimize, the server runs the
+  internal pipeline — labels the screen, retrieves structural experiment twins,
+  diagnoses frictions, synthesizes a slot-diverse portfolio of falsifiable
+  hypotheses bound to real A/B experiments — then renders the dark report; the
+  skill captures the screen, generates one mockup per winner, and hosts it. Use
+  when the user wants to redesign, improve, critique, optimize, or design a
+  product screen for conversion or quality.
 allowed-tools:
   - Bash
   - Read
@@ -23,6 +29,39 @@ allowed-tools:
 
 Optimize a paywall with an evidence-backed, slot-diverse portfolio of conversion
 hypotheses — not generic component advice.
+
+## Objectives — pick INTENT-FIRST (read first)
+
+This skill (legacy name `optimize-paywall`) handles **any product screen**, not
+just paywalls. Classify the **user's intent FIRST**, then act — never pick by
+whether an image happens to be available:
+
+| `objective` | User intent | What happens |
+|---|---|---|
+| **optimize** (default) | Move a **metric** (conversion) on an **existing** screen | Run the pipeline below (Steps 1–4). **Screenshot required.** |
+| **improve** | Raise **aesthetic / design quality** of an **existing** screen | Same pipeline, design-quality framing. **Screenshot required.** |
+| **create** | Design a **new** screen **from scratch** (none exists) | **Redirect to `lazyweb-deep-design-research`** (greenfield). No screenshot. |
+
+**Grounding is enforced by the intent; it does not select it.** For `optimize`/
+`improve` you MUST have a screenshot of the current screen — get it in this order:
+
+1. **Capture it yourself** on the user's behalf (dev-server / preview / browser
+   tools). This is the default, not a fallback.
+2. **Ask the user to upload** one only if you cannot capture it.
+3. **Stop with a clear reason** if neither works — tell the user *what's needed*
+   (a screenshot of the screen, or switch to `create` to start from scratch).
+   Never run an ungrounded optimize/improve, and never silently fall back to
+   `create` just because no image was supplied.
+
+**For `objective=create`:** do NOT run Steps 1–4. Hand off to
+`lazyweb-deep-design-research` (its greenfield branch needs no current screen) —
+fetch it via `lazyweb_get_workflows { operation:"fetch", workflow:"lazyweb-deep-design-research" }`
+or invoke the `/lazyweb-deep-design-research` skill — passing the screen_type, the
+conversion goal, and any brand/design-system context you have. The helper
+(`--objective create`) and the MCP (`objective:"create"`) also return this
+redirect as a backstop. `create` is the value name on the wire.
+
+The rest of this skill is the **optimize / improve** pipeline.
 
 ## CRITICAL: how this skill works (read first)
 
@@ -129,6 +168,7 @@ python "$SKILL_DIR/optimize_paywall.py" synthesize \
   --plan-structure "<e.g. monthly $6.99 / annual $59.99>" \
   --product-brief "<who the user is; free vs paid + why upgrade; where this sits in the flow; the wedge>" \
   --platform <mobile|web> --screen-type <paywall|pricing|landing|signup> \
+  [--objective optimize|improve]   # default optimize; a NEW screen from scratch uses create (see Objectives) — not this command \
   [--category <cat>] [--constraints "<...>"] [--divergence auto|low|med|high] \
   --out "$WORK/synthesis.json"
 ```

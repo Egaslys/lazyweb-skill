@@ -269,6 +269,22 @@ def image_args(image_path: str, token: str, label: str) -> dict:
 
 
 def cmd_synthesize(client: McpClient, a: argparse.Namespace) -> dict:
+    objective = (getattr(a, "objective", "") or "optimize").lower()
+    if objective == "create":
+        # create = design a NEW screen from scratch. The synthesize pipeline is
+        # screenshot-keyed (label -> twins -> frictions -> EDIT mockup) and can't
+        # run greenfield, so we DON'T call it — we return a redirect to the
+        # deep-design-research greenfield flow. The skill intercepts create-intent
+        # before invoking this helper; this is the backstop.
+        return {
+            "status": "redirect",
+            "objective": "create",
+            "route_to": "lazyweb-deep-design-research",
+            "reason": "create designs a new screen from scratch; the paywall synthesize pipeline needs a current screenshot to label, retrieve twins, diagnose frictions, and EDIT a mockup.",
+            "next": "Run the lazyweb-deep-design-research greenfield flow (pass screen_type, the conversion goal, and any brand/design-system context). If a screen already exists, this is the wrong objective — use --objective optimize|improve with --image.",
+        }
+    if not (a.image or "").strip():
+        fatal("synthesize with --objective optimize|improve requires --image (a screenshot of the current screen). For a new screen from scratch, use --objective create.")
     # Operator product brief — the highest-signal context. Inline text or @file.
     # Forwarded as `product_brief`; the server treats it as AUTHORITATIVE and
     # grounds the diagnosis in it (who the user is, the free/paid value exchange,
@@ -291,6 +307,7 @@ def cmd_synthesize(client: McpClient, a: argparse.Namespace) -> dict:
         "divergence": a.divergence or "auto",
         "platform": a.platform or "mobile",
         "screen_type": a.screen_type or "",
+        "objective": objective,
         "report_skill": "optimize-paywall",
         "skill": "lazyweb-optimize-paywall",
         "version": skill_version(),
@@ -335,7 +352,10 @@ def main() -> None:
     sub = ap.add_subparsers(dest="cmd", required=True)
 
     s = sub.add_parser("synthesize")
-    s.add_argument("--image", required=True)
+    s.add_argument("--image", default="")
+    s.add_argument("--objective", default="optimize", choices=["optimize", "improve", "create"],
+                   help="Intent-first: optimize|improve operate on an EXISTING screen (need --image); "
+                        "create = a NEW screen from scratch (redirects to deep-design-research, no image).")
     s.add_argument("--product", default="")
     s.add_argument("--conversion-goal", dest="conversion_goal", default="")
     s.add_argument("--plan-structure", dest="plan_structure", default="")
@@ -364,23 +384,29 @@ def main() -> None:
     m.add_argument("--out", default="")
 
     a = ap.parse_args()
-    token = load_token()
-    if not token:
-        fatal("no Lazyweb token (set LAZYWEB_MCP_TOKEN or ~/.lazyweb/lazyweb_mcp_token)")
 
-    client = McpClient(a.endpoint, token)
-    try:
-        client.initialize()
-        out = cmd_synthesize(client, a) if a.cmd == "synthesize" else cmd_mockup(client, a)
-    except urllib.error.HTTPError as exc:
-        detail = ""
+    # create = a new screen from scratch → pure redirect (no MCP call), so it
+    # needs no token or network. Handle it before building the client.
+    if a.cmd == "synthesize" and (getattr(a, "objective", "") or "").lower() == "create":
+        out = cmd_synthesize(None, a)
+    else:
+        token = load_token()
+        if not token:
+            fatal("no Lazyweb token (set LAZYWEB_MCP_TOKEN or ~/.lazyweb/lazyweb_mcp_token)")
+
+        client = McpClient(a.endpoint, token)
         try:
-            detail = exc.read().decode("utf-8", "replace")[:400]
-        except Exception:
-            pass
-        fatal(f"HTTP {exc.code} from {a.endpoint}: {detail}")
-    except (urllib.error.URLError, RuntimeError, OSError) as exc:
-        fatal(str(exc))
+            client.initialize()
+            out = cmd_synthesize(client, a) if a.cmd == "synthesize" else cmd_mockup(client, a)
+        except urllib.error.HTTPError as exc:
+            detail = ""
+            try:
+                detail = exc.read().decode("utf-8", "replace")[:400]
+            except Exception:
+                pass
+            fatal(f"HTTP {exc.code} from {a.endpoint}: {detail}")
+        except (urllib.error.URLError, RuntimeError, OSError) as exc:
+            fatal(str(exc))
 
     text = json.dumps(out, indent=2)
     if getattr(a, "out", ""):
