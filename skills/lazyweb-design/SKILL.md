@@ -125,7 +125,12 @@ tools and run `lazyweb_health`. Required tools:
 
 If the **MCP itself** is missing or its auth fails (e.g. `lazyweb_health` errors),
 tell the user to run `curl -fsSL https://www.lazyweb.com/install.sh | bash`,
-reload, and rerun. With the presign upload flow (Step 1), image input is
+reload, and rerun. If instead a tool is refused as **OUT OF DATE** (the result has
+`code: "skill_deprecated"` / `action_required: "upgrade"` / `do_not_fallback: true`,
+or says your skill pack is below the required version), that is a **HARD STOP**: do
+NOT proceed in a degraded, web-only, or fabricated-report mode — STOP and have the
+user run `/lazyweb-update` (or the install command above), reload, and retry.
+With the presign upload flow (Step 1), image input is
 authenticated by the **MCP session itself** — if the MCP is healthy, upload works,
 by construction. The legacy helper-script token (`~/.lazyweb/lazyweb_mcp_token`) is
 no longer on the image-input path; it only matters for the optional token-script
