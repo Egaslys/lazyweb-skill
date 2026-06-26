@@ -27,8 +27,12 @@ inspiration, competitive design analysis, best-practice research, quick screen
 examples, feedback on an existing interface, creative design ideas, or
 paywall optimization, monetization, and A/B test research.
 
-This high-level skill routes to the right visible Lazyweb mode. Do not
-reimplement the mode here. Read the selected mode's `SKILL.md` and follow it.
+This high-level skill routes to the right Lazyweb mode. Do not reimplement the
+mode here. Hand off by **invoking the mode's installed skill by name**, using
+its **dedicated MCP tool**, or **fetching its workflow over MCP** — see Routing
+below. Never point the agent at a `skills/<name>/SKILL.md` file path: that
+layout exists only in the source repo, not in the installed skill, so the path
+does not resolve.
 
 ## First Run
 
@@ -63,16 +67,26 @@ continue with web research only if they want a degraded fallback.
 
 Choose exactly one mode:
 
-| User intent | Read and run |
+| User intent | How to run |
 |---|---|
-| Optimize (conversion), improve (design quality), or design from scratch ANY product screen — paywall, pricing, landing, signup, onboarding, dashboard, settings, etc. (routes on objective) | `skills/lazyweb-design/SKILL.md` |
-| Quick grouped examples, UI references, or screenshots without a full report | `skills/lazyweb-quick-search/SKILL.md` |
-| Quick direct `lazyweb_search` preflight before designing, no report | `skills/lazyweb-quick-search/SKILL.md` |
-| Creative cross-category ideas or unconventional directions | `skills/lazyweb-design-brainstorm/SKILL.md` |
-| Rewrite, evaluate, or stress-test ONE paywall CTA (button copy, not layout) | `skills/lazyweb-paywall-cta/SKILL.md` |
-| A/B tests, experiment examples, pricing, trials, lifecycle, or monetization strategy | `skills/lazyweb-ab-test-research/SKILL.md` |
-| Design best practices for X — find the top community-rated skill online and apply it as context (no install) | `skills/lazyweb-design-best-practices/SKILL.md` |
-| Update local Lazyweb skills, reinstall Lazyweb, or sync Lazyweb into agentic IDEs | `skills/lazyweb-update/SKILL.md` |
+| Optimize (conversion), improve (design quality), or design from scratch ANY product screen — paywall, pricing, landing, signup, onboarding, dashboard, settings, etc. (routes on objective) | **Invoke the `lazyweb-design` skill** |
+| Quick grouped examples, UI references, or screenshots without a full report | **Invoke the `lazyweb-quick-search` skill** |
+| Quick direct `lazyweb_search` preflight before designing, no report | **Invoke the `lazyweb-quick-search` skill** |
+| Update local Lazyweb skills, reinstall Lazyweb, or sync Lazyweb into agentic IDEs | **Invoke the `lazyweb-update` skill** |
+| A/B tests, experiment examples, pricing, trials, lifecycle, or monetization strategy | Use the `lazyweb_search_ab_tests` MCP tool (mobile A/B evidence) |
+| Rewrite, evaluate, or stress-test ONE paywall CTA (button copy, not layout) | Use the `lazyweb_paywall_cta_research` MCP tool |
+| Creative cross-category ideas or unconventional directions | Fetch its workflow: `lazyweb_get_workflows { operation:"fetch", workflow:"lazyweb-design-brainstorm" }` |
+| Design best practices for X — find the top community-rated skill online and apply it as context (no install) | Fetch its workflow: `lazyweb_get_workflows { operation:"fetch", workflow:"lazyweb-design-best-practices" }` |
+
+**How to run, explained.** Only `lazyweb-design`, `lazyweb-quick-search`, and
+`lazyweb-update` are installed as local skills — invoke them **by name**, which
+resolves regardless of how the host lays out skill directories. The remaining
+modes are intentionally not installed as slash commands: reach A/B-test and
+paywall-CTA work through their dedicated MCP tools above, and fetch brainstorm /
+best-practices methodology over MCP with `lazyweb_get_workflows`. The `create`
+objective inside `lazyweb-design` likewise fetches the `lazyweb-design-create`
+backend over MCP. Never substitute a `skills/<name>/SKILL.md` file read for any
+of these — that path does not exist in the install.
 
 For a bare `/lazyweb` request, briefly explain the modes above and ask which
 one the user wants. Recommend `lazyweb-design` when they want to optimize,
@@ -98,16 +112,22 @@ from the internet, and applies them as context — nothing gets installed.
 
 When a mode is clear:
 
-1. Read the corresponding `SKILL.md`.
+1. Reach the mode by the mechanism in the table above — **invoke the installed
+   skill by name** (`lazyweb-design`, `lazyweb-quick-search`, `lazyweb-update`),
+   use the mode's **dedicated MCP tool**, or **fetch its workflow** with
+   `lazyweb_get_workflows`. Do NOT read a `skills/<name>/SKILL.md` file path —
+   that layout exists only in the source repo, not in the install.
 2. Follow that mode from the top.
 3. Use Lazyweb MCP tools for database-backed evidence.
 4. Embed Lazyweb database images directly with returned `imageUrl`/`image_url` values, and save only current-state or web-captured screenshots locally when the selected mode requires them.
 5. Cite whether each reference came from Lazyweb or the web.
 
-If the local host exposes the mode skills directly in its slash menu, users may
-call those mode skills directly. This `/lazyweb` skill remains the compatibility
-entry point for hosts that only show one downloaded skill or where the user is
-not sure which mode to use.
+The installed mode skills (`lazyweb-design`, `lazyweb-quick-search`,
+`lazyweb-update`) may also be called directly by the user from the slash menu.
+This `/lazyweb` skill remains the entry point for hosts that show only one
+downloaded skill or where the user is not sure which mode to use — there, reach
+the unsurfaced modes via their MCP tool or `lazyweb_get_workflows`, never a
+local file path.
 
 ## Autorouter Check (one-time, after the request is served)
 
