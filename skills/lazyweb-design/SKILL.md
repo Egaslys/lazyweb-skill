@@ -54,10 +54,11 @@ whether an image happens to be available:
    Never run an ungrounded optimize/improve, and never silently fall back to
    `create` just because no image was supplied.
 
-**For `objective=create`:** do NOT run Steps 1–4. Hand off to
-`lazyweb-design-create` (the internal greenfield backend; needs no current
-screen) — fetch it via `lazyweb_get_workflows { operation:"fetch", workflow:"lazyweb-design-create" }`
-or invoke the `lazyweb-design-create` skill — passing the screen_type, the
+**For `objective=create`:** do NOT run Steps 1–4. Hand off to the internal
+greenfield backend (`lazyweb-design-create`; needs no current screen) by
+**fetching it over MCP**: `lazyweb_get_workflows { operation:"fetch", workflow:"lazyweb-design-create" }`. It is intentionally not installed as a
+local slash command, so always fetch it — do not rely on a local
+`lazyweb-design-create` skill being present. Pass the screen_type, the
 conversion goal, and any brand/design-system context you have. The helper
 (`--objective create`) and the MCP (`objective:"create"`) also return this
 redirect as a backstop. `create` is the value name on the wire.

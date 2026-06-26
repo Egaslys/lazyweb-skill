@@ -145,14 +145,25 @@ install_skills_to_root() {
   do
     rm -rf "$skills_root/$legacy_skill_dir"
   done
-  # Iterate every skill directory under $ROOT/skills. Avoids the
-  # hardcoded-list trap that left lazyweb-paywall-cta and
-  # lazyweb-optimize-sign-up stranded on disk after 0.4.0.
+  # Surface only the focused, user-facing slash-command set. Every other skill
+  # dir stays in the repo (the server/router can still reach it via
+  # lazyweb_get_workflows — e.g. objective=create fetches lazyweb-design-create)
+  # but is intentionally NOT installed as a slash command. Claude Code surfaces
+  # any installed skill and has no per-skill "hide from menu" flag, so curation
+  # has to happen here at install time. We iterate every dir so anything not in
+  # the focused set is actively removed from the install root — no stale slash
+  # commands linger (the original reason this loop avoided a hardcoded list).
+  local FOCUSED_SKILLS="lazyweb-design lazyweb-quick-search lazyweb-update"
   local skill_dir_path skill_dir
   for skill_dir_path in "$ROOT/skills"/*/; do
     [ -d "$skill_dir_path" ] || continue
     skill_dir="$(basename "$skill_dir_path")"
-    link_or_copy "$ROOT/skills/$skill_dir" "$skills_root/$skill_dir"
+    case " $FOCUSED_SKILLS " in
+      *" $skill_dir "*)
+        link_or_copy "$ROOT/skills/$skill_dir" "$skills_root/$skill_dir" ;;
+      *)
+        rm -rf "$skills_root/$skill_dir" ;;
+    esac
   done
 }
 
