@@ -120,8 +120,11 @@ tools and run `lazyweb_health`. Required tools:
 - `lazyweb_render_report` — server-renders + hosts the report (pass
   `report_skill="optimize-paywall"` and `report_data.synthesis_id`).
 
-**Pass `skill: "optimize-paywall"` and `version: "<x.y.z>"` on every call** (read
+**Pass `skill: "lazyweb-design"` and `version: "<x.y.z>"` on every call** (read
 `~/.lazyweb/VERSION`, fall back `"0.0.0"`). Optional analytics; never drop a real arg.
+(Keep `report_skill="optimize-paywall"` on `lazyweb_render_report` — that's the
+backend/report tag and is intentionally left legacy; only the analytics `skill`
+slug moves to the `lazyweb-design` umbrella.)
 
 If the **MCP itself** is missing or its auth fails (e.g. `lazyweb_health` errors),
 tell the user to run `curl -fsSL https://www.lazyweb.com/install.sh | bash`,
@@ -354,7 +357,7 @@ the server reloads everything from `synthesis_id`), and `report_data`:
 
 So the call is `lazyweb_render_report(report_skill="optimize-paywall",
 objective="<optimize|improve>", platform="<mobile|web>",
-screen_type="<paywall|pricing|landing|signup>", skill="optimize-paywall",
+screen_type="<paywall|pricing|landing|signup>", skill="lazyweb-design",
 version="<x.y.z>", report_data={…})`.
 
 Notes:
