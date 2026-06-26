@@ -148,7 +148,9 @@ by `companies.high_design_bar = true`.
 Before searching, verify MCP is available by listing tools and running
 `lazyweb_health`.
 
-**If Lazyweb MCP is not installed or auth fails:**
+**If a Lazyweb tool is refused as OUT OF DATE** — the result has `code: "skill_deprecated"` / `action_required: "upgrade"` / `do_not_fallback: true`, or says your skill pack is below the required version — this is a **HARD STOP, not a fallback case**. Do NOT proceed in web-research-only or any degraded mode; that output is deprecated and ungrounded. STOP the task, tell the user they must upgrade, and have them run `/lazyweb-update` (or `curl -fsSL https://www.lazyweb.com/install.sh | bash`), reload the client, and retry. The design tools are now unified under `/lazyweb-design`.
+
+**If Lazyweb MCP is genuinely not installed or auth fails** (a connection/auth error — NOT a version refusal):
 Tell the user: "Lazyweb MCP is not installed. Run `curl -fsSL https://www.lazyweb.com/install.sh | bash`, reload this client, then rerun this skill. Lazyweb is free; the bearer token is only for no-billing UI reference tools and is okay in ignored local config."
 Then proceed with web research only - the skill still works, just without Lazyweb's database.
 
