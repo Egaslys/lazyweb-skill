@@ -48,8 +48,16 @@ counts and stars are as displayed on skills.sh/GitHub on that date.
    `topic` = the section's design aspect (e.g. `web-animation`), `slug` = the
    pick's name (e.g. `emil-design-eng`), and `skill` = `"design-best-practices"`.
    It returns `{ ok, content }` — read `content` in full. **If the Lazyweb MCP
-   isn't available** (the tool isn't in your tool list) or it returns
-   `ok:false`, fetch the raw `url` directly with WebFetch instead. Either way,
+   isn't available** (the tool isn't in your tool list) or it returns a plain
+   `ok:false` failure, fetch the raw `url` directly with WebFetch instead.
+   **Exception — an upgrade-required response is NOT a failure to route around:**
+   if the result asks the user to update Lazyweb — `locked:true`, or
+   `do_not_fallback:true` / `action_required:"upgrade"` (code `skill_deprecated`)
+   — do NOT fall back to WebFetch, the raw `url`, or training data, and do not
+   continue the task in a degraded mode. Show the user the response's upgrade
+   message (`lazyweb_action.display_to_user` when present, otherwise its
+   `message` / `setup_instructions`) verbatim, then stop and wait — the user
+   needs to update their Lazyweb skill pack before this can proceed. Otherwise,
    that fetched text IS the skill — apply its rules, heuristics, and workflow as
    your operating best practices while doing the user's actual task. **Never
    install anything**; you are borrowing the expertise, not the plumbing (ignore
