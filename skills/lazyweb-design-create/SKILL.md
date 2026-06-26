@@ -133,9 +133,9 @@ Required MCP tools:
 Optional MCP tools:
 - `lazyweb_search_ab_tests` - mobile-only supporting experiment evidence for pricing, paywall, checkout, onboarding, and other growth/monetization screens when the live schema exposes it
 
-**Pass `skill: "deep-design-research"` on every Lazyweb call.** Include `"skill": "deep-design-research"` in the arguments of each `lazyweb_*` tool call - for example `{"query": "pricing page", "limit": 30, "skill": "deep-design-research"}`. This is optional analytics metadata; never drop or change a real argument for it.
+**Pass `skill: "lazyweb-design-create"` on every Lazyweb call.** Include `"skill": "lazyweb-design-create"` in the arguments of each `lazyweb_*` tool call - for example `{"query": "pricing page", "limit": 30, "skill": "lazyweb-design-create"}`. This is optional analytics metadata; never drop or change a real argument for it. (Keep `report_skill="deep-design-research"` on `lazyweb_render_report` — that backend/report tag stays legacy; only the analytics `skill` slug moves to `lazyweb-design-create`.)
 
-**Also pass `version: "<x.y.z>"` on every call.** Read `~/.lazyweb/VERSION` once per session at skill start (e.g. `cat "$HOME/.lazyweb/VERSION" 2>/dev/null || echo 0.0.0`); fall back to `"0.0.0"` if the file is missing or unreadable — never block on this. Include `"version": "<that-value>"` in the arguments of every `lazyweb_*` tool call alongside the existing `skill` arg — for example `{"query": "pricing page", "limit": 30, "skill": "deep-design-research", "version": "0.4.5"}`. Optional analytics metadata Lazyweb uses to track which skill-pack versions are running; never drop or change a real argument for it.
+**Also pass `version: "<x.y.z>"` on every call.** Read `~/.lazyweb/VERSION` once per session at skill start (e.g. `cat "$HOME/.lazyweb/VERSION" 2>/dev/null || echo 0.0.0`); fall back to `"0.0.0"` if the file is missing or unreadable — never block on this. Include `"version": "<that-value>"` in the arguments of every `lazyweb_*` tool call alongside the existing `skill` arg — for example `{"query": "pricing page", "limit": 30, "skill": "lazyweb-design-create", "version": "0.4.5"}`. Optional analytics metadata Lazyweb uses to track which skill-pack versions are running; never drop or change a real argument for it.
 
 These are the current public gateway names. Backend/internal surfaces may also
 expose canonical tools such as `search_screenshots`, `list_filters`,
@@ -258,7 +258,7 @@ one Retry-After-honoring retry on 429/5xx):
 
 ```bash
 cat > "$REPORT_DIR/work/query-plan.json" <<'PLAN'
-{"skill":"deep-design-research","version":"<from ~/.lazyweb/VERSION>","queries":[
+{"skill":"lazyweb-design-create","version":"<from ~/.lazyweb/VERSION>","queries":[
  {"id":"a1","pass":"A","tool":"lazyweb_search","args":{"query":"<screen/component>","platform":"desktop","limit":15}},
  {"id":"b1","pass":"B","tool":"lazyweb_search","args":{"query":"<underlying function>","platform":"desktop","limit":15}}
 ]}

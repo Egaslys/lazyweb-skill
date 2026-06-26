@@ -233,7 +233,7 @@ def poll(client: McpClient, get_tool: str, job_id: str, budget_s: float, label: 
         time.sleep(POLL_INTERVAL_S)
         rpc += 1
         res = payload_of(client.tools_call(rpc, get_tool, {"job_id": job_id,
-                                                           "skill": "lazyweb-optimize-paywall",
+                                                           "skill": "lazyweb-design",
                                                            "version": skill_version()}))
         status = (res.get("status") or "").lower()
         if status == "done":
@@ -336,7 +336,7 @@ def cmd_synthesize(client: McpClient, a: argparse.Namespace) -> dict:
         "screen_type": a.screen_type or "",
         "objective": objective,
         "report_skill": "optimize-paywall",
-        "skill": "lazyweb-optimize-paywall",
+        "skill": "lazyweb-design",
         "version": skill_version(),
     }
     # `objective` already carries the run mode (optimize|improve). Forward the
@@ -369,7 +369,7 @@ def cmd_mockup(client: McpClient, a: argparse.Namespace) -> dict:
         "prompt": prompt,
         **image_args(a.image, client.token, "mockup (EDIT off current screenshot)", image_url),
         "quality": a.quality or "medium",
-        "skill": "lazyweb-optimize-paywall",
+        "skill": "lazyweb-design",
         "version": skill_version(),
     }  # NOTE: omit `size` in EDIT mode so it matches the input aspect ratio
     started = payload_of(client.tools_call(1, "lazyweb_start_mockup", args))
